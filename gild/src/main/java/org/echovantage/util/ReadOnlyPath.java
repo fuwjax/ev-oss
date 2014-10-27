@@ -14,7 +14,7 @@ public class ReadOnlyPath {
 		this.path = path;
 	}
 
-	public InputStream open() throws IOException {
+	public InputStream newInputStream() throws IOException {
 		return Files.newInputStream(path);
 	}
 
@@ -64,5 +64,9 @@ public class ReadOnlyPath {
 
 	public void copyTo(final Path dest) throws IOException {
 		Files2.copy(path, dest);
+	}
+
+	public ReadOnlyPath getParent() {
+		return new ReadOnlyPath(path.getParent());
 	}
 }

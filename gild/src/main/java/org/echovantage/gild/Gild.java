@@ -31,12 +31,12 @@ import org.junit.runners.model.Statement;
  *
  * <pre>
  * package org.example.test;
- *
+ * 
  * public class TestClass {
  * 	private DatabaseProxy db = new DatabaseProxy(dataSource);
  * 	\@Rule
  * 	public Gilded harness = new Gilded().with("db", db);
- *
+ * 
  * 	\@Test
  * 	public void testSomething() throws Exception {
  * 		// loads src/test/gilded/org.example.test.TestClass/testSomething/input/db/* into the dataSource
@@ -53,7 +53,7 @@ import org.junit.runners.model.Statement;
  * <pre>
  * 	\@Rule
  * 	public Gilded harness = new Gilded().with("db", db).staged(StandardStageFactory.startingAt("stage1"));
- *
+ * 
  * 	\@Test
  * 	public void testProcess() throws Exception {
  * 		// loads src/test/gilded/org.example.test.TestClass/testProcess/stage1/input/db/* into the dataSource
