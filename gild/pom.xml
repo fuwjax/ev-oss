@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.echovantage</groupId>
     <artifactId>oss</artifactId>
-    <version>0.5-SNAPSHOT</version>
+    <version>0.5</version>
   </parent>
   <artifactId>gild</artifactId>
   <dependencies>
