@@ -7,7 +7,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -142,9 +141,7 @@ public class Gild implements TestRule {
 		assertFalse("Stage has already been prepared", prepared);
 		for(final Map.Entry<String, ServiceProxy> entry : proxies.entrySet()) {
 			final Path in = stage.inputPath(entry.getKey());
-			if(Files.exists(in)) {
-				entry.getValue().prepare(new ReadOnlyPath(in));
-			}
+			entry.getValue().prepare(new ReadOnlyPath(in));
 		}
 		prepared = true;
 	}
@@ -161,17 +158,15 @@ public class Gild implements TestRule {
 		for(final Map.Entry<String, ServiceProxy> entry : proxies.entrySet()) {
 			final String service = entry.getKey();
 			final Path gold = stage.goldPath(service);
-			if(Files.exists(gold)) {
-				final Path compare = stage.comparePath(service);
-				if(transform == null) {
-					entry.getValue().preserve(compare, new ReadOnlyPath(gold));
-				} else {
-					final Path output = stage.transformPath(service);
-					entry.getValue().preserve(output, new ReadOnlyPath(gold));
-					transform.transform(new ReadOnlyPath(output), compare);
-				}
-				assertGolden(gold, compare);
+			final Path compare = stage.comparePath(service);
+			if(transform == null) {
+				entry.getValue().preserve(compare, new ReadOnlyPath(gold));
+			} else {
+				final Path output = stage.transformPath(service);
+				entry.getValue().preserve(output, new ReadOnlyPath(gold));
+				transform.transform(new ReadOnlyPath(output), compare);
 			}
+			assertGolden(gold, compare);
 		}
 	}
 

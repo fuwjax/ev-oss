@@ -103,14 +103,16 @@ public class Assert2 {
 	 * @throws IOException if the paths cannot be walked
 	 */
 	public static void containsAll(final Path expected, final Path actual) throws IOException {
-		walkFileTree(expected, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-				final Path sub = expected.relativize(file);
-				assertTrue(sub + " exists in " + expected + ", but not in " + actual, Files.exists(actual.resolve(sub)));
-				return super.visitFile(file, attrs);
-			}
-		});
+		if(Files.exists(expected)) {
+			walkFileTree(expected, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+					final Path sub = expected.relativize(file);
+					assertTrue(sub + " exists in " + expected + ", but not in " + actual, Files.exists(actual.resolve(sub)));
+					return super.visitFile(file, attrs);
+				}
+			});
+		}
 	}
 
 	/**
@@ -120,20 +122,22 @@ public class Assert2 {
 	 * @throws IOException if the paths cannot be traversed
 	 */
 	public static void assertEquals(final Path expected, final Path actual) throws IOException {
-		containsAll(expected, actual);
 		containsAll(actual, expected);
-		walkFileTree(expected, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-				final Path sub = expected.relativize(file);
-				final Path therePath = actual.resolve(sub);
-				final long hereSize = Files.size(file);
-				final long thereSize = Files.size(therePath);
-				Assert.assertEquals(sub + " is " + hereSize + " bytes in " + expected + ", but " + thereSize + " bytes in " + actual, hereSize, thereSize);
-				assertByteEquals(sub, file, therePath);
-				return super.visitFile(file, attrs);
-			}
-		});
+		if(Files.exists(expected)) {
+			containsAll(expected, actual);
+			walkFileTree(expected, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+					final Path sub = expected.relativize(file);
+					final Path therePath = actual.resolve(sub);
+					final long hereSize = Files.size(file);
+					final long thereSize = Files.size(therePath);
+					Assert.assertEquals(sub + " is " + hereSize + " bytes in " + expected + ", but " + thereSize + " bytes in " + actual, hereSize, thereSize);
+					assertByteEquals(sub, file, therePath);
+					return super.visitFile(file, attrs);
+				}
+			});
+		}
 	}
 
 	/**
