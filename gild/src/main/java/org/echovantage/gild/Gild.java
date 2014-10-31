@@ -18,7 +18,6 @@ import org.echovantage.gild.stage.StageFactory;
 import org.echovantage.gild.stage.StandardStageFactory;
 import org.echovantage.gild.transform.Transformer;
 import org.echovantage.util.Files2;
-import org.echovantage.util.ReadOnlyPath;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -32,12 +31,12 @@ import org.junit.runners.model.Statement;
  *
  * <pre>
  * package org.example.test;
- * 
+ *
  * public class TestClass {
  * 	private DatabaseProxy db = new DatabaseProxy(dataSource);
  * 	\@Rule
  * 	public Gilded harness = new Gilded().with("db", db);
- * 
+ *
  * 	\@Test
  * 	public void testSomething() throws Exception {
  * 		// loads src/test/gilded/org.example.test.TestClass/testSomething/input/db/* into the dataSource
@@ -54,7 +53,7 @@ import org.junit.runners.model.Statement;
  * <pre>
  * 	\@Rule
  * 	public Gilded harness = new Gilded().with("db", db).staged(StandardStageFactory.startingAt("stage1"));
- * 
+ *
  * 	\@Test
  * 	public void testProcess() throws Exception {
  * 		// loads src/test/gilded/org.example.test.TestClass/testProcess/stage1/input/db/* into the dataSource
@@ -78,7 +77,7 @@ import org.junit.runners.model.Statement;
  *
  * By default, the harness uses the standard path locations detailed in
  * {@link StandardStageFactory} and has no {@link Transformer}.
- * 
+ *
  * @author fuwjax
  */
 public class Gild implements TestRule {
@@ -91,7 +90,7 @@ public class Gild implements TestRule {
 
 	/**
 	 * Adds a service proxy to this harness.
-	 * 
+	 *
 	 * @param serviceName
 	 *           the name of the service
 	 * @param proxy
@@ -118,7 +117,7 @@ public class Gild implements TestRule {
 	 * assert. This method may have vairous
 	 * safeguards to prevent it from being accidentally left in code during a
 	 * release.
-	 * 
+	 *
 	 * @return this harness
 	 */
 	public Gild updateGoldCopy() {
@@ -193,7 +192,7 @@ public class Gild implements TestRule {
 
 	/**
 	 * Moves to the next stage in the staged test run.
-	 * 
+	 *
 	 * @param stageName
 	 *           the next stage name
 	 */

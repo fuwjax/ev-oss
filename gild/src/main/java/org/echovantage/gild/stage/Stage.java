@@ -11,13 +11,13 @@ import org.echovantage.gild.proxy.ServiceProxy;
  * system. They should be returned whether
  * they exist, it's simply where in the file system they would occur, regardless
  * of whether they actually do.
- * 
+ *
  * @author fuwjax
  */
 public interface Stage {
 	/**
 	 * The input path for the service.
-	 * 
+	 *
 	 * @param service
 	 *           the service name of one of the registered {@link ServiceProxy}
 	 *           instances
@@ -27,7 +27,7 @@ public interface Stage {
 
 	/**
 	 * The gold copy path for the service.
-	 * 
+	 *
 	 * @param service
 	 *           the service name of one of the registered {@link ServiceProxy}
 	 *           instances
@@ -37,7 +37,7 @@ public interface Stage {
 
 	/**
 	 * The compare copy (transformed output) path for the service.
-	 * 
+	 *
 	 * @param service
 	 *           the service name of one of the registered {@link ServiceProxy}
 	 *           instances
@@ -47,7 +47,7 @@ public interface Stage {
 
 	/**
 	 * The pre-transform (raw output) path for the service.
-	 * 
+	 *
 	 * @param service
 	 *           the service name of one of the registered {@link ServiceProxy}
 	 *           instances
@@ -57,7 +57,7 @@ public interface Stage {
 
 	/**
 	 * The next stage for this test, named {@code stage}.
-	 * 
+	 *
 	 * @param stage
 	 *           the next stage name
 	 * @return the next stage.

@@ -42,10 +42,10 @@ public class HttpClientProxy extends AbstractServiceProxy {
 		Collections.sort(paths);
 		for(final ReadOnlyPath file : paths) {
 			try(final Socket socket = new Socket(host, port);
-			      OutputStream out = socket.getOutputStream();
-			      InputStream in = socket.getInputStream();
-			      InputStream req = file.newInputStream();
-			      InputStream hin = new HttpResponseInputStream(in, req)) {
+					OutputStream out = socket.getOutputStream();
+					InputStream in = socket.getInputStream();
+					InputStream req = file.newInputStream();
+					InputStream hin = new HttpResponseInputStream(in, req)) {
 				file.copyTo(out);
 				Files.copy(hin, output.resolve(file.getFileName()));
 			}

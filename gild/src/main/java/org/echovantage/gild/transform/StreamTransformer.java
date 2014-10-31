@@ -18,7 +18,7 @@ public class StreamTransformer implements Transformer {
 	@Override
 	public void transform(final ReadOnlyPath src, final Path dest) throws IOException {
 		try(InputStream in = src.newInputStream();
-		      OutputStream out = Files.newOutputStream(dest)) {
+				OutputStream out = Files.newOutputStream(dest)) {
 			transform.transform(in, out);
 		}
 	}

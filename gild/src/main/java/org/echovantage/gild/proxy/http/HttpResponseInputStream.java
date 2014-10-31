@@ -20,7 +20,7 @@ public class HttpResponseInputStream extends InputStream {
 	private long bytesRead;
 	private final boolean mayHaveContent;
 
-	public HttpResponseInputStream(final InputStream resp, InputStream req) throws IOException {
+	public HttpResponseInputStream(final InputStream resp, final InputStream req) throws IOException {
 		this(resp, responseHasContent(req));
 	}
 

@@ -9,13 +9,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  * File utility class for test-centric operations.
- * 
+ *
  * @author fuwjax
  */
 public class Files2 {
 	/**
 	 * Copies a source to a destination, works recursively on directories.
-	 * 
+	 *
 	 * @param source
 	 *           the source path
 	 * @param dest
@@ -43,7 +43,7 @@ public class Files2 {
 
 	/**
 	 * Deletes a path, including directories.
-	 * 
+	 *
 	 * @param target
 	 *           the path to delete
 	 * @throws IOException

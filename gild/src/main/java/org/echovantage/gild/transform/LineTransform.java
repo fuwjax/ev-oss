@@ -19,7 +19,7 @@ public abstract class LineTransform implements StreamTransform {
 	@Override
 	public void transform(final InputStream input, final OutputStream output) throws IOException {
 		try(final PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, charset));
-		      final BufferedReader reader = new BufferedReader(new InputStreamReader(input, charset))) {
+				final BufferedReader reader = new BufferedReader(new InputStreamReader(input, charset))) {
 			String line;
 			while((line = reader.readLine()) != null) {
 				writer.println(transform(line));

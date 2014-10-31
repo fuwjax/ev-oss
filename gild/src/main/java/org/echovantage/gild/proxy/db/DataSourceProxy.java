@@ -43,8 +43,8 @@ public class DataSourceProxy extends AbstractServiceProxy {
 	@Override
 	protected boolean preserveImpl(final Path output, final ReadOnlyPath golden) throws IOException, SQLException {
 		try(Connection c = db.getConnection();
-		      Statement s = c.createStatement();
-		      DirectoryStream<ReadOnlyPath> schemas = golden.newDirectoryStream()) {
+				Statement s = c.createStatement();
+				DirectoryStream<ReadOnlyPath> schemas = golden.newDirectoryStream()) {
 			for(final ReadOnlyPath schema : schemas) {
 				final Path schemaTarget = output.resolve(schema.getFileName());
 				Files.createDirectories(schemaTarget);
@@ -52,7 +52,7 @@ public class DataSourceProxy extends AbstractServiceProxy {
 					for(final ReadOnlyPath table : tables) {
 						final Path tableTarget = schemaTarget.resolve(table.getFileName());
 						try(BufferedWriter w = newBufferedWriter(tableTarget, charset);
-						      ResultSet rs = s.executeQuery("SELECT * FROM " + tableName(table) + " ORDER BY id")) {
+								ResultSet rs = s.executeQuery("SELECT * FROM " + tableName(table) + " ORDER BY id")) {
 							while(rs.next()) {
 								if(rs.isFirst()) {
 									for(int col = 1; col <= rs.getMetaData().getColumnCount(); col++) {
@@ -77,8 +77,8 @@ public class DataSourceProxy extends AbstractServiceProxy {
 	@Override
 	protected void prepareImpl(final ReadOnlyPath input, final Path output) throws IOException, SQLException {
 		try(Connection c = db.getConnection();
-		      Statement s = c.createStatement();
-		      DirectoryStream<ReadOnlyPath> schemas = input.newDirectoryStream()) {
+				Statement s = c.createStatement();
+				DirectoryStream<ReadOnlyPath> schemas = input.newDirectoryStream()) {
 			for(final ReadOnlyPath schema : schemas) {
 				loadSchema(schema, s);
 			}
