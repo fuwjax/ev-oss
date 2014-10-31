@@ -3,7 +3,7 @@
 
 	<groupId>com.echovantage</groupId>
 	<artifactId>oss</artifactId>
-	<version>0.4</version>
+	<version>0.5-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>EchoVantage Open Source</name>
@@ -22,7 +22,7 @@
 		<url>git@github.com:EchoVantage/ev-oss.git</url>
 		<connection>scm:git:${project.scm.url}</connection>
 		<developerConnection>scm:git:${project.scm.url}</developerConnection>
-		<tag>oss-0.4</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<build>
