@@ -1,6 +1,7 @@
 package org.echovantage.gild.proxy;
 
 import static org.echovantage.util.Assert2.assertCompletes;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 import java.nio.file.Path;
@@ -36,6 +37,10 @@ public abstract class AbstractServiceProxy implements ServiceProxy {
 			bufferedInput = null;
 			assertCompletes(() -> prepareImpl(input));
 		}
+	}
+
+	protected final void checkNotReady() {
+		assertFalse("Cannot change properties after proxy is made ready", bufferedInput != null && isReady());
 	}
 
 	protected abstract void prepareImpl(ReadOnlyPath input) throws Exception;

@@ -1,6 +1,7 @@
 package org.echovantage.gild.proxy.db;
 
 import static java.nio.file.Files.newBufferedWriter;
+import static org.junit.Assert.assertNotEquals;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,7 +32,7 @@ import org.echovantage.gild.proxy.AbstractServiceProxy;
 import org.echovantage.util.ReadOnlyPath;
 
 public class DataSourceProxy extends AbstractServiceProxy {
-	private static final Charset UTF_8 = Charset.forName("UTF-8");
+	private Charset charset = Charset.forName("UTF-8");
 	private final DateFormat GMT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS+00");
 	{
 		GMT.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -41,16 +42,16 @@ public class DataSourceProxy extends AbstractServiceProxy {
 	@Override
 	protected void preserveImpl(final Path output, final ReadOnlyPath golden) throws IOException, SQLException {
 		try(Connection c = db.getConnection();
-				Statement s = c.createStatement();
-				DirectoryStream<ReadOnlyPath> schemas = golden.newDirectoryStream()) {
+		      Statement s = c.createStatement();
+		      DirectoryStream<ReadOnlyPath> schemas = golden.newDirectoryStream()) {
 			for(final ReadOnlyPath schema : schemas) {
 				final Path schemaTarget = output.resolve(schema.getFileName());
 				Files.createDirectories(schemaTarget);
 				try(DirectoryStream<ReadOnlyPath> tables = schema.newDirectoryStream()) {
 					for(final ReadOnlyPath table : tables) {
 						final Path tableTarget = schemaTarget.resolve(table.getFileName());
-						try(BufferedWriter w = newBufferedWriter(tableTarget, UTF_8);
-								ResultSet rs = s.executeQuery("SELECT * FROM " + tableName(table) + " ORDER BY id")) {
+						try(BufferedWriter w = newBufferedWriter(tableTarget, charset);
+						      ResultSet rs = s.executeQuery("SELECT * FROM " + tableName(table) + " ORDER BY id")) {
 							while(rs.next()) {
 								if(rs.isFirst()) {
 									for(int col = 1; col <= rs.getMetaData().getColumnCount(); col++) {
@@ -79,8 +80,8 @@ public class DataSourceProxy extends AbstractServiceProxy {
 	@Override
 	protected void prepareImpl(final ReadOnlyPath input) throws IOException, SQLException {
 		try(Connection c = db.getConnection();
-				Statement s = c.createStatement();
-				DirectoryStream<ReadOnlyPath> schemas = input.newDirectoryStream()) {
+		      Statement s = c.createStatement();
+		      DirectoryStream<ReadOnlyPath> schemas = input.newDirectoryStream()) {
 			for(final ReadOnlyPath schema : schemas) {
 				try(DirectoryStream<ReadOnlyPath> tables = schema.newDirectoryStream()) {
 					for(final ReadOnlyPath table : tables) {
@@ -102,22 +103,20 @@ public class DataSourceProxy extends AbstractServiceProxy {
 			while(iter.hasNext()) {
 				try {
 					loadTable(iter.next(), s);
+					iter.remove();
 				} catch(final SQLException e) {
 					if(!"23503".equals(e.getSQLState())) {
 						throw e;
 					}
-					iter.remove();
 				}
 			}
-			if(count == list.size()) {
-				throw new IllegalStateException("Cannot load any more tables from " + list);
-			}
+			assertNotEquals("Cannot load any more tables from " + list, count, list.size());
 		}
 	}
 
 	private void loadTable(final ReadOnlyPath table, final Statement s) throws IOException, SQLException {
 		final String tableName = tableName(table);
-		try(BufferedReader r = new BufferedReader(new InputStreamReader(table.newInputStream(), UTF_8))) {
+		try(BufferedReader r = new BufferedReader(new InputStreamReader(table.newInputStream(), charset))) {
 			String line = r.readLine();
 			final String sql = "INSERT INTO " + tableName + " (" + line + ") VALUES (";
 			int count = 1;
@@ -134,7 +133,15 @@ public class DataSourceProxy extends AbstractServiceProxy {
 	}
 
 	public DataSourceProxy setDataSource(final DataSource db) {
+		checkNotReady();
 		this.db = db;
+		checkReady();
+		return this;
+	}
+
+	public DataSourceProxy setCharset(final Charset charset) {
+		checkNotReady();
+		this.charset = charset;
 		checkReady();
 		return this;
 	}

@@ -36,6 +36,7 @@ public class FileSystemProxy extends AbstractServiceProxy {
 	}
 
 	public void setWorkingDirectory(final Path working) {
+		checkNotReady();
 		this.working = working;
 		checkReady();
 	}
