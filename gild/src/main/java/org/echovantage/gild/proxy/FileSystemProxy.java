@@ -19,8 +19,8 @@ public class FileSystemProxy extends AbstractServiceProxy {
 
 	@Override
 	protected void prepareImpl(final ReadOnlyPath input) throws Exception {
-		Files.createDirectories(working);
 		Files2.delete(working);
+		Files.createDirectories(working);
 		input.copyTo(working);
 	}
 
