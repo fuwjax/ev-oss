@@ -19,8 +19,8 @@ public class HttpResponseInputStream extends InputStream {
 	private boolean header = true;
 	private long bytesRead;
 	private final boolean mayHaveContent;
-	
-	public HttpResponseInputStream(final InputStream resp, InputStream req) throws IOException{
+
+	public HttpResponseInputStream(final InputStream resp, InputStream req) throws IOException {
 		this(resp, responseHasContent(req));
 	}
 
@@ -106,7 +106,7 @@ public class HttpResponseInputStream extends InputStream {
 
 	@Override
 	public long skip(final long n) throws IOException {
-		int remaining = (int)Math.min(1024, n);
+		int remaining = (int) Math.min(1024, n);
 		ensure(remaining);
 		remaining = Math.min(remaining, buffer.remaining());
 		buffer.position(remaining + buffer.position());

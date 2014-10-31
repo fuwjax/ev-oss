@@ -9,10 +9,10 @@ import java.nio.file.Path;
 import java.util.Iterator;
 
 public class ReadOnlyPath implements Comparable<ReadOnlyPath> {
-	public static ReadOnlyPath readOnly(Path path){
+	public static ReadOnlyPath readOnly(Path path) {
 		return path == null ? null : new ReadOnlyPath(path);
 	}
-	
+
 	private final Path path;
 
 	private ReadOnlyPath(final Path path) {
@@ -74,18 +74,18 @@ public class ReadOnlyPath implements Comparable<ReadOnlyPath> {
 	public ReadOnlyPath getParent() {
 		return new ReadOnlyPath(path.getParent());
 	}
-	
+
 	@Override
 	public String toString() {
-	   return getFileName();
+		return getFileName();
 	}
 
 	@Override
-   public int compareTo(ReadOnlyPath o) {
-	   return path.compareTo(o.path);
-   }
+	public int compareTo(ReadOnlyPath o) {
+		return path.compareTo(o.path);
+	}
 
 	public void copyTo(OutputStream out) throws IOException {
 		Files.copy(path, out);
-   }
+	}
 }

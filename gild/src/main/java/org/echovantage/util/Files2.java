@@ -9,14 +9,19 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  * File utility class for test-centric operations.
+ * 
  * @author fuwjax
  */
 public class Files2 {
 	/**
 	 * Copies a source to a destination, works recursively on directories.
-	 * @param source the source path
-	 * @param dest the destination path
-	 * @throws IOException if the source cannot be copied to the destination
+	 * 
+	 * @param source
+	 *           the source path
+	 * @param dest
+	 *           the destination path
+	 * @throws IOException
+	 *            if the source cannot be copied to the destination
 	 */
 	public static void copy(final Path source, final Path dest) throws IOException {
 		if(Files.exists(source)) {
@@ -38,8 +43,11 @@ public class Files2 {
 
 	/**
 	 * Deletes a path, including directories.
-	 * @param target the path to delete
-	 * @throws IOException if the path cannot be deleted
+	 * 
+	 * @param target
+	 *           the path to delete
+	 * @throws IOException
+	 *            if the path cannot be deleted
 	 */
 	public static void delete(final Path target) throws IOException {
 		if(target != null && Files.exists(target)) {
