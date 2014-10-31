@@ -2,12 +2,13 @@ package org.echovantage.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-public class ReadOnlyPath {
+public class ReadOnlyPath implements Comparable<ReadOnlyPath> {
 	private final Path path;
 
 	public ReadOnlyPath(final Path path) {
@@ -69,4 +70,18 @@ public class ReadOnlyPath {
 	public ReadOnlyPath getParent() {
 		return new ReadOnlyPath(path.getParent());
 	}
+	
+	@Override
+	public String toString() {
+	   return getFileName();
+	}
+
+	@Override
+   public int compareTo(ReadOnlyPath o) {
+	   return path.compareTo(o.path);
+   }
+
+	public void copyTo(OutputStream out) throws IOException {
+		Files.copy(path, out);
+   }
 }

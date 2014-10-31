@@ -93,7 +93,7 @@ public class Assert2 {
 	}
 
 	private static String nameOf(final Object obj) {
-		return obj == null ? null : (obj instanceof Class ? (Class<?>)obj : obj.getClass()).getCanonicalName();
+		return obj == null ? null : obj instanceof Exception ? obj.getClass().getCanonicalName()+": "+((Exception)obj).getLocalizedMessage() : (obj instanceof Class ? (Class<?>)obj : obj.getClass()).getCanonicalName();
 	}
 
 	/**

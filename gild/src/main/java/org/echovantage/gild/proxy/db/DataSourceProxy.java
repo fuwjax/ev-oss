@@ -83,36 +83,36 @@ public class DataSourceProxy extends AbstractServiceProxy {
 		      Statement s = c.createStatement();
 		      DirectoryStream<ReadOnlyPath> schemas = input.newDirectoryStream()) {
 			for(final ReadOnlyPath schema : schemas) {
-				try(DirectoryStream<ReadOnlyPath> tables = schema.newDirectoryStream()) {
-					for(final ReadOnlyPath table : tables) {
-						final String tableName = table.getParent().getFileName() + "." + table.getFileName();
-						s.execute("TRUNCATE TABLE " + tableName + " RESTART IDENTITY CASCADE");
-					}
-					loadTables(tables, s);
-				}
+				loadSchema(schema, s);
 			}
 		}
 	}
 
-	private void loadTables(final Iterable<ReadOnlyPath> tables, final Statement s) throws IOException, SQLException {
-		final List<ReadOnlyPath> list = new ArrayList<>();
-		tables.forEach(table -> list.add(table));
-		while(!list.isEmpty()) {
-			final int count = list.size();
-			final Iterator<ReadOnlyPath> iter = list.iterator();
-			while(iter.hasNext()) {
-				try {
-					loadTable(iter.next(), s);
-					iter.remove();
-				} catch(final SQLException e) {
-					if(!"23503".equals(e.getSQLState())) {
-						throw e;
-					}
-				}
-			}
-			assertNotEquals("Cannot load any more tables from " + list, count, list.size());
-		}
-	}
+	private void loadSchema(final ReadOnlyPath schema, Statement s) throws IOException, SQLException {
+	   final List<ReadOnlyPath> tables = new ArrayList<>();
+	   try(DirectoryStream<ReadOnlyPath> schemaTables = schema.newDirectoryStream()) {
+	   	schemaTables.forEach(table -> tables.add(table));
+	   }
+	   for(final ReadOnlyPath table : tables) {
+	   	final String tableName = table.getParent().getFileName() + "." + table.getFileName();
+	   	s.execute("TRUNCATE TABLE " + tableName + " RESTART IDENTITY CASCADE");
+	   }
+	   while(!tables.isEmpty()) {
+	   	final int count = tables.size();
+	   	final Iterator<ReadOnlyPath> iter = tables.iterator();
+	   	while(iter.hasNext()) {
+	   		try {
+	   			loadTable(iter.next(), s);
+	   			iter.remove();
+	   		} catch(final SQLException e) {
+	   			if(!"23503".equals(e.getSQLState())) {
+	   				throw e;
+	   			}
+	   		}
+	   	}
+	   	assertNotEquals("Cannot load any more tables from " + tables, count, tables.size());
+	   }
+   }
 
 	private void loadTable(final ReadOnlyPath table, final Statement s) throws IOException, SQLException {
 		final String tableName = tableName(table);
