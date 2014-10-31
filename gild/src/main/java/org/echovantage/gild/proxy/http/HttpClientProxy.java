@@ -10,46 +10,51 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.echovantage.gild.proxy.ServiceProxy;
+import org.echovantage.gild.proxy.AbstractServiceProxy;
 import org.echovantage.util.ReadOnlyPath;
 
-public class HttpClientProxy implements ServiceProxy {
-	private ReadOnlyPath input;
-	private String host;
-	private int port;
-	
-	public HttpClientProxy(int port){
+public class HttpClientProxy extends AbstractServiceProxy {
+	private final String host;
+	private final int port;
+
+	public HttpClientProxy(final int port) {
 		this("localhost", port);
 	}
-	
-	public HttpClientProxy(String host, int port){
+
+	public HttpClientProxy(final String host, final int port) {
 		this.host = host;
 		this.port = port;
 	}
 
-	@Override
-   public void prepare(ReadOnlyPath input) throws Exception {
-		this.input = input;
-   }
+	public void send() {
+		configured();
+	}
 
 	@Override
-   public void preserve(Path output, ReadOnlyPath golden) throws Exception {
+	protected void prepareImpl(final ReadOnlyPath input, final Path output) throws Exception {
+		Files.createDirectories(output);
 		List<ReadOnlyPath> paths = new ArrayList<>();
-		try(DirectoryStream<ReadOnlyPath> stream = input.newDirectoryStream()){
-			for(ReadOnlyPath test: stream){
+		try(DirectoryStream<ReadOnlyPath> stream = input.newDirectoryStream()) {
+			for(ReadOnlyPath test : stream) {
 				paths.add(test);
 			}
 		}
 		Collections.sort(paths);
 		for(final ReadOnlyPath file : paths) {
 			try(final Socket socket = new Socket(host, port);
-					OutputStream out = socket.getOutputStream();
-					InputStream in = socket.getInputStream();
-					InputStream req = file.newInputStream();
-					InputStream hin = new HttpResponseInputStream(in, req)) {
+			      OutputStream out = socket.getOutputStream();
+			      InputStream in = socket.getInputStream();
+			      InputStream req = file.newInputStream();
+			      InputStream hin = new HttpResponseInputStream(in, req)) {
 				file.copyTo(out);
 				Files.copy(hin, output.resolve(file.getFileName()));
 			}
 		}
-   }
+	}
+
+	@Override
+	protected boolean preserveImpl(final Path output, final ReadOnlyPath golden) throws Exception {
+		// preserved in prepare
+		return false;
+	}
 }

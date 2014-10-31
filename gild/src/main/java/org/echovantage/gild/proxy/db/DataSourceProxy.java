@@ -1,6 +1,7 @@
 package org.echovantage.gild.proxy.db;
 
 import static java.nio.file.Files.newBufferedWriter;
+import static org.echovantage.util.Assert2.assertCompletes;
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.BufferedReader;
@@ -40,7 +41,7 @@ public class DataSourceProxy extends AbstractServiceProxy {
 	private DataSource db;
 
 	@Override
-	protected void preserveImpl(final Path output, final ReadOnlyPath golden) throws IOException, SQLException {
+	protected boolean preserveImpl(final Path output, final ReadOnlyPath golden) throws IOException, SQLException {
 		try(Connection c = db.getConnection();
 		      Statement s = c.createStatement();
 		      DirectoryStream<ReadOnlyPath> schemas = golden.newDirectoryStream()) {
@@ -70,15 +71,11 @@ public class DataSourceProxy extends AbstractServiceProxy {
 				}
 			}
 		}
+		return true;
 	}
 
 	@Override
-	protected boolean isReady() {
-		return db != null;
-	}
-
-	@Override
-	protected void prepareImpl(final ReadOnlyPath input) throws IOException, SQLException {
+	protected void prepareImpl(final ReadOnlyPath input, final Path output) throws IOException, SQLException {
 		try(Connection c = db.getConnection();
 		      Statement s = c.createStatement();
 		      DirectoryStream<ReadOnlyPath> schemas = input.newDirectoryStream()) {
@@ -88,31 +85,31 @@ public class DataSourceProxy extends AbstractServiceProxy {
 		}
 	}
 
-	private void loadSchema(final ReadOnlyPath schema, Statement s) throws IOException, SQLException {
-	   final List<ReadOnlyPath> tables = new ArrayList<>();
-	   try(DirectoryStream<ReadOnlyPath> schemaTables = schema.newDirectoryStream()) {
-	   	schemaTables.forEach(table -> tables.add(table));
-	   }
-	   for(final ReadOnlyPath table : tables) {
-	   	final String tableName = table.getParent().getFileName() + "." + table.getFileName();
-	   	s.execute("TRUNCATE TABLE " + tableName + " RESTART IDENTITY CASCADE");
-	   }
-	   while(!tables.isEmpty()) {
-	   	final int count = tables.size();
-	   	final Iterator<ReadOnlyPath> iter = tables.iterator();
-	   	while(iter.hasNext()) {
-	   		try {
-	   			loadTable(iter.next(), s);
-	   			iter.remove();
-	   		} catch(final SQLException e) {
-	   			if(!"23503".equals(e.getSQLState())) {
-	   				throw e;
-	   			}
-	   		}
-	   	}
-	   	assertNotEquals("Cannot load any more tables from " + tables, count, tables.size());
-	   }
-   }
+	private void loadSchema(final ReadOnlyPath schema, final Statement s) throws IOException, SQLException {
+		final List<ReadOnlyPath> tables = new ArrayList<>();
+		try(DirectoryStream<ReadOnlyPath> schemaTables = schema.newDirectoryStream()) {
+			schemaTables.forEach(table -> tables.add(table));
+		}
+		for(final ReadOnlyPath table : tables) {
+			final String tableName = table.getParent().getFileName() + "." + table.getFileName();
+			s.execute("TRUNCATE TABLE " + tableName + " RESTART IDENTITY CASCADE");
+		}
+		while(!tables.isEmpty()) {
+			final int count = tables.size();
+			final Iterator<ReadOnlyPath> iter = tables.iterator();
+			while(iter.hasNext()) {
+				try {
+					loadTable(iter.next(), s);
+					iter.remove();
+				} catch(final SQLException e) {
+					if(!"23503".equals(e.getSQLState())) {
+						throw e;
+					}
+				}
+			}
+			assertNotEquals("Cannot load any more tables from " + tables, count, tables.size());
+		}
+	}
 
 	private void loadTable(final ReadOnlyPath table, final Statement s) throws IOException, SQLException {
 		final String tableName = tableName(table);
@@ -133,16 +130,14 @@ public class DataSourceProxy extends AbstractServiceProxy {
 	}
 
 	public DataSourceProxy setDataSource(final DataSource db) {
-		checkNotReady();
 		this.db = db;
-		checkReady();
+		assertCompletes(this::configured);
 		return this;
 	}
 
 	public DataSourceProxy setCharset(final Charset charset) {
-		checkNotReady();
+		assertNotConfigured();
 		this.charset = charset;
-		checkReady();
 		return this;
 	}
 
@@ -151,12 +146,12 @@ public class DataSourceProxy extends AbstractServiceProxy {
 			return "'" + object.toString().replaceAll("'", "''") + "'";
 		}
 		if(object instanceof Date) {
-			return "'" + GMT.format((Date)object) + "'";
+			return "'" + GMT.format((Date) object) + "'";
 		}
 		if(object instanceof Map) {
 			final StringBuilder builder = new StringBuilder("'");
 			String delim = "";
-			for(final Map.Entry<String, String> entry : new TreeMap<>((Map<String, String>)object).entrySet()) {
+			for(final Map.Entry<String, String> entry : new TreeMap<>((Map<String, String>) object).entrySet()) {
 				builder.append(delim).append(inner(entry.getKey())).append("=>").append(inner(entry.getValue()));
 				delim = ",";
 			}
@@ -165,8 +160,8 @@ public class DataSourceProxy extends AbstractServiceProxy {
 		if(object instanceof Array) {
 			final StringBuilder builder = new StringBuilder("'{");
 			String delim = "";
-			for(final Object value : (Object[])((Array)object).getArray()) {
-				builder.append(delim).append(value instanceof String ? inner((String)value) : String.valueOf(value));
+			for(final Object value : (Object[]) ((Array) object).getArray()) {
+				builder.append(delim).append(value instanceof String ? inner((String) value) : String.valueOf(value));
 				delim = ",";
 			}
 			return builder.append("}'").toString();

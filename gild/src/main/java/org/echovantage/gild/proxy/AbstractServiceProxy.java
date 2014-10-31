@@ -2,7 +2,7 @@ package org.echovantage.gild.proxy;
 
 import static org.echovantage.util.Assert2.assertCompletes;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 
@@ -10,38 +10,51 @@ import org.echovantage.util.ReadOnlyPath;
 
 public abstract class AbstractServiceProxy implements ServiceProxy {
 	private ReadOnlyPath bufferedInput;
+	private Path bufferedOutput;
+	private boolean configured;
+
+	protected AbstractServiceProxy() {
+		// must call configured
+	}
+
+	protected AbstractServiceProxy(final boolean configured) {
+		this.configured = configured;
+	}
 
 	@Override
-	public final void prepare(final ReadOnlyPath input) throws Exception {
-		if(isReady()) {
-			prepareImpl(input);
+	public final void prepare(final ReadOnlyPath input, final Path output) {
+		if(configured) {
+			assertCompletes(() -> prepareImpl(input, output));
 		} else {
-			assertNull("Proxy has not been made ready", bufferedInput);
 			bufferedInput = input;
+			bufferedOutput = output;
 		}
 	}
 
 	@Override
-	public final void preserve(final Path output, final ReadOnlyPath golden) throws Exception {
-		assertNull("Proxy has not been made ready", bufferedInput);
-		preserveImpl(output, golden);
+	public final void preserve(final Path output, final ReadOnlyPath golden) {
+		assertTrue("Proxy is not configured", configured);
+		configured = assertCompletes(() -> preserveImpl(output, golden));
 	}
 
-	protected abstract void preserveImpl(final Path output, final ReadOnlyPath golden) throws Exception;
+	protected abstract boolean preserveImpl(final Path output, final ReadOnlyPath golden) throws Exception;
 
-	protected abstract boolean isReady();
+	protected void assertNotConfigured() {
+		assertFalse("Proxy is already configured", configured);
+	}
 
-	protected final void checkReady() {
-		if(bufferedInput != null && isReady()) {
-			final ReadOnlyPath input = bufferedInput;
-			bufferedInput = null;
-			assertCompletes(() -> prepareImpl(input));
+	protected void configured() {
+		if(!configured) {
+			configured = true;
+			if(bufferedInput != null) {
+				final ReadOnlyPath input = bufferedInput;
+				bufferedInput = null;
+				final Path output = bufferedOutput;
+				bufferedOutput = null;
+				assertCompletes(() -> prepareImpl(input, output));
+			}
 		}
 	}
 
-	protected final void checkNotReady() {
-		assertFalse("Cannot change properties after proxy is made ready", bufferedInput != null && isReady());
-	}
-
-	protected abstract void prepareImpl(ReadOnlyPath input) throws Exception;
+	protected abstract void prepareImpl(ReadOnlyPath input, Path output) throws Exception;
 }

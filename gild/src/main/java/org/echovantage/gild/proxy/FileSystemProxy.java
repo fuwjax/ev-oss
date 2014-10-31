@@ -1,5 +1,7 @@
 package org.echovantage.gild.proxy;
 
+import static org.echovantage.util.Assert2.assertCompletes;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -14,30 +16,25 @@ public class FileSystemProxy extends AbstractServiceProxy {
 	}
 
 	public FileSystemProxy(final Path working) {
-		this.working = working;
+		setWorkingDirectory(working);
 	}
 
 	@Override
-	protected void prepareImpl(final ReadOnlyPath input) throws Exception {
+	protected void prepareImpl(final ReadOnlyPath input, final Path output) throws Exception {
 		Files2.delete(working);
 		Files.createDirectories(working);
 		input.copyTo(working);
 	}
 
 	@Override
-	protected void preserveImpl(final Path output, final ReadOnlyPath golden) throws Exception {
+	protected boolean preserveImpl(final Path output, final ReadOnlyPath golden) throws Exception {
 		Files.createDirectories(output);
 		Files2.copy(working, output);
-	}
-
-	@Override
-	protected boolean isReady() {
-		return working != null;
+		return true;
 	}
 
 	public void setWorkingDirectory(final Path working) {
-		checkNotReady();
 		this.working = working;
-		checkReady();
+		assertCompletes(this::configured);
 	}
 }

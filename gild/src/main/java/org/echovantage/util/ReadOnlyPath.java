@@ -9,9 +9,13 @@ import java.nio.file.Path;
 import java.util.Iterator;
 
 public class ReadOnlyPath implements Comparable<ReadOnlyPath> {
+	public static ReadOnlyPath readOnly(Path path){
+		return path == null ? null : new ReadOnlyPath(path);
+	}
+	
 	private final Path path;
 
-	public ReadOnlyPath(final Path path) {
+	private ReadOnlyPath(final Path path) {
 		this.path = path;
 	}
 

@@ -3,6 +3,7 @@ package org.echovantage.gild;
 import static org.echovantage.util.Assert2.assertCompletes;
 import static org.echovantage.util.Assert2.assertEquals;
 import static org.echovantage.util.Files2.delete;
+import static org.echovantage.util.ReadOnlyPath.readOnly;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
@@ -23,7 +24,8 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- * The Gilded Test Harness jUnit Rule. The Gilded harness does a gold copy restore and compare through various services
+ * The Gilded Test Harness jUnit Rule. The Gilded harness does a gold copy
+ * restore and compare through various services
  * generally external to the system under test.
  * <p>
  * Standard Usage:
@@ -74,8 +76,9 @@ import org.junit.runners.model.Statement;
  * 	\@Rule Gilded harness = new Gilded().with("db", db).updateGoldCopy();
  * </pre>
  *
- * By default, the harness uses the standard path locations detailed in {@link StandardStageFactory} and has no
- * {@link Transformer}.
+ * By default, the harness uses the standard path locations detailed in
+ * {@link StandardStageFactory} and has no {@link Transformer}.
+ * 
  * @author fuwjax
  */
 public class Gild implements TestRule {
@@ -88,8 +91,11 @@ public class Gild implements TestRule {
 
 	/**
 	 * Adds a service proxy to this harness.
-	 * @param serviceName the name of the service
-	 * @param proxy the service proxy
+	 * 
+	 * @param serviceName
+	 *           the name of the service
+	 * @param proxy
+	 *           the service proxy
 	 * @return this harness
 	 */
 	public Gild with(final String serviceName, final ServiceProxy proxy) {
@@ -108,8 +114,11 @@ public class Gild implements TestRule {
 	}
 
 	/**
-	 * Turns this test execution into a gold copy create instead of a gold copy assert. This method may have vairous
-	 * safeguards to prevent it from being accidentally left in code during a release.
+	 * Turns this test execution into a gold copy create instead of a gold copy
+	 * assert. This method may have vairous
+	 * safeguards to prevent it from being accidentally left in code during a
+	 * release.
+	 * 
 	 * @return this harness
 	 */
 	public Gild updateGoldCopy() {
@@ -140,8 +149,11 @@ public class Gild implements TestRule {
 	private void prepare() throws Exception {
 		assertFalse("Stage has already been prepared", prepared);
 		for(final Map.Entry<String, ServiceProxy> entry : proxies.entrySet()) {
-			final Path in = stage.inputPath(entry.getKey());
-			entry.getValue().prepare(new ReadOnlyPath(in));
+			String service = entry.getKey();
+			ServiceProxy proxy = entry.getValue();
+			final Path in = stage.inputPath(service);
+			Path output = transform == null ? stage.comparePath(service) : stage.transformPath(service);
+			proxy.prepare(readOnly(in), output);
 		}
 		prepared = true;
 	}
@@ -160,11 +172,11 @@ public class Gild implements TestRule {
 			final Path gold = stage.goldPath(service);
 			final Path compare = stage.comparePath(service);
 			if(transform == null) {
-				entry.getValue().preserve(compare, new ReadOnlyPath(gold));
+				entry.getValue().preserve(compare, readOnly(gold));
 			} else {
 				final Path output = stage.transformPath(service);
-				entry.getValue().preserve(output, new ReadOnlyPath(gold));
-				transform.transform(new ReadOnlyPath(output), compare);
+				entry.getValue().preserve(output, readOnly(gold));
+				transform.transform(readOnly(output), compare);
 			}
 			assertGolden(gold, compare);
 		}
@@ -181,7 +193,9 @@ public class Gild implements TestRule {
 
 	/**
 	 * Moves to the next stage in the staged test run.
-	 * @param stageName the next stage name
+	 * 
+	 * @param stageName
+	 *           the next stage name
 	 */
 	public void nextStage(final String stageName) {
 		assertNotNull("Cannot move to a null stage", stageName);

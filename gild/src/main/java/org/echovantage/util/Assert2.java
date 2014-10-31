@@ -21,12 +21,15 @@ import org.junit.Assert;
 public class Assert2 {
 	/**
 	 * Just like a normal {@link Runnable} with throws.
+	 *
 	 * @author fuwjax
 	 */
 	public interface Runnable {
 		/**
 		 * Executes the runnable.
-		 * @throws Exception if the run cannot complete
+		 *
+		 * @throws Exception
+		 *            if the run cannot complete
 		 */
 		void run() throws Exception;
 	}
@@ -45,13 +48,14 @@ public class Assert2 {
 		assertCompletes(wrap(whenCalled));
 	}
 
-	public static void assertCompletes(final Callable<?> whenCalled) {
+	public static <T>T assertCompletes(final Callable<T> whenCalled) {
 		try {
-			whenCalled.call();
+			return whenCalled.call();
 		} catch(final AssertionError e) {
 			throw e;
 		} catch(final Throwable t) {
 			fail(description(null, t));
+			return null; // never happens
 		}
 	}
 
@@ -93,14 +97,19 @@ public class Assert2 {
 	}
 
 	private static String nameOf(final Object obj) {
-		return obj == null ? null : obj instanceof Exception ? obj.getClass().getCanonicalName()+": "+((Exception)obj).getLocalizedMessage() : (obj instanceof Class ? (Class<?>)obj : obj.getClass()).getCanonicalName();
+		return obj == null ? null : obj instanceof Exception ? obj.getClass().getCanonicalName() + ": " + ((Exception) obj).getLocalizedMessage() : (obj instanceof Class ? (Class<?>) obj : obj.getClass()).getCanonicalName();
 	}
 
 	/**
-	 * Asserts that every file that exists relative to expected also exists relative to actual.
-	 * @param expected the expected path
-	 * @param actual the actual path
-	 * @throws IOException if the paths cannot be walked
+	 * Asserts that every file that exists relative to expected also exists
+	 * relative to actual.
+	 *
+	 * @param expected
+	 *           the expected path
+	 * @param actual
+	 *           the actual path
+	 * @throws IOException
+	 *            if the paths cannot be walked
 	 */
 	public static void containsAll(final Path expected, final Path actual) throws IOException {
 		if(Files.exists(expected)) {
@@ -117,9 +126,13 @@ public class Assert2 {
 
 	/**
 	 * Asserts that two paths are deeply byte-equivalent.
-	 * @param expected one of the paths
-	 * @param actual the other path
-	 * @throws IOException if the paths cannot be traversed
+	 *
+	 * @param expected
+	 *           one of the paths
+	 * @param actual
+	 *           the other path
+	 * @throws IOException
+	 *            if the paths cannot be traversed
 	 */
 	public static void assertEquals(final Path expected, final Path actual) throws IOException {
 		containsAll(actual, expected);
@@ -142,10 +155,15 @@ public class Assert2 {
 
 	/**
 	 * Asserts that two paths are byte-equivalent.
-	 * @param sub the shared portion of the two paths
-	 * @param expected the expected path
-	 * @param actual the actual path
-	 * @throws IOException if the paths cannot be opened and consumed
+	 *
+	 * @param sub
+	 *           the shared portion of the two paths
+	 * @param expected
+	 *           the expected path
+	 * @param actual
+	 *           the actual path
+	 * @throws IOException
+	 *            if the paths cannot be opened and consumed
 	 */
 	public static void assertByteEquals(final Path sub, final Path expected, final Path actual) throws IOException {
 		final int length = 4096;
@@ -163,8 +181,8 @@ public class Assert2 {
 				if(i >= thereLimit) {
 					thereLimit += read(thereStream, thereBuffer, thereLimit);
 				}
-				final int c = hereBuffer[(int)(i % length)];
-				Assert.assertEquals(sub + " does not match at byte " + i + " line " + line + " column " + ch, c, thereBuffer[(int)(i % length)]);
+				final int c = hereBuffer[(int) (i % length)];
+				Assert.assertEquals(sub + " does not match at byte " + i + " line " + line + " column " + ch, c, thereBuffer[(int) (i % length)]);
 				if(c == '\n') {
 					ch = 0;
 					line++;
@@ -176,7 +194,7 @@ public class Assert2 {
 	}
 
 	private static int read(final InputStream stream, final byte[] buffer, final long limit) throws IOException {
-		final int offset = (int)(limit % buffer.length);
+		final int offset = (int) (limit % buffer.length);
 		final int count = stream.read(buffer, offset, buffer.length - offset);
 		if(count == -1) {
 			throw new EOFException();
