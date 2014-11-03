@@ -17,6 +17,7 @@
 
 	<modules>
 		<module>gild</module>
+		<module>wonton</module>
 	</modules>
 
 	<scm>
