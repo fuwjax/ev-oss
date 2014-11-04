@@ -2,17 +2,15 @@ package org.echovantage.wonton.standard;
 
 import java.util.Map;
 
-import org.echovantage.wonton.StandardType;
 import org.echovantage.wonton.Wonton;
 
 public abstract class AbstractMapWonton extends AbstractContainerWonton {
-	@Override
-	public abstract Map<String, Wonton> asObject();
+	public AbstractMapWonton(final Type type) {
+		super(type);
+	}
 
 	@Override
-	public Type type() {
-		return StandardType.OBJECT;
-	}
+	public abstract Map<String, Wonton> asObject();
 
 	@Override
 	protected Wonton getShallow(final String shallowKey) {

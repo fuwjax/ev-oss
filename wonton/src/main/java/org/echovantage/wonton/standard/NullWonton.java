@@ -1,17 +1,18 @@
 package org.echovantage.wonton.standard;
 
-import org.echovantage.wonton.StandardType;
-
+import org.echovantage.wonton.Wonton;
 
 public class NullWonton extends AbstractWonton {
-	public static final NullWonton NULL = new NullWonton();
+	public static Wonton create(final Object value, final Wonton.Type type) {
+		return value == null ? new NullWonton(type) : null;
+	}
 
-	private NullWonton() {
-		// singleton
+	public NullWonton(final Wonton.Type type) {
+		super(type);
 	}
 
 	@Override
-	public Type type() {
-		return StandardType.NULL;
+	public String toString() {
+		return "null";
 	}
 }

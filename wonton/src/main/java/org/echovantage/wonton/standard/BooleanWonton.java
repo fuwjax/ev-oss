@@ -1,14 +1,16 @@
 package org.echovantage.wonton.standard;
 
-import org.echovantage.wonton.StandardType;
+import org.echovantage.wonton.Wonton;
 
 public class BooleanWonton extends AbstractWonton {
-	public static final BooleanWonton TRUE = new BooleanWonton(true);
-	public static final BooleanWonton FALSE = new BooleanWonton(false);
+	public static Wonton create(final Object value, final Type type) {
+		return value instanceof Boolean ? new BooleanWonton((Boolean) value, type) : null;
+	}
+
 	private final boolean value;
 
-	private BooleanWonton(final boolean value) {
-		// doubleton?
+	public BooleanWonton(final boolean value, final Wonton.Type type) {
+		super(type);
 		this.value = value;
 	}
 
@@ -18,7 +20,7 @@ public class BooleanWonton extends AbstractWonton {
 	}
 
 	@Override
-	public Type type() {
-		return StandardType.BOOLEAN;
+	public String toString() {
+		return value ? "true" : "false";
 	}
 }

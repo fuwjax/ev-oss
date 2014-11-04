@@ -94,7 +94,7 @@ public class ListDecorator<E, T> extends AbstractList<T> {
 
 	@Override
 	public boolean contains(final Object o) {
-		return list.contains(decode((T)o));
+		return list.contains(decode((T) o));
 	}
 
 	@Override
@@ -125,12 +125,12 @@ public class ListDecorator<E, T> extends AbstractList<T> {
 
 	@Override
 	public int indexOf(final Object o) {
-		return list.indexOf(decode((T)o));
+		return list.indexOf(decode((T) o));
 	}
 
 	@Override
 	public int lastIndexOf(final Object o) {
-		return list.lastIndexOf(decode((T)o));
+		return list.lastIndexOf(decode((T) o));
 	}
 
 	@Override

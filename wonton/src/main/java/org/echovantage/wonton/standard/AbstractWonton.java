@@ -7,6 +7,18 @@ import java.util.Objects;
 import org.echovantage.wonton.Wonton;
 
 public abstract class AbstractWonton implements Wonton {
+	private final Type type;
+
+	public AbstractWonton(final Type type) {
+		assert type != null;
+		this.type = type;
+	}
+
+	@Override
+	public final Type type() {
+		return type;
+	}
+
 	@Override
 	public List<Wonton> asArray() {
 		return null;
@@ -34,7 +46,7 @@ public abstract class AbstractWonton implements Wonton {
 
 	@Override
 	public Wonton get(final String key) {
-		return NULL;
+		return null;
 	}
 
 	@Override
@@ -48,19 +60,13 @@ public abstract class AbstractWonton implements Wonton {
 	}
 
 	@Override
-	public int compareTo(final Wonton o) {
-		return type().equals(o.type()) ? type().compare(this, o) : type().ordinal() - o.type().ordinal();
-	}
-
-	@Override
-	public String toString() {
-		return type().toString(this);
-	}
+	public abstract String toString();
 
 	@Override
 	public boolean equals(final Object obj) {
 		if(obj instanceof Wonton) {
-			return compareTo((Wonton)obj) == 0;
+			Wonton o = (Wonton) obj;
+			return type().equals(o.type()) && Objects.equals(type().valueOf(this), type().valueOf(o));
 		}
 		return false;
 	}

@@ -4,13 +4,11 @@ import static java.lang.Integer.parseInt;
 
 import java.util.List;
 
-import org.echovantage.wonton.StandardType;
 import org.echovantage.wonton.Wonton;
 
 public abstract class AbstractListWonton extends AbstractContainerWonton {
-	@Override
-	public Type type() {
-		return StandardType.ARRAY;
+	public AbstractListWonton(final Type type) {
+		super(type);
 	}
 
 	@Override

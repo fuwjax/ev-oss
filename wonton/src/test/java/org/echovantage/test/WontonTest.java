@@ -1,10 +1,8 @@
 package org.echovantage.test;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
-import static org.echovantage.wonton.StandardWontonFactory.FACTORY;
+import static org.echovantage.wonton.StandardType.FACTORY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -20,38 +18,35 @@ public class WontonTest {
 		final Wonton wonton = FACTORY.create(null);
 		assertEquals(StandardType.NULL, wonton.type());
 		assertNull(wonton.value());
-		assertEquals(emptyList(), wonton.asArray());
-		assertEquals(false, wonton.asBoolean());
-		assertEquals(0.0, wonton.asNumber());
-		assertEquals(emptyMap(), wonton.asObject());
-		assertEquals("", wonton.asString());
-		assertEquals(Wonton.NULL, wonton);
+		assertNull(wonton.asArray());
+		assertNull(wonton.asBoolean());
+		assertNull(wonton.asNumber());
+		assertNull(wonton.asObject());
+		assertNull(wonton.asString());
 	}
 
 	@Test
 	public void testTrue() {
 		final Wonton wonton = FACTORY.create(true);
 		assertEquals(StandardType.BOOLEAN, wonton.type());
-		assertTrue((Boolean)wonton.value());
-		assertEquals(emptyList(), wonton.asArray());
+		assertTrue((Boolean) wonton.value());
+		assertNull(wonton.asArray());
 		assertEquals(true, wonton.asBoolean());
-		assertEquals(0.0, wonton.asNumber());
-		assertEquals(emptyMap(), wonton.asObject());
-		assertEquals("", wonton.asString());
-		assertEquals(Wonton.TRUE, wonton);
+		assertNull(wonton.asNumber());
+		assertNull(wonton.asObject());
+		assertNull(wonton.asString());
 	}
 
 	@Test
 	public void testFalse() {
 		final Wonton wonton = FACTORY.create(false);
 		assertEquals(StandardType.BOOLEAN, wonton.type());
-		assertFalse((Boolean)wonton.value());
-		assertEquals(emptyList(), wonton.asArray());
+		assertFalse((Boolean) wonton.value());
+		assertNull(wonton.asArray());
 		assertEquals(false, wonton.asBoolean());
-		assertEquals(0.0, wonton.asNumber());
-		assertEquals(emptyMap(), wonton.asObject());
-		assertEquals("", wonton.asString());
-		assertEquals(Wonton.FALSE, wonton);
+		assertNull(wonton.asNumber());
+		assertNull(wonton.asObject());
+		assertNull(wonton.asString());
 	}
 
 	@Test
@@ -59,11 +54,11 @@ public class WontonTest {
 		final Wonton wonton = FACTORY.create(5.3);
 		assertEquals(StandardType.NUMBER, wonton.type());
 		assertEquals(5.3, wonton.value());
-		assertEquals(emptyList(), wonton.asArray());
-		assertEquals(false, wonton.asBoolean());
+		assertNull(wonton.asArray());
+		assertNull(wonton.asBoolean());
 		assertEquals(5.3, wonton.asNumber());
-		assertEquals(emptyMap(), wonton.asObject());
-		assertEquals("", wonton.asString());
+		assertNull(wonton.asObject());
+		assertNull(wonton.asString());
 	}
 
 	@Test
@@ -71,11 +66,11 @@ public class WontonTest {
 		final Wonton wonton = FACTORY.create(5);
 		assertEquals(StandardType.NUMBER, wonton.type());
 		assertEquals(5, wonton.value());
-		assertEquals(emptyList(), wonton.asArray());
-		assertEquals(false, wonton.asBoolean());
+		assertNull(wonton.asArray());
+		assertNull(wonton.asBoolean());
 		assertEquals(5, wonton.asNumber());
-		assertEquals(emptyMap(), wonton.asObject());
-		assertEquals("", wonton.asString());
+		assertNull(wonton.asObject());
+		assertNull(wonton.asString());
 	}
 
 	@Test
@@ -83,10 +78,10 @@ public class WontonTest {
 		final Wonton wonton = FACTORY.create("Hello, World!");
 		assertEquals(StandardType.STRING, wonton.type());
 		assertEquals("Hello, World!", wonton.value());
-		assertEquals(emptyList(), wonton.asArray());
-		assertEquals(false, wonton.asBoolean());
-		assertEquals(0.0, wonton.asNumber());
-		assertEquals(emptyMap(), wonton.asObject());
+		assertNull(wonton.asArray());
+		assertNull(wonton.asBoolean());
+		assertNull(wonton.asNumber());
+		assertNull(wonton.asObject());
 		assertEquals("Hello, World!", wonton.asString());
 	}
 
@@ -96,15 +91,15 @@ public class WontonTest {
 		assertEquals(StandardType.ARRAY, wonton.type());
 		assertEquals(asList(FACTORY.create(1), FACTORY.create(2), FACTORY.create(3)), wonton.value());
 		assertEquals(wonton.value(), wonton.asArray());
-		assertEquals(false, wonton.asBoolean());
-		assertEquals(0.0, wonton.asNumber());
-		assertEquals(emptyMap(), wonton.asObject());
-		assertEquals("", wonton.asString());
+		assertNull(wonton.asBoolean());
+		assertNull(wonton.asNumber());
+		assertNull(wonton.asObject());
+		assertNull(wonton.asString());
 		assertEquals(FACTORY.create(1), wonton.get("[0]"));
 		assertEquals(FACTORY.create(1), wonton.get("0"));
-		assertEquals(FACTORY.create(null), wonton.get("12"));
-		assertEquals(FACTORY.create(null), wonton.get("[9]"));
-		assertEquals(FACTORY.create(null), wonton.get("bob"));
+		assertNull(wonton.get("12"));
+		assertNull(wonton.get("[9]"));
+		assertNull(wonton.get("bob"));
 		wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
 	}
 
@@ -114,10 +109,10 @@ public class WontonTest {
 		assertEquals(StandardType.ARRAY, wonton.type());
 		assertEquals(asList(FACTORY.create(1), FACTORY.create(2), FACTORY.create(3)), wonton.value());
 		assertEquals(wonton.value(), wonton.asArray());
-		assertEquals(false, wonton.asBoolean());
-		assertEquals(0.0, wonton.asNumber());
-		assertEquals(emptyMap(), wonton.asObject());
-		assertEquals("", wonton.asString());
+		assertNull(wonton.asBoolean());
+		assertNull(wonton.asNumber());
+		assertNull(wonton.asObject());
+		assertNull(wonton.asString());
 	}
 
 	@Test
@@ -126,10 +121,10 @@ public class WontonTest {
 		assertEquals(StandardType.ARRAY, wonton.type());
 		assertEquals(asList(FACTORY.create(1), FACTORY.create(2), FACTORY.create(3)), wonton.value());
 		assertEquals(wonton.value(), wonton.asArray());
-		assertEquals(false, wonton.asBoolean());
-		assertEquals(0.0, wonton.asNumber());
-		assertEquals(emptyMap(), wonton.asObject());
-		assertEquals("", wonton.asString());
+		assertNull(wonton.asBoolean());
+		assertNull(wonton.asNumber());
+		assertNull(wonton.asObject());
+		assertNull(wonton.asString());
 	}
 
 	@Test
@@ -137,11 +132,11 @@ public class WontonTest {
 		final Wonton wonton = FACTORY.create(singletonMap("bob", "hope"));
 		assertEquals(StandardType.OBJECT, wonton.type());
 		assertEquals(singletonMap("bob", FACTORY.create("hope")), wonton.value());
-		assertEquals(emptyList(), wonton.asArray());
-		assertEquals(false, wonton.asBoolean());
-		assertEquals(0.0, wonton.asNumber());
+		assertNull(wonton.asArray());
+		assertNull(wonton.asBoolean());
+		assertNull(wonton.asNumber());
 		assertEquals(wonton.value(), wonton.asObject());
-		assertEquals("", wonton.asString());
+		assertNull(wonton.asString());
 		assertEquals(FACTORY.create("hope"), wonton.get("bob"));
 		assertEquals(FACTORY.create("hope"), wonton.get("[bob]"));
 		wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
@@ -151,11 +146,13 @@ public class WontonTest {
 	public void testDeep() {
 		final Wonton wonton = FACTORY.create(singletonMap("root", asList(singletonMap("bob", "hope"), singletonMap("bob", "newhart"))));
 		assertEquals(StandardType.OBJECT, wonton.type());
-		assertEquals(emptyList(), wonton.asArray());
-		assertEquals(false, wonton.asBoolean());
-		assertEquals(0.0, wonton.asNumber());
+		assertNull(wonton.asArray());
+		assertNull(wonton.asBoolean());
+		assertNull(wonton.asNumber());
 		assertEquals(wonton.value(), wonton.asObject());
-		assertEquals("", wonton.asString());
+		assertNull(wonton.asString());
+		assertEquals(FACTORY.create(asList(singletonMap("bob", "hope"), singletonMap("bob", "newhart"))), wonton.get("root"));
+		assertEquals(FACTORY.create(singletonMap("bob", "hope")), wonton.get("root[0]"));
 		assertEquals(FACTORY.create("hope"), wonton.get("root[0].bob"));
 		assertEquals(FACTORY.create("newhart"), wonton.get("[root][1][bob]"));
 		assertEquals(FACTORY.create("hope"), wonton.get("root.0.bob"));
