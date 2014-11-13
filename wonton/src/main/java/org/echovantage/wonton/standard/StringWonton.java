@@ -1,12 +1,6 @@
 package org.echovantage.wonton.standard;
 
-import org.echovantage.wonton.Wonton;
-
 public class StringWonton extends AbstractWonton {
-	public static Wonton create(final Object value, final Type type) {
-		return value instanceof CharSequence ? new StringWonton(value.toString(), type) : null;
-	}
-
 	public static String escape(final String value) {
 		return '"' + value
 				.replaceAll("\\\\", "\\\\")
@@ -21,9 +15,14 @@ public class StringWonton extends AbstractWonton {
 
 	private final String value;
 
-	public StringWonton(final String value, final Wonton.Type type) {
-		super(type);
+	public StringWonton(final String value) {
+		assert value != null;
 		this.value = value;
+	}
+
+	@Override
+	public Type type() {
+		return Type.STRING;
 	}
 
 	@Override

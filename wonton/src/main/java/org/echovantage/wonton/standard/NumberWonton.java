@@ -3,16 +3,16 @@ package org.echovantage.wonton.standard;
 import org.echovantage.wonton.Wonton;
 
 public class NumberWonton extends AbstractWonton {
-	public static Wonton create(final Object value, final Type type) {
-		return value instanceof Number ? new NumberWonton((Number) value, type) : null;
-	}
-
 	private final Number value;
 
-	public NumberWonton(final Number value, final Wonton.Type type) {
-		super(type);
+	public NumberWonton(final Number value) {
 		assert value != null;
 		this.value = value;
+	}
+
+	@Override
+	public Type type() {
+		return Type.NUMBER;
 	}
 
 	@Override
@@ -21,8 +21,8 @@ public class NumberWonton extends AbstractWonton {
 	}
 
 	@Override
-	public int hashCode() {
-		return Double.hashCode(value.doubleValue());
+	protected Object id(final Wonton wonton) {
+		return wonton.asNumber().doubleValue();
 	}
 
 	@Override

@@ -3,32 +3,16 @@ package org.echovantage.wonton.standard;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.echovantage.wonton.StandardType;
 import org.echovantage.wonton.Wonton;
 
-public abstract class AbstractContainerWonton extends AbstractWonton {
+abstract class AbstractContainerWonton extends AbstractWonton {
 	private static final Pattern KEY = Pattern.compile("^\\[?([^\\[.\\]]+)\\]?\\.?((?![\\].]).*)$");
 
-	private static String joinKey(final String prefix, final String suffix) {
+	static String joinKey(final String prefix, final String suffix) {
 		return prefix + (suffix.startsWith("[") ? suffix : "." + suffix);
 	}
 
-	public AbstractContainerWonton(final Type type) {
-		super(type);
-	}
-
-	@Override
-	public Wonton get(final String key) {
-		final Matcher matcher = matchKey(key);
-		try {
-			final Wonton elm = getShallow(matcher.group(1));
-			return elm == null ? null : "".equals(matcher.group(2)) ? elm : elm.get(matcher.group(2));
-		} catch(final RuntimeException e) {
-			return null;
-		}
-	}
-
-	protected static Matcher matchKey(final String key) {
+	private static Matcher matchKey(final String key) {
 		final Matcher matcher = KEY.matcher(key);
 		if(!matcher.matches()) {
 			throw new IllegalArgumentException("Unparsable key: " + key);
@@ -36,13 +20,29 @@ public abstract class AbstractContainerWonton extends AbstractWonton {
 		return matcher;
 	}
 
+	@Override
+	public final Wonton get(final String key) {
+		assert key != null;
+		final Matcher matcher = matchKey(key);
+		final String prefix = matcher.group(1);
+		final String suffix = matcher.group(2);
+		final Wonton elm = getShallow(prefix);
+		if(elm == null) {
+			throw new NoSuchKeyException();
+		}
+		return "".equals(suffix) ? elm : elm.get(suffix);
+	}
+
 	protected abstract Wonton getShallow(String shallowKey);
 
 	@Override
-	public void accept(final Visitor visitor) {
+	public final void accept(final Visitor visitor) {
+		assert visitor != null;
 		acceptShallow(new Visitor() {
 			@Override
 			public void visit(final String key, final Wonton value) {
+				assert key != null;
+				assert value != null;
 				visitor.visit(key, value);
 				value.accept((subKey, subValue) -> visitor.visit(joinKey(key, subKey), subValue));
 			}
@@ -51,24 +51,26 @@ public abstract class AbstractContainerWonton extends AbstractWonton {
 
 	protected abstract void acceptShallow(Visitor visitor);
 
-	public void set(final String key, final Wonton value) {
-		Matcher matcher = matchKey(key);
-		String prefix = matcher.group(1);
-		String suffix = matcher.group(2);
+	protected void set(final String key, final Wonton value) {
+		assert key != null;
+		assert value != null;
+		final Matcher matcher = matchKey(key);
+		final String prefix = matcher.group(1);
+		final String suffix = matcher.group(2);
 		if("".equals(suffix)) {
 			setShallow(prefix, value);
 		} else {
 			Wonton child = getShallow(prefix);
 			if(child == null) {
 				if(suffix.startsWith("[0]")) {
-					child = new ListWonton(StandardType.ARRAY);
+					child = new ListWonton();
 				} else {
-					child = new MapWonton(StandardType.OBJECT);
+					child = new MapWonton();
 				}
-				setShallow(matcher.group(1), child);
+				setShallow(prefix, child);
 			}
-			if(child instanceof Wonton.Mutable) {
-				((Wonton.Mutable) child).set(suffix, value);
+			if(child instanceof MutableStruct) {
+				((MutableStruct)child).set(suffix, value);
 			} else {
 				throw new IllegalArgumentException("Cannot set property " + suffix + " on an immutable wonton");
 			}
@@ -79,7 +81,7 @@ public abstract class AbstractContainerWonton extends AbstractWonton {
 		throw new UnsupportedOperationException();
 	}
 
-	public Wonton build() {
+	protected Wonton build() {
 		return this;
 	}
 }

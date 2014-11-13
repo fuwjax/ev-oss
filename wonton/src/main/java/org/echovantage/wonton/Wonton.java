@@ -2,6 +2,7 @@ package org.echovantage.wonton;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The standard transport interface for Whatever Object NotaTiON. Wontons all
@@ -11,18 +12,6 @@ import java.util.Map;
  * @author fuwjax
  */
 public interface Wonton {
-	public interface Mutable {
-		void set(String key, Wonton value);
-
-		Wonton build();
-	}
-
-	public interface MutableFactory extends Factory {
-		Mutable createObject();
-
-		Mutable createArray();
-	}
-
 	/**
 	 * The Visitor interface for {@link Wonton#accept(Visitor)}.
 	 * @author fuwjax
@@ -36,43 +25,94 @@ public interface Wonton {
 		public void visit(final String key, final Wonton value);
 	}
 
-	/**
-	 * Creates a wonton from a source object.
-	 * @author fuwjax
-	 */
+	public interface MutableStruct {
+		void set(String key, Wonton value);
+
+		Wonton build();
+	}
+
+	public interface MutableArray extends MutableStruct {
+		void append(Wonton value);
+	}
+
 	public interface Factory {
-		Wonton create(Object value);
+		MutableStruct newMutableStruct();
+
+		MutableArray newMutableArray();
+
+		Wonton wrap(Object value);
 	}
 
-	public interface Type {
-		/**
-		 * Returns the value of the wonton as though it were an instance of this
-		 * type. There is no type checking performed.
-		 * @param wonton the wonton to value
-		 * @return the value of the wonton
-		 */
-		Object valueOf(Wonton wonton);
+	public enum Type {
+		VOID(wonton -> null),
+		BOOLEAN(Wonton::asBoolean),
+		NUMBER(Wonton::asNumber),
+		STRING(Wonton::asString),
+		ARRAY(Wonton::asArray),
+		STRUCT(Wonton::asStruct);
+		private final Function<Wonton, Object> value;
+
+		private Type(final Function<Wonton, Object> value) {
+			this.value = value;
+		}
+
+		public Object valueOf(final Wonton wonton) {
+			return value.apply(wonton);
+		}
 	}
 
-	public interface FactoryType extends Type {
-		Wonton create(Object value, Factory factory);
+	public class InvalidTypeException extends RuntimeException {
 	}
 
-	String asString();
+	public class NoSuchKeyException extends RuntimeException {
+		public NoSuchKeyException() {
+		}
 
-	Boolean asBoolean();
+		public NoSuchKeyException(final Throwable cause) {
+			super(cause);
+		}
+	}
 
-	Number asNumber();
+	default String asString() {
+		throw new InvalidTypeException();
+	}
 
-	Map<String, ? extends Wonton> asObject();
+	default Boolean asBoolean() {
+		throw new InvalidTypeException();
+	}
 
-	List<? extends Wonton> asArray();
+	default Number asNumber() {
+		throw new InvalidTypeException();
+	}
 
-	Object value();
+	default Map<String, ? extends Wonton> asStruct() {
+		throw new InvalidTypeException();
+	}
+
+	default List<? extends Wonton> asArray() {
+		throw new InvalidTypeException();
+	}
+
+	default Object value() {
+		return type().valueOf(this);
+	}
 
 	Type type();
 
-	Wonton get(String key);
+	default Wonton get(final String key) {
+		throw new NoSuchKeyException();
+	}
 
-	void accept(Visitor visitor);
+	default void accept(final Visitor visitor) {
+		// do nothing
+	}
+
+	@Override
+	String toString();
+
+	@Override
+	boolean equals(Object obj);
+
+	@Override
+	public int hashCode();
 }
