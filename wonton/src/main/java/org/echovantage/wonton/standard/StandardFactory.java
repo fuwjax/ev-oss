@@ -5,16 +5,14 @@ import java.util.Map;
 
 import org.echovantage.util.Lists;
 import org.echovantage.wonton.Wonton;
-import org.echovantage.wonton.Wonton.MutableArray;
-import org.echovantage.wonton.Wonton.MutableStruct;
 
 public class StandardFactory {
 	public static final StandardFactory FACTORY = new StandardFactory();
-	public static final Wonton NULL = new NullWonton();
-	public static final Wonton TRUE = new BooleanWonton(true);
-	public static final Wonton FALSE = new BooleanWonton(false);
+	public static final Wonton NULL = NullWonton.NULL;
+	public static final Wonton TRUE = BooleanWonton.TRUE;
+	public static final Wonton FALSE = BooleanWonton.FALSE;
 
-	public Wonton wrap(final Object object) {
+	public Wonton wontonOf(final Object object) {
 		if(object == null) {
 			return NULL;
 		}
@@ -43,13 +41,5 @@ public class StandardFactory {
 			return new ListWrapper(Lists.reflectiveList(object));
 		}
 		throw new IllegalArgumentException("No standard transformation for " + object.getClass());
-	}
-
-	public MutableStruct newMutableStruct() {
-		return new MapWonton();
-	}
-
-	public MutableArray newMutableArray() {
-		return new ListWonton();
 	}
 }

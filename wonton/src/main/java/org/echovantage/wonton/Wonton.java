@@ -1,8 +1,12 @@
 package org.echovantage.wonton;
 
+import static org.echovantage.wonton.standard.StandardFactory.FACTORY;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.echovantage.wonton.standard.StandardPath;
 
 /**
  * The standard transport interface for Whatever Object NotaTiON. Wontons all
@@ -12,6 +16,28 @@ import java.util.function.Function;
  * @author fuwjax
  */
 public interface Wonton {
+	public static Path pathOf(final String... keys) {
+		return StandardPath.pathOf(keys);
+	}
+
+	public static Path path(final String path) {
+		return StandardPath.path(path);
+	}
+
+	public static Wonton wontonOf(final Object value) {
+		return FACTORY.wontonOf(value);
+	}
+
+	public interface Path {
+		String key();
+
+		Path tail();
+
+		Path append(Path suffix);
+
+		boolean isEmpty();
+	}
+
 	/**
 	 * The Visitor interface for {@link Wonton#accept(Visitor)}.
 	 * @author fuwjax
@@ -19,28 +45,22 @@ public interface Wonton {
 	public interface Visitor {
 		/**
 		 * Visits a particular entry from the accepting wonton.
-		 * @param key the entry key
+		 * @param path the entry path
 		 * @param value the entry value
 		 */
-		public void visit(final String key, final Wonton value);
+		public void visit(final Path path, final Wonton value);
 	}
 
-	public interface MutableStruct {
-		void set(String key, Wonton value);
+	public interface Mutable {
+		Mutable set(Path path, Wonton value);
+
+		Mutable append(Path path, Wonton value);
 
 		Wonton build();
 	}
 
-	public interface MutableArray extends MutableStruct {
-		void append(Wonton value);
-	}
-
 	public interface Factory {
-		MutableStruct newMutableStruct();
-
-		MutableArray newMutableArray();
-
-		Wonton wrap(Object value);
+		Wonton wontonOf(Object value);
 	}
 
 	public enum Type {
@@ -64,11 +84,12 @@ public interface Wonton {
 	public class InvalidTypeException extends RuntimeException {
 	}
 
-	public class NoSuchKeyException extends RuntimeException {
-		public NoSuchKeyException() {
+	public class NoSuchPathException extends RuntimeException {
+		public NoSuchPathException(final Path path) {
+			super(path.toString());
 		}
 
-		public NoSuchKeyException(final Throwable cause) {
+		public NoSuchPathException(final Throwable cause) {
 			super(cause);
 		}
 	}
@@ -99,20 +120,11 @@ public interface Wonton {
 
 	Type type();
 
-	default Wonton get(final String key) {
-		throw new NoSuchKeyException();
+	default Wonton get(final Path path) {
+		throw new NoSuchPathException(path);
 	}
 
 	default void accept(final Visitor visitor) {
 		// do nothing
 	}
-
-	@Override
-	String toString();
-
-	@Override
-	boolean equals(Object obj);
-
-	@Override
-	public int hashCode();
 }

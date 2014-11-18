@@ -13,16 +13,16 @@ public abstract class AbstractMapWonton extends AbstractContainerWonton {
 	}
 
 	@Override
-	public abstract Map<String, Wonton> asStruct();
+	public abstract Map<String, ? extends Wonton> asStruct();
 
 	@Override
-	protected final Wonton getShallow(final String shallowKey) {
+	protected final Wonton get(final String shallowKey) {
 		return asStruct().get(shallowKey);
 	}
 
 	@Override
-	protected final void acceptShallow(final Visitor visitor) {
-		for(final Map.Entry<String, Wonton> entry : asStruct().entrySet()) {
+	protected final void acceptShallow(final ShallowVisitor visitor) {
+		for(final Map.Entry<String, ? extends Wonton> entry : asStruct().entrySet()) {
 			visitor.visit(entry.getKey(), entry.getValue());
 		}
 	}

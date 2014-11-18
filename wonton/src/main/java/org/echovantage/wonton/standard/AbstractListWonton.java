@@ -8,7 +8,7 @@ import org.echovantage.wonton.Wonton;
 
 public abstract class AbstractListWonton extends AbstractContainerWonton {
 	@Override
-	public abstract List<Wonton> asArray();
+	public abstract List<? extends Wonton> asArray();
 
 	@Override
 	public final Type type() {
@@ -16,20 +16,19 @@ public abstract class AbstractListWonton extends AbstractContainerWonton {
 	}
 
 	@Override
-	protected final void acceptShallow(final Visitor visitor) {
+	protected final void acceptShallow(final ShallowVisitor visitor) {
 		int index = 0;
 		for(final Wonton v : asArray()) {
-			final String k = "[" + index++ + "]";
-			visitor.visit(k, v);
+			visitor.visit(Integer.toString(index++), v);
 		}
 	}
 
 	@Override
-	protected final Wonton getShallow(final String shallowKey) {
+	protected final Wonton get(final String shallowKey) {
 		try {
 			return asArray().get(parseInt(shallowKey));
 		} catch(final RuntimeException e) {
-			throw new NoSuchKeyException(e);
+			throw new NoSuchPathException(e);
 		}
 	}
 

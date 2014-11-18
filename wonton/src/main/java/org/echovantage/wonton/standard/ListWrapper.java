@@ -10,7 +10,7 @@ public class ListWrapper extends AbstractListWonton {
 
 	public ListWrapper(final List<?> original) {
 		assert original != null;
-		list = new ListDecorator<>(original, StandardFactory.FACTORY::wrap);
+		list = new ListDecorator<>(original, StandardFactory.FACTORY::wontonOf);
 	}
 
 	@Override

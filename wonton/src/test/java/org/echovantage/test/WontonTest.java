@@ -2,7 +2,6 @@ package org.echovantage.test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
-import static org.echovantage.wonton.standard.StandardFactory.FACTORY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -15,7 +14,7 @@ import org.junit.Test;
 public class WontonTest {
 	@Test
 	public void testNull() {
-		final Wonton wonton = FACTORY.wrap(null);
+		final Wonton wonton = Wonton.wontonOf(null);
 		assertEquals(Wonton.Type.VOID, wonton.type());
 		assertNull(wonton.value());
 		assertNull(wonton.asArray());
@@ -27,7 +26,7 @@ public class WontonTest {
 
 	@Test
 	public void testTrue() {
-		final Wonton wonton = FACTORY.wrap(true);
+		final Wonton wonton = Wonton.wontonOf(true);
 		assertEquals(Wonton.Type.BOOLEAN, wonton.type());
 		assertTrue((Boolean)wonton.value());
 		assertWrongType(() -> wonton.asArray());
@@ -39,7 +38,7 @@ public class WontonTest {
 
 	@Test
 	public void testFalse() {
-		final Wonton wonton = FACTORY.wrap(false);
+		final Wonton wonton = Wonton.wontonOf(false);
 		assertEquals(Wonton.Type.BOOLEAN, wonton.type());
 		assertFalse((Boolean)wonton.value());
 		assertWrongType(() -> wonton.asArray());
@@ -51,7 +50,7 @@ public class WontonTest {
 
 	@Test
 	public void testDouble() {
-		final Wonton wonton = FACTORY.wrap(5.3);
+		final Wonton wonton = Wonton.wontonOf(5.3);
 		assertEquals(Wonton.Type.NUMBER, wonton.type());
 		assertEquals(5.3, wonton.value());
 		assertWrongType(() -> wonton.asArray());
@@ -63,7 +62,7 @@ public class WontonTest {
 
 	@Test
 	public void testInteger() {
-		final Wonton wonton = FACTORY.wrap(5);
+		final Wonton wonton = Wonton.wontonOf(5);
 		assertEquals(Wonton.Type.NUMBER, wonton.type());
 		assertEquals(5, wonton.value());
 		assertWrongType(() -> wonton.asArray());
@@ -75,7 +74,7 @@ public class WontonTest {
 
 	@Test
 	public void testString() {
-		final Wonton wonton = FACTORY.wrap("Hello, World!");
+		final Wonton wonton = Wonton.wontonOf("Hello, World!");
 		assertEquals(Wonton.Type.STRING, wonton.type());
 		assertEquals("Hello, World!", wonton.value());
 		assertWrongType(() -> wonton.asArray());
@@ -87,27 +86,30 @@ public class WontonTest {
 
 	@Test
 	public void testList() {
-		final Wonton wonton = FACTORY.wrap(asList(1, 2, 3));
+		final Wonton wonton = Wonton.wontonOf(asList(1, 2, 3));
 		assertEquals(Wonton.Type.ARRAY, wonton.type());
-		assertEquals(asList(FACTORY.wrap(1), FACTORY.wrap(2), FACTORY.wrap(3)), wonton.value());
+		assertEquals(asList(Wonton.wontonOf(1), Wonton.wontonOf(2), Wonton.wontonOf(3)), wonton.value());
 		assertEquals(wonton.value(), wonton.asArray());
 		assertWrongType(() -> wonton.asBoolean());
 		assertWrongType(() -> wonton.asNumber());
 		assertWrongType(() -> wonton.asStruct());
 		assertWrongType(() -> wonton.asString());
-		assertEquals(FACTORY.wrap(1), wonton.get("[0]"));
-		assertEquals(FACTORY.wrap(1), wonton.get("0"));
-		assertNoKey(() -> wonton.get("12"));
-		assertNoKey(() -> wonton.get("[9]"));
-		assertNoKey(() -> wonton.get("bob"));
+		assertEquals(Wonton.wontonOf(1), wonton.get(Wonton.path("[0]")));
+		final String[] keys = { "0" };
+		assertEquals(Wonton.wontonOf(1), wonton.get(Wonton.pathOf(keys)));
+		final String[] keys1 = { "12" };
+		assertNoKey(() -> wonton.get(Wonton.pathOf(keys1)));
+		assertNoKey(() -> wonton.get(Wonton.path("[9]")));
+		final String[] keys2 = { "bob" };
+		assertNoKey(() -> wonton.get(Wonton.pathOf(keys2)));
 		wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
 	}
 
 	@Test
 	public void testArray() {
-		final Wonton wonton = FACTORY.wrap(new int[] { 1, 2, 3 });
+		final Wonton wonton = Wonton.wontonOf(new int[] { 1, 2, 3 });
 		assertEquals(Wonton.Type.ARRAY, wonton.type());
-		assertEquals(asList(FACTORY.wrap(1), FACTORY.wrap(2), FACTORY.wrap(3)), wonton.value());
+		assertEquals(asList(Wonton.wontonOf(1), Wonton.wontonOf(2), Wonton.wontonOf(3)), wonton.value());
 		assertEquals(wonton.value(), wonton.asArray());
 		assertWrongType(() -> wonton.asBoolean());
 		assertWrongType(() -> wonton.asNumber());
@@ -117,9 +119,9 @@ public class WontonTest {
 
 	@Test
 	public void testObjectArray() {
-		final Wonton wonton = FACTORY.wrap(new Object[] { 1, 2, 3 });
+		final Wonton wonton = Wonton.wontonOf(new Object[] { 1, 2, 3 });
 		assertEquals(Wonton.Type.ARRAY, wonton.type());
-		assertEquals(asList(FACTORY.wrap(1), FACTORY.wrap(2), FACTORY.wrap(3)), wonton.value());
+		assertEquals(asList(Wonton.wontonOf(1), Wonton.wontonOf(2), Wonton.wontonOf(3)), wonton.value());
 		assertEquals(wonton.value(), wonton.asArray());
 		assertWrongType(() -> wonton.asBoolean());
 		assertWrongType(() -> wonton.asNumber());
@@ -129,16 +131,16 @@ public class WontonTest {
 
 	@Test
 	public void testMap() {
-		final Wonton wonton = FACTORY.wrap(singletonMap("bob", "hope"));
+		final Wonton wonton = Wonton.wontonOf(singletonMap("bob", "hope"));
 		assertEquals(Wonton.Type.STRUCT, wonton.type());
-		assertEquals(singletonMap("bob", FACTORY.wrap("hope")), wonton.value());
+		assertEquals(singletonMap("bob", Wonton.wontonOf("hope")), wonton.value());
 		assertWrongType(() -> wonton.asArray());
 		assertWrongType(() -> wonton.asBoolean());
 		assertWrongType(() -> wonton.asNumber());
 		assertEquals(wonton.value(), wonton.asStruct());
 		assertWrongType(() -> wonton.asString());
-		assertEquals(FACTORY.wrap("hope"), wonton.get("bob"));
-		assertEquals(FACTORY.wrap("hope"), wonton.get("[bob]"));
+		assertEquals(Wonton.wontonOf("hope"), wonton.get(Wonton.path("bob")));
+		assertEquals(Wonton.wontonOf("hope"), wonton.get(Wonton.path("[bob]")));
 		wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
 	}
 
@@ -155,25 +157,27 @@ public class WontonTest {
 		try {
 			runner.run();
 			fail("didn't throw bad key");
-		} catch(final Wonton.NoSuchKeyException e) {
+		} catch(final Wonton.NoSuchPathException e) {
 			// pass
 		}
 	}
 
 	@Test
 	public void testDeep() {
-		final Wonton wonton = FACTORY.wrap(singletonMap("root", asList(singletonMap("bob", "hope"), singletonMap("bob", "newhart"))));
+		final Wonton wonton = Wonton.wontonOf(singletonMap("root", asList(singletonMap("bob", "hope"), singletonMap("bob", "newhart"))));
 		assertEquals(Wonton.Type.STRUCT, wonton.type());
 		assertWrongType(() -> wonton.asArray());
 		assertWrongType(() -> wonton.asBoolean());
 		assertWrongType(() -> wonton.asNumber());
 		assertEquals(wonton.value(), wonton.asStruct());
 		assertWrongType(() -> wonton.asString());
-		assertEquals(FACTORY.wrap(asList(singletonMap("bob", "hope"), singletonMap("bob", "newhart"))), wonton.get("root"));
-		assertEquals(FACTORY.wrap(singletonMap("bob", "hope")), wonton.get("root[0]"));
-		assertEquals(FACTORY.wrap("hope"), wonton.get("root[0].bob"));
-		assertEquals(FACTORY.wrap("newhart"), wonton.get("[root][1][bob]"));
-		assertEquals(FACTORY.wrap("hope"), wonton.get("root.0.bob"));
+		assertEquals(Wonton.wontonOf(asList(singletonMap("bob", "hope"), singletonMap("bob", "newhart"))), wonton.get(Wonton.path("root")));
+		assertEquals(Wonton.wontonOf(singletonMap("bob", "hope")), wonton.get(Wonton.path("root[0]")));
+		assertEquals(Wonton.wontonOf("hope"), wonton.get(Wonton.path("root[0].bob")));
+		assertEquals(Wonton.wontonOf("newhart"), wonton.get(Wonton.path("[root][1][bob]")));
+		final String[] keys = { "root", "1", "bob" };
+		assertEquals(Wonton.wontonOf("newhart"), wonton.get(Wonton.pathOf(keys)));
+		assertEquals(Wonton.wontonOf("hope"), wonton.get(Wonton.path("root.0.bob")));
 		wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
 	}
 }
