@@ -2,6 +2,7 @@ package org.echovantage.util;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class EntryDecorator<K, O, T> implements Map.Entry<K, T> {
@@ -26,5 +27,19 @@ public class EntryDecorator<K, O, T> implements Map.Entry<K, T> {
 	@Override
 	public T setValue(final T value) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if(obj == null || !(obj instanceof Map.Entry)) {
+			return false;
+		}
+		final Map.Entry o = (Map.Entry)obj;
+		return Objects.equals(getKey(), o.getKey()) && Objects.equals(getValue(), o.getValue());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(getKey()) ^ Objects.hashCode(getValue());
 	}
 }

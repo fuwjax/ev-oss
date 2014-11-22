@@ -53,6 +53,6 @@ public class MapDecorator<K, O, T> extends AbstractMap<K, T> {
 
 	@Override
 	public Set<Map.Entry<K, T>> entrySet() {
-		return new CollectionDecorator<>(map.entrySet(), entry -> new EntryDecorator<>(entry, encoder));
+		return new SetDecorator<>(map.entrySet(), entry -> new EntryDecorator<>(entry, encoder));
 	}
 }

@@ -3,10 +3,9 @@ package org.echovantage.util;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.function.Function;
 
-public class CollectionDecorator<O, T> extends AbstractCollection<T> implements Set<T> {
+public class CollectionDecorator<O, T> extends AbstractCollection<T> {
 	private final Collection<? extends O> collection;
 	private final Function<? super O, ? extends T> encoder;
 

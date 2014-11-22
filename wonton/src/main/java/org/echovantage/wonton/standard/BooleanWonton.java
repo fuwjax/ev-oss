@@ -1,10 +1,7 @@
 package org.echovantage.wonton.standard;
 
-import org.echovantage.wonton.Wonton;
 
 public class BooleanWonton extends AbstractWonton {
-	public static final Wonton TRUE = new BooleanWonton(true);
-	public static final Wonton FALSE = new BooleanWonton(false);
 	private final boolean value;
 
 	public BooleanWonton(final boolean value) {

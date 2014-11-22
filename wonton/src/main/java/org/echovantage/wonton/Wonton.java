@@ -1,12 +1,20 @@
 package org.echovantage.wonton;
 
-import static org.echovantage.wonton.standard.StandardFactory.FACTORY;
-
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.echovantage.util.Lists;
+import org.echovantage.util.ObjectMap;
+import org.echovantage.util.ObjectMap.MapEntries;
+import org.echovantage.wonton.standard.BooleanWonton;
+import org.echovantage.wonton.standard.ListWrapper;
+import org.echovantage.wonton.standard.MapWrapper;
+import org.echovantage.wonton.standard.NullWonton;
+import org.echovantage.wonton.standard.NumberWonton;
 import org.echovantage.wonton.standard.StandardPath;
+import org.echovantage.wonton.standard.StringWonton;
 
 /**
  * The standard transport interface for Whatever Object NotaTiON. Wontons all
@@ -16,6 +24,10 @@ import org.echovantage.wonton.standard.StandardPath;
  * @author fuwjax
  */
 public interface Wonton {
+	public static final Wonton NULL = new NullWonton();
+	public static final Wonton TRUE = new BooleanWonton(true);
+	public static final Wonton FALSE = new BooleanWonton(false);
+
 	public static Path pathOf(final String... keys) {
 		return StandardPath.pathOf(keys);
 	}
@@ -24,8 +36,38 @@ public interface Wonton {
 		return StandardPath.path(path);
 	}
 
-	public static Wonton wontonOf(final Object value) {
-		return FACTORY.wontonOf(value);
+	public static Wonton wontonOf(final Object object) {
+		if(object == null) {
+			return NULL;
+		}
+		if(object instanceof Wonton) {
+			return (Wonton)object;
+		}
+		if(object instanceof Boolean) {
+			return (Boolean)object ? TRUE : FALSE;
+		}
+		if(object instanceof Number) {
+			return new NumberWonton((Number)object);
+		}
+		if(object instanceof CharSequence) {
+			return new StringWonton(object.toString());
+		}
+		if(object instanceof Map) {
+			return new MapWrapper((Map<String, ?>)object);
+		}
+		if(object instanceof Iterable) {
+			return new ListWrapper(Lists.toList((Iterable<?>)object));
+		}
+		if(object instanceof Object[]) {
+			return new ListWrapper(Arrays.asList((Object[])object));
+		}
+		if(object.getClass().isArray()) {
+			return new ListWrapper(Lists.reflectiveList(object));
+		}
+		if(object.getClass().isAnnotationPresent(MapEntries.class)) {
+			return new MapWrapper(ObjectMap.mapOf(object));
+		}
+		throw new IllegalArgumentException("No standard transformation for " + object.getClass());
 	}
 
 	public interface Path {

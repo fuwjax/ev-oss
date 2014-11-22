@@ -6,8 +6,6 @@ import java.util.Map;
 import org.echovantage.wonton.Wonton;
 
 public class NullWonton extends AbstractWonton {
-	public static Wonton NULL = new NullWonton();
-
 	@Override
 	public String toString() {
 		return "null";

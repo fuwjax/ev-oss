@@ -10,7 +10,7 @@ public class MapWrapper extends AbstractMapWonton {
 
 	public MapWrapper(final Map<String, ?> original) {
 		assert original != null;
-		map = new MapDecorator<>(original, StandardFactory.FACTORY::wontonOf);
+		map = new MapDecorator<>(original, Wonton::wontonOf);
 	}
 
 	@Override
