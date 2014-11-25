@@ -1,0 +1,26 @@
+$start wonton
+$ignore skip
+wonton: value | inner
+value: container | primitive
+container: [[{(<] inner? [\]})>] = inner
+inner: value (','? value)* = [value] | entry (','? entry)* = {entry}
+entry: key [:=] value = {key: value}
+key: string | literal
+primitive: string | number = numberOf(number) | 'null' = null | 'true' = true | 'false' = false | literal
+string: /'<schars>'|"<dchars>"/ = schars | dchars
+schars: /([^\\']|<escape>)*/
+dchars: /([^\\"]|<escape>)*/
+escape: newline | return | tab | unicode | simple
+newline: '\\n' = '\n'
+return: '\\r' = '\r'
+tab: '\\t' = '\t'
+unicode: '\\u' hex = charOf(intOf(hex, 16))
+simple: '\\' char = char
+hex: [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]
+char: .
+number: /((0|-?[1-9]\d*)(\.\d*)?|-?\.\d+)([eE](0|-?[1-9]\d*))?/
+literal: /[-0-9a-zA-Z_$./]+/
+skip: comment | ws
+ws: /\s/
+comment: /#.*\n/
+

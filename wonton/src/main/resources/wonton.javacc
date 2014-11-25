@@ -1,0 +1,195 @@
+options {
+      STATIC = false;
+      SUPPORT_CLASS_VISIBILITY_PUBLIC = true;
+      ERROR_REPORTING = false;
+      JAVA_UNICODE_ESCAPE = true;
+      UNICODE_INPUT = true;
+      NODE_USES_PARSER = false;
+      VISITOR = false;
+}
+
+PARSER_BEGIN(WontonParser)
+package org.echovantage.wonton;
+
+public class WontonParser {
+
+    public WontonParser() {
+        super();
+    }
+}
+
+PARSER_END(WontonParser)
+
+SKIP: {
+        " "
+    |   "\t"
+    |   "\n"
+    |   "\r"
+    |   "\f"
+}
+// comments: not really part of JSON spec, but parser shouldn't blow-up if present
+SKIP: {
+    <COMMENT_LINE: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+}
+SKIP: {
+    <COMMENT_BLOCK: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+}
+
+// JSON reserved keywords (prefix with K_ to avoid naming conflicts): only lower case allowed!
+TOKEN: {
+        <K_TRUE: "true">
+    |   <K_FALSE: "false">
+    |   <K_NULL: "null">
+}
+
+// JSON operators (prefix with O_ to avoid naming conflicts)
+TOKEN: {
+        <O_OPENBRACE: "{">
+    |   <O_CLOSEBRACE: "}">
+    |   <O_OPENBRACKET: "[">
+    |   <O_CLOSEBRACKET: "]">
+    |   <O_COMMA: ",">
+    |   <O_COLON: ":">
+    |   <O_DOT: ".">
+    |   <O_PLUS: "+">
+    |   <O_MINUS: "-">  
+}
+
+// numeric literals
+TOKEN: {
+        <#DIGIT: ["0" - "9"] >
+    |   <#NONZERO_DIGIT: ["1" - "9"] >
+    |   <#EXP: ["e", "E"] ( <O_PLUS > | <O_MINUS > )? >
+}
+// JSON numbers do not support octal or hexadecimal formats
+TOKEN: {
+  
+        <NUMBER:  <INTEGER> | <INTEGER> <FRACTIONAL_DIGITS> | <INTEGER> <EXPONENT> | <INTEGER> <FRACTIONAL_DIGITS> <EXPONENT> >
+    |   <INTEGER: (<O_MINUS>)? ( <DIGIT> | <NONZERO_DIGIT> <DIGITS>) >
+    |   <FRACTIONAL_DIGITS: <O_DOT> <DIGITS > >
+    |   <EXPONENT: <EXP> <DIGITS> >
+    |   <DIGITS: ( <DIGIT> )+ >
+}
+
+// string literals
+TOKEN: {
+        <STRING: "\"" ( <ALLOWABLE_CHARACTERS> )* "\"" >
+    |   <ALLOWABLE_CHARACTERS:(   
+	        (~["\"", "\\", "\u0000"-"\u001f"])
+	           | ("\\"
+	            ( ["u"] ["0"-"9","a"-"f", "A"-"F"] ["0"-"9","a"-"f", "A"-"F"] ["0"-"9","a"-"f", "A"-"F"] ["0"-"9","a"-"f", "A"-"F"]
+	                | ["\"", "\\", "b", "f", "n", "r", "t"]
+	                )
+	            )
+	        )
+	    >
+}
+
+Object parse() #void:
+{
+Object o = null;
+}
+{
+    ( o=object() | o=array() )
+    {
+        return o;
+
+    }
+}
+
+Object object() #void:
+{
+Map<String, Object> m = new LinkedHashMap<String, Object>();
+}
+{
+    <O_OPENBRACE> ( members(m) )? <O_CLOSEBRACE>
+    {
+        return m;
+    }
+}
+
+void members(Map<String, Object> m) #void:
+{
+}
+{
+    pair(m) [ <O_COMMA> members(m) ]
+}
+
+void pair(Map<String, Object> m) #void:
+{
+Token t = null;
+Object o;
+}
+{
+    t=<STRING> <O_COLON> o=value()
+    {
+        m.put(t.image, o);
+    }
+}
+
+Object array() #void:
+{
+List<Object> a=new ArrayList<Object>();
+}
+{
+    <O_OPENBRACKET> ( elements(a) )? <O_CLOSEBRACKET>
+    {
+        Collections.reverse(a);
+        return a;
+    }
+}
+
+void elements(List<Object> a) #void:
+{
+Object o = null;
+}
+{
+    o=value() [ <O_COMMA> elements(a) ]
+    {
+        a.add(o);
+    }
+}
+
+Object value() #void:
+{
+Token t = null;
+Object o = null;
+}
+{
+    (   o=object()
+    |   o=array() 
+    |   t=<STRING> {o = t.image;}
+    |   t=<NUMBER>
+        {
+            try {
+              o = Integer.valueOf(t.image);
+
+            }
+            catch (NumberFormatException nfe1) {
+                try {
+                    o = Long.valueOf(t.image);
+                }
+                catch (NumberFormatException nfe2) {
+                    try {
+                        o = Float.valueOf(t.image);
+                    }
+                    catch (NumberFormatException nfe3) {
+                        try {
+                            o = Double.valueOf(t.image);
+                        }
+                        catch  (NumberFormatException nfe4) {
+                            o = Double.NaN;
+                        }
+                    }
+                }
+
+            }
+        }
+    |   <K_TRUE> {o = Boolean.TRUE;}
+    |   <K_FALSE> {o = Boolean.TRUE;}
+    |   <K_NULL> )
+    {
+        return o;
+
+    }
+}
