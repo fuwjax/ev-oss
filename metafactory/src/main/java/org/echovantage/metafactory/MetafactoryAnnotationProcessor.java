@@ -80,7 +80,7 @@ public class MetafactoryAnnotationProcessor extends AbstractProcessor {
 					metas.put(annotation.getQualifiedName(), factory);
 				}
 				for(final Element service : roundEnv.getElementsAnnotatedWith(annotation)) {
-					factory.process((TypeElement)service);
+					factory.process((TypeElement) service);
 				}
 			} catch(final IOException e) {
 				error(annotation, "IO error while processing annotation: %s", e.getLocalizedMessage());
@@ -115,8 +115,8 @@ public class MetafactoryAnnotationProcessor extends AbstractProcessor {
 			try {
 				final FileObject f = getResource(StandardLocation.SOURCE_PATH, "", metaInfServices());
 				try(InputStream input = f.openInputStream();
-						Reader reader = new InputStreamReader(input, "UTF-8");
-						final BufferedReader r = new BufferedReader(reader)) {
+				      Reader reader = new InputStreamReader(input, "UTF-8");
+				      final BufferedReader r = new BufferedReader(reader)) {
 					String line;
 					while((line = r.readLine()) != null) {
 						final TypeElement type = typeOf(line);
@@ -149,7 +149,7 @@ public class MetafactoryAnnotationProcessor extends AbstractProcessor {
 							error("Service contract %s must contain exactly one abstract method", contract);
 							return null;
 						}
-						m = (ExecutableElement)e;
+						m = (ExecutableElement) e;
 					}
 				}
 			}
@@ -168,8 +168,7 @@ public class MetafactoryAnnotationProcessor extends AbstractProcessor {
 				error("%s is not a %s, service does not satisfy factory method signature", service, method.getReturnType());
 			} else if(!hasConstructor(service, method)) {
 				error("%s does not have a constructor that matches the signature of %s", service, method);
-			} else {
-				services.add(service);
+			} else if(services.add(service)) {
 				factories.add(createFactory(contract, method, service));
 			}
 		}
@@ -179,7 +178,7 @@ public class MetafactoryAnnotationProcessor extends AbstractProcessor {
 			try {
 				final FileObject metainfServices = createResource(StandardLocation.CLASS_OUTPUT, "", metaInfServices(), services.toArray(new Element[services.size()]));
 				try(Writer writer = metainfServices.openWriter();
-						PrintWriter pw = new PrintWriter(writer)) {
+				      PrintWriter pw = new PrintWriter(writer)) {
 					for(final String value : factories) {
 						pw.println(value);
 					}
@@ -243,7 +242,7 @@ public class MetafactoryAnnotationProcessor extends AbstractProcessor {
 	static boolean hasConstructor(final TypeElement type, final ExecutableElement signature) {
 		for(final Element e : type.getEnclosedElements()) {
 			if(e.getKind().equals(ElementKind.CONSTRUCTOR)) {
-				final ExecutableElement constructor = (ExecutableElement)e;
+				final ExecutableElement constructor = (ExecutableElement) e;
 				if(isCallable(constructor.getParameters(), signature.getParameters())) {
 					return true;
 				}
@@ -269,7 +268,7 @@ public class MetafactoryAnnotationProcessor extends AbstractProcessor {
 		if(e == null) {
 			return null;
 		}
-		return e.getKind() == ElementKind.PACKAGE ? (PackageElement)e : packageOf(e);
+		return e.getKind() == ElementKind.PACKAGE ? (PackageElement) e : packageOf(e);
 	}
 
 	FileObject createResource(final JavaFileManager.Location location,
@@ -280,8 +279,8 @@ public class MetafactoryAnnotationProcessor extends AbstractProcessor {
 	}
 
 	FileObject getResource(final Location location,
-			final CharSequence pkg,
-			final CharSequence relativeName) throws IOException {
+	      final CharSequence pkg,
+	      final CharSequence relativeName) throws IOException {
 		return processingEnv.getFiler().getResource(location, pkg, relativeName);
 	}
 
@@ -321,7 +320,7 @@ public class MetafactoryAnnotationProcessor extends AbstractProcessor {
 	}
 
 	static TypeElement typeOf(final TypeMirror superclass) {
-		return superclass.getKind() == TypeKind.NONE ? null : (TypeElement)((DeclaredType)superclass).asElement();
+		return superclass.getKind() == TypeKind.NONE ? null : (TypeElement) ((DeclaredType) superclass).asElement();
 	}
 
 	static boolean isService(final TypeElement type) {
@@ -351,7 +350,7 @@ public class MetafactoryAnnotationProcessor extends AbstractProcessor {
 
 	static boolean hasPublicDefaultConstructor(final TypeElement type) {
 		for(final Element e : type.getEnclosedElements()) {
-			if(e.getKind().equals(ElementKind.CONSTRUCTOR) && ((ExecutableElement)e).getParameters().isEmpty()) {
+			if(e.getKind().equals(ElementKind.CONSTRUCTOR) && ((ExecutableElement) e).getParameters().isEmpty()) {
 				return isPublic(type);
 			}
 		}
