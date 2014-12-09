@@ -1,26 +1,71 @@
-$start wonton
-$ignore skip
-wonton: value | inner
-value: container | primitive
-container: [[{(<] inner? [\]})>] = inner
-inner: value (','? value)* = [value] | entry (','? entry)* = {entry}
-entry: key [:=] value = {key: value}
+$start: wonton
+$ignore: skip
+wonton: value | array | object
+value: '[' ']'
+	 = []
+value: '[' array ']'
+	 = array
+value: '{' '}'
+	 = {}
+value: '{' object '}'
+	 = object
+value: 'null'
+	 = null()
+value: 'true'
+	 = true()
+value: 'false'
+	 = false()
+value: number
+     = numberOf(number)
+value: string | literal
+array: value (','? value)*
+	 = [] + value
+object: entry (','? entry)*
+	  = {} + entry
+entry: key [:=] value
+	 = { key: value }
 key: string | literal
-primitive: string | number = numberOf(number) | 'null' = null | 'true' = true | 'false' = false | literal
-string: /'<schars>'|"<dchars>"/ = schars | dchars
-schars: /([^\\']|<escape>)*/
-dchars: /([^\\"]|<escape>)*/
-escape: newline | return | tab | unicode | simple
-newline: '\\n' = '\n'
-return: '\\r' = '\r'
-tab: '\\t' = '\t'
-unicode: '\\u' hex = charOf(intOf(hex, 16))
-simple: '\\' char = char
-hex: [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]
-char: .
-number: /((0|-?[1-9]\d*)(\.\d*)?|-?\.\d+)([eE](0|-?[1-9]\d*))?/
-literal: /[-0-9a-zA-Z_$./]+/
+string: /'<schar>*'/
+	  = "" + schar
+string: /"<dchar>*"/
+	  = "" + dchar
+schar: [^//'] | escape
+dchar: [^//"] | escape
+escape: '\\n'
+	  = '\n'
+escape: '\\r'
+	  = '\r'
+escape: '\\t'
+	  = '\t'
+escape: /\\u<$.unicode.hex4>/
+	  = $.unicode.hex4
+escape: /\\U<$.unicode.hex8>/
+	  = $.unicode.hex8
+escape: /\\<echar>/
+	  = echar
+echar: ["'\\]
+number: $.number.decimal.int | $.number.decimal.float
+literal: /[^:=\[\]{},'"\\#[ws]]+/
 skip: comment | ws
-ws: /\s/
-comment: /#.*\n/
+comment: /#[^\n]*\n/
+ws: $.unicode.class.whitespace
 
+
+
+
+wonton: value | array | object
+value: '[' array? ']' | '{' object? '}' | 'null' | 'true' | 'false' | string | number | literal
+array: value (','? value)*
+object: entry (','? entry)*
+entry: key [:=] value
+key: string | literal
+string: /'<schars>'|"<dchars>"/
+schars: /([^//']|<escape>)*/
+dchars: /([^//"]|<escape>)*/
+escape: /\\([nrt]|u<hex>{4}|U<hex>{8}|["'\\])/
+hex: [0-9a-fA-F]
+number: /((0|-?[1-9]\d*)(\.\d*)?|-?\.\d+)([eE](0|-?[1-9]\d*))?/
+literal: /[^:=\[\]{},'"\\#[ws]]+/
+skip: comment | ws
+comment: '#' [^\n]* '\n'
+ws: [\u0009\u000A-\u000D\u0020\u0085\u00A0\u1680\u2000-\u200B\u2028\u2029\u202F\u205F\u3000]

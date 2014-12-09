@@ -18,6 +18,8 @@
 	<modules>
 		<module>gild</module>
 		<module>wonton</module>
+		<module>jerc</module>
+		<module>metafactory</module>
 	</modules>
 
 	<scm>
