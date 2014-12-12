@@ -1,1 +1,2 @@
-org.echovantage.metafactory.MetafactoryAnnotationProcessor
+org.echovantage.metafactory.MetaFactoryAnnotationProcessor
+org.echovantage.metafactory.MetaServiceAnnotationProcessor

@@ -12,6 +12,8 @@
  */
 package org.echovantage.metafactory;
 
+import static java.util.Collections.singleton;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,22 +22,16 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
-import javax.annotation.Generated;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -51,15 +47,12 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
-import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 
 /**
  * @author Fuwjax
  */
-@SupportedAnnotationTypes("*")
-public class MetaFactoryAnnotationProcessor extends AbstractProcessor {
-	private final DateFormat ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+public class MetaServiceAnnotationProcessor extends AbstractProcessor {
 	private final Map<CharSequence, MetaFactoryServices> metas = new HashMap<>();
 
 	@Override
@@ -68,18 +61,32 @@ public class MetaFactoryAnnotationProcessor extends AbstractProcessor {
 	}
 
 	@Override
+	public Set<String> getSupportedAnnotationTypes() {
+		return singleton(MetaService.class.getName());
+	}
+
+	@Override
 	public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
 		for(final TypeElement annotation : annotations) {
-			if(annotation.getAnnotation(MetaFactory.class) == null) {
-				continue;
-			}
 			try {
-				MetaFactoryServices factory = metas.get(annotation.getQualifiedName());
-				if(factory == null) {
-					factory = new MetaFactoryServices(annotation);
-					metas.put(annotation.getQualifiedName(), factory);
-				}
 				for(final Element service : roundEnv.getElementsAnnotatedWith(annotation)) {
+					if(!isService((TypeElement)service)) {
+						error(service, "Not a valid service");
+						continue;
+					}
+					final MetaService meta = service.getAnnotation(MetaService.class);
+					TypeElement contract = typeOf(meta::value);
+					if(contract == null) {
+						contract = inferContract((TypeElement)service);
+						if(contract == null) {
+							continue;
+						}
+					}
+					MetaFactoryServices factory = metas.get(contract.getQualifiedName());
+					if(factory == null) {
+						factory = new MetaFactoryServices(contract);
+						metas.put(contract.getQualifiedName(), factory);
+					}
 					factory.process((TypeElement)service);
 				}
 			} catch(final IOException e) {
@@ -97,17 +104,29 @@ public class MetaFactoryAnnotationProcessor extends AbstractProcessor {
 		return false;
 	}
 
-	private class MetaFactoryServices {
-		final Set<String> factories = new HashSet<>();
-		final Set<Element> services = new HashSet<>();
-		private final TypeElement contract;
-		private final ExecutableElement method;
-		private final TypeElement annotation;
+	private TypeElement inferContract(final TypeElement service) {
+		if(service == null) {
+			return null;
+		}
+		final TypeElement superclass = typeOf(service.getSuperclass());
+		if("java.lang.Object".equals(superclass.getQualifiedName().toString())) {
+			if(service.getInterfaces().size() != 1) {
+				error(service, "Needed exactly one intervace on service to infer contract");
+			}
+			return typeOf(service.getInterfaces().get(0));
+		}
+		if(!service.getInterfaces().isEmpty()) {
+			error(service, "Could not choose between superclass and interface for contract");
+		}
+		return superclass;
+	}
 
-		public MetaFactoryServices(final TypeElement annotation) throws IOException {
-			this.annotation = annotation;
-			contract = typeOf(annotation.getAnnotation(MetaFactory.class));
-			method = serviceMethod();
+	private class MetaFactoryServices {
+		final Set<TypeElement> services = new HashSet<>();
+		private final TypeElement contract;
+
+		public MetaFactoryServices(final TypeElement contract) throws IOException {
+			this.contract = contract;
 			loadExisting();
 		}
 
@@ -121,7 +140,7 @@ public class MetaFactoryAnnotationProcessor extends AbstractProcessor {
 					while((line = r.readLine()) != null) {
 						final TypeElement type = typeOf(line);
 						if(isService(type) && isAssignable(contract, type)) {
-							factories.add(line);
+							services.add(type);
 						} else {
 							error("Existing service factory %s is not a public concrete class with a default constructor implementing %s, removing it from meta-inf/services", type, contract);
 						}
@@ -136,41 +155,8 @@ public class MetaFactoryAnnotationProcessor extends AbstractProcessor {
 			return "META-INF/services/" + binaryNameOf(contract);
 		}
 
-		private ExecutableElement serviceMethod() {
-			if(!isInterface(contract) && !hasPublicDefaultConstructor(contract)) {
-				error("Service contract %s must be an interface or abstract class with a default constructor", contract);
-				return null;
-			}
-			ExecutableElement m = null;
-			for(final Element e : contract.getEnclosedElements()) {
-				if(e.getKind() == ElementKind.METHOD) {
-					if(e.getModifiers().contains(Modifier.ABSTRACT)) {
-						if(m != null) {
-							error("Service contract %s must contain exactly one abstract method", contract);
-							return null;
-						}
-						m = (ExecutableElement)e;
-					}
-				}
-			}
-			return m;
-		}
-
 		public void process(final TypeElement service) throws IOException {
-			if(method == null) {
-				return;
-			}
-			final Generated generated = service.getAnnotation(Generated.class);
-			if(generated != null && Arrays.asList(generated.value()).contains(MetaFactoryAnnotationProcessor.class.getCanonicalName())) {
-				return;
-			}
-			if(!isAssignable(typeOf(method.getReturnType()), service)) {
-				error("%s is not a %s, service does not satisfy factory method signature", service, method.getReturnType());
-			} else if(!hasConstructor(service, method)) {
-				error("%s does not have a constructor that matches the signature of %s", service, method);
-			} else if(services.add(service)) {
-				factories.add(createFactory(contract, method, service));
-			}
+			services.add(service);
 		}
 
 		public void writeMetaInfServices() {
@@ -179,8 +165,8 @@ public class MetaFactoryAnnotationProcessor extends AbstractProcessor {
 				final FileObject metainfServices = createResource(StandardLocation.CLASS_OUTPUT, "", metaInfServices(), services.toArray(new Element[services.size()]));
 				try(Writer writer = metainfServices.openWriter();
 						PrintWriter pw = new PrintWriter(writer)) {
-					for(final String value : factories) {
-						pw.println(value);
+					for(final TypeElement value : services) {
+						pw.println(binaryNameOf(value));
 					}
 				}
 			} catch(final IOException e) {
@@ -192,51 +178,12 @@ public class MetaFactoryAnnotationProcessor extends AbstractProcessor {
 		}
 
 		private void error(final String pattern, final Object... args) {
-			MetaFactoryAnnotationProcessor.this.error(annotation, pattern, args);
+			MetaServiceAnnotationProcessor.this.error(contract, pattern, args);
 		}
 	}
 
 	static boolean isInterface(final TypeElement contract) {
 		return contract.getKind() == ElementKind.INTERFACE;
-	}
-
-	String createFactory(final TypeElement contract, final ExecutableElement method, final TypeElement service) throws IOException {
-		final String name = service.getQualifiedName() + "CgFactory";
-		final JavaFileObject f = processingEnv.getFiler().createSourceFile(name, contract, service);
-		try(final PrintWriter pw = new PrintWriter(f.openWriter())) {
-			pw.printf("package %s;", packageOf(service)).println();
-			for(final AnnotationMirror annotation : service.getAnnotationMirrors()) {
-				pw.println(annotation);
-			}
-			pw.printf("@javax.annotation.Generated(value=\"%s\", date=\"%s\")", MetaFactoryAnnotationProcessor.class.getCanonicalName(), ISO8601.format(new Date())).println();
-			pw.printf("public final class %sCgFactory %s %s {", service.getSimpleName(), isInterface(contract) ? "implements" : "extends", contract.getQualifiedName()).println();
-			pw.printf("	public %s %s(", service.getSimpleName(), method.getSimpleName());
-			String delim = "";
-			for(final VariableElement param : method.getParameters()) {
-				pw.print(delim);
-				pw.printf("%s %s", typeOf(param.asType()).getQualifiedName(), param.getSimpleName());
-				delim = ", ";
-			}
-			pw.print(")");
-			delim = " throws ";
-			for(final TypeMirror ex : method.getThrownTypes()) {
-				pw.print(delim);
-				pw.print(typeOf(ex).getQualifiedName());
-				delim = ", ";
-			}
-			pw.println(" {");
-			pw.printf("		return new %s(", service.getSimpleName());
-			delim = "";
-			for(final VariableElement param : method.getParameters()) {
-				pw.print(delim);
-				pw.print(param.getSimpleName());
-				delim = ", ";
-			}
-			pw.println(");");
-			pw.println("	}");
-			pw.println("}");
-		}
-		return name;
 	}
 
 	static boolean hasConstructor(final TypeElement type, final ExecutableElement signature) {
@@ -292,9 +239,9 @@ public class MetaFactoryAnnotationProcessor extends AbstractProcessor {
 		return processingEnv.getElementUtils().getTypeElement(name);
 	}
 
-	TypeElement typeOf(final MetaFactory meta) {
+	TypeElement typeOf(final Supplier<Class<?>> value) {
 		try {
-			final Class<?> cls = meta.value();
+			final Class<?> cls = value.get();
 			return typeOf(cls.getName());
 		} catch(final MirroredTypeException e) {
 			return typeOf(e.getTypeMirror());
@@ -320,7 +267,7 @@ public class MetaFactoryAnnotationProcessor extends AbstractProcessor {
 	}
 
 	static TypeElement typeOf(final TypeMirror superclass) {
-		return superclass.getKind() == TypeKind.NONE ? null : (TypeElement)((DeclaredType)superclass).asElement();
+		return superclass.getKind() == TypeKind.NONE ? null : superclass.getKind() == TypeKind.VOID ? null : (TypeElement)((DeclaredType)superclass).asElement();
 	}
 
 	static boolean isService(final TypeElement type) {
@@ -336,28 +283,28 @@ public class MetaFactoryAnnotationProcessor extends AbstractProcessor {
 		return hasPublicDefaultConstructor(type);
 	}
 
-	static boolean isStatic(final TypeElement type) {
+	static boolean isStatic(final Element type) {
 		return type.getModifiers().contains(Modifier.STATIC);
 	}
 
-	static boolean isNested(final TypeElement type) {
+	static boolean isNested(final Element type) {
 		return !ElementKind.PACKAGE.equals(type.getEnclosingElement().getKind());
 	}
 
-	static boolean isAbstract(final TypeElement type) {
+	static boolean isAbstract(final Element type) {
 		return type.getModifiers().contains(Modifier.ABSTRACT);
 	}
 
 	static boolean hasPublicDefaultConstructor(final TypeElement type) {
 		for(final Element e : type.getEnclosedElements()) {
 			if(e.getKind().equals(ElementKind.CONSTRUCTOR) && ((ExecutableElement)e).getParameters().isEmpty()) {
-				return isPublic(type);
+				return isPublic(e) && isPublic(type);
 			}
 		}
 		return false;
 	}
 
-	static boolean isPublic(final TypeElement type) {
+	static boolean isPublic(final Element type) {
 		return type.getModifiers().contains(Modifier.PUBLIC);
 	}
 

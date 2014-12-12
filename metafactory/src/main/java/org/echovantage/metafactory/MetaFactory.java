@@ -31,6 +31,6 @@ import java.lang.annotation.Target;
 @Retention(SOURCE)
 @Documented
 @Target(ANNOTATION_TYPE)
-public @interface Meta {
+public @interface MetaFactory {
 	Class<?> value() default void.class;
 }

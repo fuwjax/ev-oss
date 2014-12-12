@@ -1,10 +1,10 @@
 package org.echovantage.sample;
 
-@SampleAnnotation("example")
-public class SampleServiceImpl implements SampleService {
+@SampleAnnotation("factory")
+public class SampleServiceWithFactoryImpl implements SampleService {
 	private final String config;
 
-	public SampleServiceImpl(final String config) {
+	public SampleServiceWithFactoryImpl(final String config) {
 		this.config = config;
 	}
 

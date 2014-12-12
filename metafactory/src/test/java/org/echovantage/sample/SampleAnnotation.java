@@ -6,11 +6,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.echovantage.metafactory.Meta;
+import org.echovantage.metafactory.MetaFactory;
 
 @Retention(RUNTIME)
 @Target(TYPE)
-@Meta(SampleService.Factory.class)
+@MetaFactory(SampleService.Factory.class)
 public @interface SampleAnnotation {
 	String value();
 }
