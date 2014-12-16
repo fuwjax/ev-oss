@@ -41,25 +41,25 @@ public interface Wonton {
 			return NULL;
 		}
 		if(object instanceof Wonton) {
-			return (Wonton)object;
+			return (Wonton) object;
 		}
 		if(object instanceof Boolean) {
-			return (Boolean)object ? TRUE : FALSE;
+			return (Boolean) object ? TRUE : FALSE;
 		}
 		if(object instanceof Number) {
-			return new NumberWonton((Number)object);
+			return new NumberWonton((Number) object);
 		}
 		if(object instanceof CharSequence) {
 			return new StringWonton(object.toString());
 		}
 		if(object instanceof Map) {
-			return new MapWrapper((Map<String, ?>)object);
+			return new MapWrapper((Map<String, ?>) object);
 		}
 		if(object instanceof Iterable) {
-			return new ListWrapper(Lists.toList((Iterable<?>)object));
+			return new ListWrapper(Lists.toList((Iterable<?>) object));
 		}
 		if(object instanceof Object[]) {
-			return new ListWrapper(Arrays.asList((Object[])object));
+			return new ListWrapper(Arrays.asList((Object[]) object));
 		}
 		if(object.getClass().isArray()) {
 			return new ListWrapper(Lists.reflectiveList(object));
@@ -96,7 +96,15 @@ public interface Wonton {
 	public interface Mutable {
 		Mutable set(Path path, Wonton value);
 
+		default Mutable set(final String path, final Object value) {
+			return set(path(path), wontonOf(value));
+		}
+
 		Mutable append(Path path, Wonton value);
+
+		default Mutable append(final String path, final Object value) {
+			return append(path(path), wontonOf(value));
+		}
 
 		Wonton build();
 	}

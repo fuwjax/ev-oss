@@ -30,7 +30,7 @@ public class ListWonton extends AbstractListWonton implements Mutable {
 
 	public ListWonton put(final int index, final Wonton value) {
 		while(index > values.size()) {
-			values.add(NullWonton.NULL);
+			values.add(NULL);
 		}
 		if(index == values.size()) {
 			values.add(value);

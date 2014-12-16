@@ -32,7 +32,7 @@ public class WontonTest {
 	public void testTrue() {
 		final Wonton wonton = Wonton.wontonOf(true);
 		assertEquals(Wonton.Type.BOOLEAN, wonton.type());
-		assertTrue((Boolean)wonton.value());
+		assertTrue((Boolean) wonton.value());
 		assertWrongType(() -> wonton.asArray());
 		assertEquals(true, wonton.asBoolean());
 		assertWrongType(() -> wonton.asNumber());
@@ -44,7 +44,7 @@ public class WontonTest {
 	public void testFalse() {
 		final Wonton wonton = Wonton.wontonOf(false);
 		assertEquals(Wonton.Type.BOOLEAN, wonton.type());
-		assertFalse((Boolean)wonton.value());
+		assertFalse((Boolean) wonton.value());
 		assertWrongType(() -> wonton.asArray());
 		assertEquals(false, wonton.asBoolean());
 		assertWrongType(() -> wonton.asNumber());
@@ -153,7 +153,7 @@ public class WontonTest {
 		map.put("id", 5);
 		map.put("name", "bob");
 		map.put("description", "hope");
-		assertEquals(Wonton.wontonOf(map), wonton.value());
+		assertEquals(Wonton.wontonOf(map).value(), wonton.value());
 		assertWrongType(() -> wonton.asArray());
 		assertWrongType(() -> wonton.asBoolean());
 		assertWrongType(() -> wonton.asNumber());

@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.echovantage</groupId>
+		<groupId>org.echovantage</groupId>
 		<artifactId>oss</artifactId>
 		<version>0.6-SNAPSHOT</version>
 	</parent>
@@ -20,7 +20,7 @@
 			<systemPath>${java.home}/../lib/tools.jar</systemPath>
 		</dependency>
 		<dependency>
-			<groupId>com.echovantage</groupId>
+			<groupId>org.echovantage</groupId>
 			<artifactId>jerc</artifactId>
 			<version>0.6-SNAPSHOT</version>
 			<scope>test</scope>

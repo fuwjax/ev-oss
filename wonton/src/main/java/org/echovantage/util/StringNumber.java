@@ -46,7 +46,7 @@ public class StringNumber extends Number {
 	@Override
 	public boolean equals(final Object obj) {
 		try {
-			final Number o = (Number)obj;
+			final Number o = (Number) obj;
 			return doubleToLongBits(o.doubleValue()) == doubleToLongBits(doubleValue());
 		} catch(final Exception e) {
 			return false;
