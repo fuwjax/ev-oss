@@ -1,21 +1,18 @@
 package org.echovantage.test;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.nio.charset.Charset;
-import java.util.Arrays;
-
 import org.echovantage.wonton.Wonton;
 import org.echovantage.wonton.WontonParser;
 import org.echovantage.wonton.WontonSerial;
 import org.junit.Test;
 
-public class SerializationTest {
-	private static Charset UTF_8 = Charset.forName("UTF-8");
+import java.util.Arrays;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+public class SerializationTest {
 	@Test
 	public void testGet() throws Exception {
 		assertGet("{a:1,b:2}", "a", 1);
@@ -66,7 +63,7 @@ public class SerializationTest {
 		assertSerial("\ud800\udf00", "\"\\uD800\\uDF00\"");
 		assertSerial("𐌀", "\"\\uD800\\uDF00\"");
 		assertSerial("hello\nworld", "\"hello\\nworld\"");
-		assertSerial(Arrays.asList("hi mom", "hello\nworld"), "[\"hi mom\", \"hello\\nworld\"]");
+		assertSerial(Arrays.asList("hi mom", "hello\nworld"), "[\"hi mom\",\"hello\\nworld\"]");
 		assertSerial("hello\\world", "\"hello\\\\world\"");
 	}
 
