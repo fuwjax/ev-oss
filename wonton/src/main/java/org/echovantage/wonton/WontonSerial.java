@@ -50,10 +50,10 @@ public class WontonSerial {
 			if(first) {
 				first = false;
 			} else {
-				appender.append(", ");
+				appender.append(",");
 			}
 			appendString(entry.getKey());
-			appender.append(": ");
+			appender.append(":");
 			append(entry.getValue());
 		}
 		appender.append('}');
@@ -115,7 +115,7 @@ public class WontonSerial {
 			if(first) {
 				first = false;
 			} else {
-				appender.append(", ");
+				appender.append(",");
 			}
 			append(wonton);
 		}
