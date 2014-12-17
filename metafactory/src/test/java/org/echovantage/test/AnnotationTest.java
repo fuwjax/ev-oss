@@ -14,21 +14,22 @@ import org.junit.Test;
 
 public class AnnotationTest {
 	@Test
-	public void testFactory() throws IOException {
+	public void testMeta() throws IOException {
 		final RuntimeClassLoader loader = new RuntimeClassLoader(System.out);
 		assertTrue(loader.compile(Paths.get("src/test/java")));
 		final ServiceLoader<SampleService.Factory> factories = ServiceLoader.load(SampleService.Factory.class, loader);
-		final SampleService.Factory factory = factories.iterator().next();
-		assertEquals("factory", factory.getClass().getAnnotation(SampleAnnotation.class).value());
-		assertEquals("config:something", factory.create("config").doSomething("something"));
-	}
-
-	@Test
-	public void testService() throws IOException {
-		final RuntimeClassLoader loader = new RuntimeClassLoader(System.out);
-		assertTrue(loader.compile(Paths.get("src/test/java")));
-		final ServiceLoader<SampleService> services = ServiceLoader.load(SampleService.class, loader);
-		final SampleService service = services.iterator().next();
-		assertEquals("service:something", service.doSomething("something"));
+		int countMetaFactory = 0;
+		int countMetaService = 0;
+		for(final SampleService.Factory factory : factories) {
+			if(factory.getClass().isAnnotationPresent(SampleAnnotation.class)) {
+				assertEquals("factory", factory.getClass().getAnnotation(SampleAnnotation.class).value());
+				countMetaFactory++;
+			} else {
+				countMetaService++;
+			}
+			assertEquals("config:something", factory.create("config").doSomething("something"));
+		}
+		assertEquals(countMetaFactory, 1);
+		assertEquals(countMetaService, 2);
 	}
 }
