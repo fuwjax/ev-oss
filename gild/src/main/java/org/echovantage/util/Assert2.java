@@ -53,39 +53,47 @@ public class Assert2 {
 	}
 
 	public static void assertThrown(final Class<? extends Throwable> expected, final Runnable whenCalled) {
+		Throwable thrown = null;
 		try {
 			whenCalled.run();
 		} catch(final Throwable t) {
-			assertTrue(description(expected, t), expected.isInstance(t));
+			thrown = t;
 		}
-		fail(description(expected, null));
+		assertInstance(expected, thrown);
 	}
 
 	public static void assertThrown(final Throwable expected, final Runnable whenCalled) {
+		Throwable thrown = null;
 		try {
 			whenCalled.run();
 		} catch(final Throwable t) {
-			assertEquals(expected, t);
+			thrown = t;
 		}
-		fail(description(expected, null));
+		assertEquals(expected, thrown);
 	}
 
 	public static void assertThrown(final Class<? extends Throwable> expected, final Callable<?> whenCalled) {
+		Throwable thrown = null;
 		try {
 			whenCalled.call();
 		} catch(final Throwable t) {
-			assertTrue(description(expected, t.getClass()), expected.isInstance(t));
+			thrown = t;
 		}
-		fail(description(expected, null));
+		assertInstance(expected, thrown);
+	}
+
+	private static void assertInstance(Class<? extends Throwable> expected, Throwable thrown) {
+		Assert.assertEquals(expected, thrown == null ? null : thrown.getClass());
 	}
 
 	public static void assertThrown(final Throwable expected, final Callable<?> whenCalled) {
+		Throwable thrown = null;
 		try {
 			whenCalled.call();
 		} catch(final Throwable t) {
-			assertEquals(expected, t);
+			thrown = t;
 		}
-		fail(description(expected, null));
+		assertEquals(expected, thrown);
 	}
 
 	public static void assertEquals(final Throwable expected, final Throwable actual) {
@@ -93,7 +101,7 @@ public class Assert2 {
 			return;
 		}
 		assertFalse(description(expected, actual), expected == null ^ actual == null);
-		assertTrue(description(expected, actual), expected.getClass().isInstance(actual));
+		Assert.assertEquals(expected.getClass(), actual.getClass());
 		Assert.assertEquals(expected.getMessage(), actual.getMessage());
 		assertEquals(expected.getCause(), actual.getCause());
 	}

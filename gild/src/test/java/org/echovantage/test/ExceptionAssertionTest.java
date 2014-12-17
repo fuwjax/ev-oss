@@ -4,13 +4,13 @@ import static org.echovantage.util.Assert2.assertThrown;
 import static org.junit.Assert.fail;
 
 import org.echovantage.util.Assert2;
+import org.junit.ComparisonFailure;
 import org.junit.Test;
 
 public class ExceptionAssertionTest {
-	private static final String STATE_THROWN = "expected:<" + IllegalArgumentException.class.getCanonicalName() + "> but was:<" + IllegalStateException.class.getCanonicalName() + ": state>";
-	private static final String NULL_STATE_THROWN = "expected:<" + IllegalArgumentException.class.getCanonicalName() + "> but was:<" + IllegalStateException.class.getCanonicalName() + ": null>";
-	private static final String NONE_THROWN = "expected:<" + IllegalArgumentException.class.getCanonicalName() + "> but was:<null>";
-	private static final String WRONG_MESSAGE = "expected:<[bob]> but was:<[hope]>";
+	private static final String STATE_THROWN = "expected:<class " + IllegalArgumentException.class.getCanonicalName() + "> but was:<class " + IllegalStateException.class.getCanonicalName() + ">";
+	private static final String NONE_THROWN = "expected:<class " + IllegalArgumentException.class.getCanonicalName() + "> but was:<null>";
+	private static final String NONE_MSG_THROWN = "expected:<" + IllegalArgumentException.class.getCanonicalName() + ": null> but was:<null>";
 	private static final String MISSING_MESSAGE = "expected:<bob> but was:<null>";
 	private static final String MISSING_CAUSE = "expected:<" + IllegalArgumentException.class.getCanonicalName() + ": right> but was:<null>";
 
@@ -46,7 +46,7 @@ public class ExceptionAssertionTest {
 		try {
 			assertThrown(new IllegalArgumentException(), () -> 5);
 		} catch(final AssertionError e) {
-			Assert2.assertEquals(new AssertionError(NONE_THROWN), e);
+			Assert2.assertEquals(new AssertionError(NONE_MSG_THROWN), e);
 			return;
 		}
 		fail("the closure should not throw an exception");
@@ -57,7 +57,7 @@ public class ExceptionAssertionTest {
 		try {
 			assertThrown(new IllegalArgumentException(), () -> state(null, null));
 		} catch(final AssertionError e) {
-			Assert2.assertEquals(new AssertionError(NULL_STATE_THROWN), e);
+			Assert2.assertEquals(new AssertionError(STATE_THROWN), e);
 			return;
 		}
 		fail("the closure should not throw an exception");
@@ -83,7 +83,7 @@ public class ExceptionAssertionTest {
 		try {
 			assertThrown(new IllegalArgumentException("bob"), () -> arg("hope", null));
 		} catch(final AssertionError e) {
-			Assert2.assertEquals(new AssertionError(WRONG_MESSAGE), e);
+			Assert2.assertEquals(new ComparisonFailure("", "bob", "hope"), e);
 			return;
 		}
 		fail("the closure should not throw an exception");
@@ -94,7 +94,7 @@ public class ExceptionAssertionTest {
 		try {
 			assertThrown(new IllegalArgumentException("bob", new IllegalStateException("bob")), () -> arg("bob", new IllegalStateException("hope")));
 		} catch(final AssertionError e) {
-			Assert2.assertEquals(new AssertionError(WRONG_MESSAGE), e);
+			Assert2.assertEquals(new ComparisonFailure("", "bob", "hope"), e);
 			return;
 		}
 		fail("the closure should not throw an exception");
