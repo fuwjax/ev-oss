@@ -1,5 +1,7 @@
 package org.echovantage.wonton;
 
+import org.echovantage.util.AccessListDecorator;
+import org.echovantage.util.AccessMapDecorator;
 import org.echovantage.util.ListDecorator;
 import org.echovantage.util.MapDecorator;
 import org.echovantage.wonton.standard.StandardPath;
@@ -12,7 +14,7 @@ import java.util.Map;
 
 public class RelaxedWonton implements Wonton {
     public static Wonton relaxed(Wonton wonton) {
-        return wonton instanceof RelaxedWonton ? (RelaxedWonton) wonton : new RelaxedWonton(wonton);
+        return wonton == null ? NULL : wonton instanceof RelaxedWonton ? (RelaxedWonton) wonton : new RelaxedWonton(wonton);
     }
 
     private final Wonton wonton;
@@ -94,37 +96,48 @@ public class RelaxedWonton implements Wonton {
 
     @Override
     public Map<String, ? extends Wonton> asStruct() {
+        Map<String, Wonton> map;
         switch (wonton.type()) {
             case BOOLEAN:
             case STRING:
             case NUMBER:
             case VOID:
-                return Collections.singletonMap("value", this);
+                map = Collections.singletonMap("value", this);
+                break;
             case ARRAY:
-                Map<String, Wonton> map = new LinkedHashMap<>();
+                map = new LinkedHashMap<>();
                 int[] index = new int[1];
                 wonton.asArray().forEach(e -> map.put(Integer.toString(index[0]++), relaxed(e)));
-                return map;
+                break;
             case STRUCT:
-                return new MapDecorator<>(wonton.asStruct(), RelaxedWonton::relaxed);
+                map = new MapDecorator<>(wonton.asStruct(), RelaxedWonton::relaxed);
+                break;
+            default:
+                throw new InvalidTypeException();
         }
-        throw new InvalidTypeException();
+        return new AccessMapDecorator<>(map, key -> NULL);
     }
 
     @Override
     public List<? extends Wonton> asArray() {
+        List<Wonton> list;
         switch (wonton.type()) {
             case BOOLEAN:
             case STRING:
             case NUMBER:
             case VOID:
-                return Collections.singletonList(this);
+                list = Collections.singletonList(this);
+                break;
             case ARRAY:
-                return new ListDecorator<>(wonton.asArray(), RelaxedWonton::relaxed);
+                list = new ListDecorator<>(wonton.asArray(), RelaxedWonton::relaxed);
+                break;
             case STRUCT:
-                return new ListDecorator<>(new ArrayList<>(wonton.asStruct().values()), RelaxedWonton::relaxed);
+                list = new ListDecorator<>(new ArrayList<>(wonton.asStruct().values()), RelaxedWonton::relaxed);
+                break;
+            default:
+                throw new InvalidTypeException();
         }
-        throw new InvalidTypeException();
+        return new AccessListDecorator<>(list, key -> NULL);
     }
 
     @Override

@@ -25,9 +25,10 @@ public class ListWonton extends AbstractListWonton implements WontonFactory.Muta
     }
 
     @Override
-    public void append(final Wonton wonton) {
+    public ListWonton append(final Wonton wonton) {
         assert wonton != null;
         values.add(wonton);
+        return this;
     }
 
     @Override

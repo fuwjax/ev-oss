@@ -19,20 +19,20 @@ public interface WontonFactory {
     WontonFactory FACTORY = new WontonFactory(){};
 
     public interface MutableWonton extends Wonton {
-        default void set(Wonton.Path path, Wonton value){
+        default void set(Wonton.Path path, Wonton value) {
             assert path != null && !path.isEmpty();
-            if(path.tail().isEmpty()){
+            if (path.tail().isEmpty()) {
                 set(path.key(), value);
-            }else{
+            } else {
                 Wonton wonton = get(path.key());
-                if(wonton == null){
+                if (wonton == null) {
                     MutableWonton newWonton = factory().newStruct();
                     newWonton.set(path.tail(), value);
                     set(path.key(), newWonton);
-                }else if(wonton instanceof MutableWonton) {
+                } else if (wonton instanceof MutableWonton) {
                     ((MutableWonton) wonton).set(path.tail(), value);
-                }else{
-                    throw new IllegalArgumentException("Cannot set "+path+", immutable value");
+                } else {
+                    throw new IllegalArgumentException("Cannot set " + path + ", immutable value");
                 }
             }
         }
@@ -40,10 +40,15 @@ public interface WontonFactory {
         WontonFactory factory();
 
         void set(final String key, final Wonton value);
+
+        default MutableWonton with(String path, Object value) {
+            set(Wonton.path(path), factory().wontonOf(value));
+            return this;
+        }
     }
 
     public interface MutableArray extends MutableWonton{
-        void append(final Wonton value);
+        MutableArray append(final Wonton value);
 
         Wonton get(int index);
 
