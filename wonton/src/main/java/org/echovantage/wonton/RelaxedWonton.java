@@ -155,7 +155,7 @@ public class RelaxedWonton implements Wonton {
         if (StandardPath.isPath(key)) {
             return get(StandardPath.path(key));
         }
-        return relaxed(get(key));
+        return relaxed(wonton.get(key));
     }
 
     @Override
