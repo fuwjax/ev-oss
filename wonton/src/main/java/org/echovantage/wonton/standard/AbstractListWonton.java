@@ -1,45 +1,40 @@
 package org.echovantage.wonton.standard;
 
-import static java.lang.Integer.parseInt;
+import org.echovantage.util.ListDecorator;
+import org.echovantage.wonton.Wonton;
 
 import java.util.List;
 
-import org.echovantage.wonton.Wonton;
+public abstract class AbstractListWonton extends AbstractContainerWonton implements Wonton.WArray {
+    public static Wonton wrap(List<? extends Wonton> list) {
+        return new AbstractListWonton() {
+            @Override
+            public List<? extends Wonton> asArray() {
+                return list;
+            }
+        };
+    }
 
-public abstract class AbstractListWonton extends AbstractContainerWonton {
-	@Override
-	public abstract List<? extends Wonton> asArray();
+    public static Wonton wontonOf(List<?> list) {
+        return wrap(new ListDecorator<>(list, Wonton::wontonOf));
+    }
 
-	@Override
-	public final Type type() {
-		return Type.ARRAY;
-	}
+    @Override
+    protected final void acceptShallow(final ShallowVisitor visitor) {
+        int index = 0;
+        for (final Wonton v : asArray()) {
+            visitor.visit(Integer.toString(index++), v);
+        }
+    }
 
-	@Override
-	protected final void acceptShallow(final ShallowVisitor visitor) {
-		int index = 0;
-		for(final Wonton v : asArray()) {
-			visitor.visit(Integer.toString(index++), v);
-		}
-	}
-
-	@Override
-	protected final Wonton get(final String shallowKey) {
-		try {
-			return asArray().get(parseInt(shallowKey));
-		} catch(final RuntimeException e) {
-			throw new NoSuchPathException(e);
-		}
-	}
-
-	@Override
-	public final String toString() {
-		final StringBuilder builder = new StringBuilder("[");
-		String delim = "";
-		for(final Wonton v : asArray()) {
-			builder.append(delim).append(v);
-			delim = ",";
-		}
-		return builder.append("]").toString();
-	}
+    @Override
+    public final String toString() {
+        final StringBuilder builder = new StringBuilder("[");
+        String delim = "";
+        for (final Wonton v : asArray()) {
+            builder.append(delim).append(v);
+            delim = ",";
+        }
+        return builder.append("]").toString();
+    }
 }

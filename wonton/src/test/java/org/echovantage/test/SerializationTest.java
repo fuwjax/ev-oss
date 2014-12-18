@@ -7,10 +7,8 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static java.util.Collections.*;
+import static org.junit.Assert.*;
 
 public class SerializationTest {
 	@Test
@@ -89,8 +87,6 @@ public class SerializationTest {
 	}
 
 	private static void assertSerial(final Object value, final String json) throws Exception {
-		StringBuilder builder = new StringBuilder();
-		new WontonSerial(builder).append(Wonton.wontonOf(value));
-		assertEquals(json, builder.toString());
+		assertEquals(json, WontonSerial.toString(Wonton.wontonOf(value)));
 	}
 }

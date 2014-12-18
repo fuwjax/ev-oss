@@ -1,20 +1,20 @@
 package org.echovantage.wonton;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
 import org.echovantage.util.Lists;
 import org.echovantage.util.ObjectMap;
 import org.echovantage.util.ObjectMap.MapEntries;
+import org.echovantage.wonton.standard.AbstractListWonton;
+import org.echovantage.wonton.standard.AbstractMapWonton;
 import org.echovantage.wonton.standard.BooleanWonton;
-import org.echovantage.wonton.standard.ListWrapper;
-import org.echovantage.wonton.standard.MapWrapper;
 import org.echovantage.wonton.standard.NullWonton;
 import org.echovantage.wonton.standard.NumberWonton;
 import org.echovantage.wonton.standard.StandardPath;
 import org.echovantage.wonton.standard.StringWonton;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The standard transport interface for Whatever Object NotaTiON. Wontons all
@@ -27,10 +27,6 @@ public interface Wonton {
 	public static final Wonton NULL = new NullWonton();
 	public static final Wonton TRUE = new BooleanWonton(true);
 	public static final Wonton FALSE = new BooleanWonton(false);
-
-	public static Path pathOf(final String... keys) {
-		return StandardPath.pathOf(keys);
-	}
 
 	public static Path path(final String path) {
 		return StandardPath.path(path);
@@ -53,19 +49,19 @@ public interface Wonton {
 			return new StringWonton(object.toString());
 		}
 		if(object instanceof Map) {
-			return new MapWrapper((Map<String, ?>) object);
+			return AbstractMapWonton.wontonOf((Map<String, ?>) object);
 		}
 		if(object instanceof Iterable) {
-			return new ListWrapper(Lists.toList((Iterable<?>) object));
+			return AbstractListWonton.wontonOf(Lists.toList((Iterable<?>) object));
 		}
 		if(object instanceof Object[]) {
-			return new ListWrapper(Arrays.asList((Object[]) object));
+			return AbstractListWonton.wontonOf(Arrays.asList((Object[]) object));
 		}
 		if(object.getClass().isArray()) {
-			return new ListWrapper(Lists.reflectiveList(object));
+			return AbstractListWonton.wontonOf(Lists.reflectiveList(object));
 		}
 		if(object.getClass().isAnnotationPresent(MapEntries.class)) {
-			return new MapWrapper(ObjectMap.mapOf(object));
+			return AbstractMapWonton.wontonOf(ObjectMap.mapOf(object));
 		}
 		throw new IllegalArgumentException("No standard transformation for " + object.getClass());
 	}
@@ -94,23 +90,33 @@ public interface Wonton {
 	}
 
 	public interface Mutable {
-		Mutable set(Path path, Wonton value);
-
-		default Mutable set(final String path, final Object value) {
-			return set(path(path), wontonOf(value));
+		default Mutable set(Path path, Wonton value){
+			assert path != null && !path.isEmpty();
+			if(path.tail().isEmpty()){
+				set(path.key(), value);
+			}else{
+				getOrCreate(path.key()).set(path.tail(), value);
+			}
+			return this;
 		}
 
-		Mutable append(Path path, Wonton value);
+		Mutable getOrCreate(String key);
 
-		default Mutable append(final String path, final Object value) {
-			return append(path(path), wontonOf(value));
+		Mutable set(final String key, final Wonton value);
+
+		default Mutable append(Path path, Wonton value){
+			assert path != null;
+			if(path.isEmpty()){
+				append(value);
+			}else{
+				getOrCreate(path.key()).append(path.tail(), value);
+			}
+			return this;
 		}
+
+		Mutable append(final Wonton value);
 
 		Wonton build();
-	}
-
-	public interface Factory {
-		Wonton wontonOf(Object value);
 	}
 
 	public enum Type {
@@ -129,6 +135,116 @@ public interface Wonton {
 		public Object valueOf(final Wonton wonton) {
 			return value.apply(wonton);
 		}
+	}
+
+	public interface WVoid extends Wonton{
+		@Override
+		default Type type(){
+			return Type.VOID;
+		}
+
+		@Override
+		default String asString(){
+			return null;
+		}
+
+		@Override
+		default Boolean asBoolean(){
+			return null;
+		}
+
+		@Override
+		default List<? extends Wonton> asArray(){
+			return null;
+		}
+
+		@Override
+		default Map<String, ? extends Wonton> asStruct(){
+			return null;
+		}
+
+		@Override
+		default Number asNumber(){
+			return null;
+		}
+	}
+
+	public interface WString extends Wonton{
+		@Override
+		default Type type(){
+			return Type.STRING;
+		}
+
+		@Override
+		String asString();
+	}
+
+	public interface WBoolean extends Wonton{
+		@Override
+		default Type type(){
+			return Type.BOOLEAN;
+		}
+
+		@Override
+		Boolean asBoolean();
+	}
+
+	public interface WNumber extends Wonton{
+		@Override
+		default Type type(){
+			return Type.NUMBER;
+		}
+
+		@Override
+		Number asNumber();
+	}
+
+	public interface WStruct extends Wonton{
+		@Override
+		default Type type(){
+			return Type.STRUCT;
+		}
+
+		@Override
+		Map<String, ? extends Wonton> asStruct();
+
+		@Override
+		default Wonton get(final String key){
+			return asStruct().get(key);
+		}
+
+		@Override
+		void accept(final Visitor visitor);
+	}
+
+	public interface WArray extends Wonton{
+		@Override
+		default Type type(){
+			return Type.ARRAY;
+		}
+
+		@Override
+		List<? extends Wonton> asArray();
+
+		@Override
+		default Wonton get(final String key){
+			try {
+				return get(Integer.parseInt(key));
+			}catch(NumberFormatException e){
+				throw new NoSuchPathException(e);
+			}
+		}
+
+		default Wonton get(int index){
+			try{
+				return asArray().get(index);
+			}catch(IndexOutOfBoundsException e){
+				throw new NoSuchPathException(e);
+			}
+		}
+
+		@Override
+		void accept(final Visitor visitor);
 	}
 
 	public class InvalidTypeException extends RuntimeException {
@@ -171,8 +287,18 @@ public interface Wonton {
 	Type type();
 
 	default Wonton get(final Path path) {
-		throw new NoSuchPathException(path);
+		assert path != null;
+		Wonton elm = this;
+		for(Path p = path; !p.isEmpty(); p = p.tail()){
+			elm = elm.get(p.key());
+			if(elm == null) {
+				throw new NoSuchPathException(path);
+			}
+		}
+		return elm;
 	}
+
+	default Wonton get(final String key) { return null;}
 
 	default void accept(final Visitor visitor) {
 		// do nothing

@@ -1,19 +1,15 @@
 package org.echovantage.test;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonMap;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.echovantage.sample.SampleMapObject;
+import org.echovantage.wonton.Wonton;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.echovantage.sample.SampleMapObject;
-import org.echovantage.wonton.Wonton;
-import org.junit.Test;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static org.junit.Assert.*;
 
 public class WontonTest {
 	@Test
@@ -33,11 +29,11 @@ public class WontonTest {
 		final Wonton wonton = Wonton.wontonOf(true);
 		assertEquals(Wonton.Type.BOOLEAN, wonton.type());
 		assertTrue((Boolean) wonton.value());
-		assertWrongType(() -> wonton.asArray());
+		assertWrongType(wonton::asArray);
 		assertEquals(true, wonton.asBoolean());
-		assertWrongType(() -> wonton.asNumber());
-		assertWrongType(() -> wonton.asStruct());
-		assertWrongType(() -> wonton.asString());
+		assertWrongType(wonton::asNumber);
+		assertWrongType(wonton::asStruct);
+		assertWrongType(wonton::asString);
 	}
 
 	@Test
@@ -45,11 +41,11 @@ public class WontonTest {
 		final Wonton wonton = Wonton.wontonOf(false);
 		assertEquals(Wonton.Type.BOOLEAN, wonton.type());
 		assertFalse((Boolean) wonton.value());
-		assertWrongType(() -> wonton.asArray());
+		assertWrongType(wonton::asArray);
 		assertEquals(false, wonton.asBoolean());
-		assertWrongType(() -> wonton.asNumber());
-		assertWrongType(() -> wonton.asStruct());
-		assertWrongType(() -> wonton.asString());
+		assertWrongType(wonton::asNumber);
+		assertWrongType(wonton::asStruct);
+		assertWrongType(wonton::asString);
 	}
 
 	@Test
@@ -57,11 +53,11 @@ public class WontonTest {
 		final Wonton wonton = Wonton.wontonOf(5.3);
 		assertEquals(Wonton.Type.NUMBER, wonton.type());
 		assertEquals(5.3, wonton.value());
-		assertWrongType(() -> wonton.asArray());
-		assertWrongType(() -> wonton.asBoolean());
+		assertWrongType(wonton::asArray);
+		assertWrongType(wonton::asBoolean);
 		assertEquals(5.3, wonton.asNumber());
-		assertWrongType(() -> wonton.asStruct());
-		assertWrongType(() -> wonton.asString());
+		assertWrongType(wonton::asStruct);
+		assertWrongType(wonton::asString);
 	}
 
 	@Test
@@ -69,11 +65,11 @@ public class WontonTest {
 		final Wonton wonton = Wonton.wontonOf(5);
 		assertEquals(Wonton.Type.NUMBER, wonton.type());
 		assertEquals(5, wonton.value());
-		assertWrongType(() -> wonton.asArray());
-		assertWrongType(() -> wonton.asBoolean());
+		assertWrongType(wonton::asArray);
+		assertWrongType(wonton::asBoolean);
 		assertEquals(5, wonton.asNumber());
-		assertWrongType(() -> wonton.asStruct());
-		assertWrongType(() -> wonton.asString());
+		assertWrongType(wonton::asStruct);
+		assertWrongType(wonton::asString);
 	}
 
 	@Test
@@ -81,10 +77,10 @@ public class WontonTest {
 		final Wonton wonton = Wonton.wontonOf("Hello, World!");
 		assertEquals(Wonton.Type.STRING, wonton.type());
 		assertEquals("Hello, World!", wonton.value());
-		assertWrongType(() -> wonton.asArray());
-		assertWrongType(() -> wonton.asBoolean());
-		assertWrongType(() -> wonton.asNumber());
-		assertWrongType(() -> wonton.asStruct());
+		assertWrongType(wonton::asArray);
+		assertWrongType(wonton::asBoolean);
+		assertWrongType(wonton::asNumber);
+		assertWrongType(wonton::asStruct);
 		assertEquals("Hello, World!", wonton.asString());
 	}
 
@@ -94,15 +90,15 @@ public class WontonTest {
 		assertEquals(Wonton.Type.ARRAY, wonton.type());
 		assertEquals(asList(Wonton.wontonOf(1), Wonton.wontonOf(2), Wonton.wontonOf(3)), wonton.value());
 		assertEquals(wonton.value(), wonton.asArray());
-		assertWrongType(() -> wonton.asBoolean());
-		assertWrongType(() -> wonton.asNumber());
-		assertWrongType(() -> wonton.asStruct());
-		assertWrongType(() -> wonton.asString());
+		assertWrongType(wonton::asBoolean);
+		assertWrongType(wonton::asNumber);
+		assertWrongType(wonton::asStruct);
+		assertWrongType(wonton::asString);
 		assertEquals(Wonton.wontonOf(1), wonton.get(Wonton.path("[0]")));
-		assertEquals(Wonton.wontonOf(1), wonton.get(Wonton.pathOf("0")));
-		assertNoKey(() -> wonton.get(Wonton.pathOf("12")));
+		assertEquals(Wonton.wontonOf(1), wonton.get("0"));
+		assertNoKey(() -> wonton.get("12"));
 		assertNoKey(() -> wonton.get(Wonton.path("[9]")));
-		assertNoKey(() -> wonton.get(Wonton.pathOf("bob")));
+		assertNoKey(() -> wonton.get("bob"));
 		wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
 	}
 
@@ -112,10 +108,10 @@ public class WontonTest {
 		assertEquals(Wonton.Type.ARRAY, wonton.type());
 		assertEquals(asList(Wonton.wontonOf(1), Wonton.wontonOf(2), Wonton.wontonOf(3)), wonton.value());
 		assertEquals(wonton.value(), wonton.asArray());
-		assertWrongType(() -> wonton.asBoolean());
-		assertWrongType(() -> wonton.asNumber());
-		assertWrongType(() -> wonton.asStruct());
-		assertWrongType(() -> wonton.asString());
+		assertWrongType(wonton::asBoolean);
+		assertWrongType(wonton::asNumber);
+		assertWrongType(wonton::asStruct);
+		assertWrongType(wonton::asString);
 	}
 
 	@Test
@@ -124,10 +120,10 @@ public class WontonTest {
 		assertEquals(Wonton.Type.ARRAY, wonton.type());
 		assertEquals(asList(Wonton.wontonOf(1), Wonton.wontonOf(2), Wonton.wontonOf(3)), wonton.value());
 		assertEquals(wonton.value(), wonton.asArray());
-		assertWrongType(() -> wonton.asBoolean());
-		assertWrongType(() -> wonton.asNumber());
-		assertWrongType(() -> wonton.asStruct());
-		assertWrongType(() -> wonton.asString());
+		assertWrongType(wonton::asBoolean);
+		assertWrongType(wonton::asNumber);
+		assertWrongType(wonton::asStruct);
+		assertWrongType(wonton::asString);
 	}
 
 	@Test
@@ -135,11 +131,11 @@ public class WontonTest {
 		final Wonton wonton = Wonton.wontonOf(singletonMap("bob", "hope"));
 		assertEquals(Wonton.Type.STRUCT, wonton.type());
 		assertEquals(singletonMap("bob", Wonton.wontonOf("hope")), wonton.value());
-		assertWrongType(() -> wonton.asArray());
-		assertWrongType(() -> wonton.asBoolean());
-		assertWrongType(() -> wonton.asNumber());
+		assertWrongType(wonton::asArray);
+		assertWrongType(wonton::asBoolean);
+		assertWrongType(wonton::asNumber);
 		assertEquals(wonton.value(), wonton.asStruct());
-		assertWrongType(() -> wonton.asString());
+		assertWrongType(wonton::asString);
 		assertEquals(Wonton.wontonOf("hope"), wonton.get(Wonton.path("bob")));
 		assertEquals(Wonton.wontonOf("hope"), wonton.get(Wonton.path("[bob]")));
 		wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
@@ -154,11 +150,11 @@ public class WontonTest {
 		map.put("name", "bob");
 		map.put("description", "hope");
 		assertEquals(Wonton.wontonOf(map).value(), wonton.value());
-		assertWrongType(() -> wonton.asArray());
-		assertWrongType(() -> wonton.asBoolean());
-		assertWrongType(() -> wonton.asNumber());
+		assertWrongType(wonton::asArray);
+		assertWrongType(wonton::asBoolean);
+		assertWrongType(wonton::asNumber);
 		assertEquals(wonton.value(), wonton.asStruct());
-		assertWrongType(() -> wonton.asString());
+		assertWrongType(wonton::asString);
 		assertEquals(Wonton.wontonOf("hope"), wonton.get(Wonton.path("description")));
 		assertEquals(Wonton.wontonOf("bob"), wonton.get(Wonton.path("[name]")));
 		wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
@@ -186,16 +182,16 @@ public class WontonTest {
 	public void testDeep() {
 		final Wonton wonton = Wonton.wontonOf(singletonMap("root", asList(singletonMap("bob", "hope"), singletonMap("bob", "newhart"))));
 		assertEquals(Wonton.Type.STRUCT, wonton.type());
-		assertWrongType(() -> wonton.asArray());
-		assertWrongType(() -> wonton.asBoolean());
-		assertWrongType(() -> wonton.asNumber());
+		assertWrongType(wonton::asArray);
+		assertWrongType(wonton::asBoolean);
+		assertWrongType(wonton::asNumber);
 		assertEquals(wonton.value(), wonton.asStruct());
-		assertWrongType(() -> wonton.asString());
+		assertWrongType(wonton::asString);
 		assertEquals(Wonton.wontonOf(asList(singletonMap("bob", "hope"), singletonMap("bob", "newhart"))), wonton.get(Wonton.path("root")));
 		assertEquals(Wonton.wontonOf(singletonMap("bob", "hope")), wonton.get(Wonton.path("root[0]")));
 		assertEquals(Wonton.wontonOf("hope"), wonton.get(Wonton.path("root[0].bob")));
 		assertEquals(Wonton.wontonOf("newhart"), wonton.get(Wonton.path("[root][1][bob]")));
-		assertEquals(Wonton.wontonOf("newhart"), wonton.get(Wonton.pathOf("root", "1", "bob")));
+		assertEquals(Wonton.wontonOf("newhart"), wonton.get("root").get("1").get("bob"));
 		assertEquals(Wonton.wontonOf("hope"), wonton.get(Wonton.path("root.0.bob")));
 		wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
 	}

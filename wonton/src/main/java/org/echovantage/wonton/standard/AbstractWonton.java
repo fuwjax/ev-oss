@@ -1,17 +1,12 @@
 package org.echovantage.wonton.standard;
 
-import java.util.Objects;
-
 import org.echovantage.wonton.Wonton;
+
+import java.util.Objects;
 
 public abstract class AbstractWonton implements Wonton {
 	@Override
 	public abstract String toString();
-
-	@Override
-	public final Object value() {
-		return type().valueOf(this);
-	}
 
 	@Override
 	public final boolean equals(final Object obj) {
@@ -28,6 +23,6 @@ public abstract class AbstractWonton implements Wonton {
 	}
 
 	protected Object id(final Wonton value) {
-		return type().valueOf(value);
+		return value();
 	}
 }

@@ -1,6 +1,8 @@
 package org.echovantage.wonton.standard;
 
-public class StringWonton extends AbstractWonton {
+import org.echovantage.wonton.Wonton;
+
+public class StringWonton extends AbstractWonton implements Wonton.WString {
 	public static String escape(final String value) {
 		return '"' + value
 				.replaceAll("\\\\", "\\\\")
@@ -18,11 +20,6 @@ public class StringWonton extends AbstractWonton {
 	public StringWonton(final String value) {
 		assert value != null;
 		this.value = value;
-	}
-
-	@Override
-	public Type type() {
-		return Type.STRING;
 	}
 
 	@Override

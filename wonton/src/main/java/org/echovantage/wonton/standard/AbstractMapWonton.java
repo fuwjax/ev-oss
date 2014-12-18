@@ -1,23 +1,24 @@
 package org.echovantage.wonton.standard;
 
-import static org.echovantage.wonton.standard.StringWonton.escape;
+import org.echovantage.util.MapDecorator;
+import org.echovantage.wonton.Wonton;
 
 import java.util.Map;
 
-import org.echovantage.wonton.Wonton;
+import static org.echovantage.wonton.standard.StringWonton.escape;
 
-public abstract class AbstractMapWonton extends AbstractContainerWonton {
-	@Override
-	public final Type type() {
-		return Type.STRUCT;
+public abstract class AbstractMapWonton extends AbstractContainerWonton implements Wonton.WStruct {
+	public static Wonton wrap(Map<String, ? extends Wonton> map){
+		return new AbstractMapWonton() {
+			@Override
+			public Map<String, ? extends Wonton> asStruct() {
+				return map;
+			}
+		};
 	}
 
-	@Override
-	public abstract Map<String, ? extends Wonton> asStruct();
-
-	@Override
-	protected final Wonton get(final String shallowKey) {
-		return asStruct().get(shallowKey);
+	public static Wonton wontonOf(Map<String, ?> map){
+		return wrap(new MapDecorator<>(map, Wonton::wontonOf));
 	}
 
 	@Override

@@ -1,16 +1,13 @@
 package org.echovantage.wonton.standard;
 
 
-public class BooleanWonton extends AbstractWonton {
+import org.echovantage.wonton.Wonton;
+
+public class BooleanWonton extends AbstractWonton implements Wonton.WBoolean{
 	private final boolean value;
 
 	public BooleanWonton(final boolean value) {
 		this.value = value;
-	}
-
-	@Override
-	public Type type() {
-		return Type.BOOLEAN;
 	}
 
 	@Override
