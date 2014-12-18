@@ -15,7 +15,7 @@ import java.text.ParseException;
 import java.util.function.IntPredicate;
 
 public class WontonParser {
-    private static final IntPredicate WS = Character::isSpaceChar;
+    private static final IntPredicate WS = Character::isWhitespace;
     private static final IntPredicate TERMINALS = WS.or(new IntSet().addAll('{', '[', '"', ':', ',', ']', '}', -1));
     private final Parser stream;
     private final WontonFactory factory;

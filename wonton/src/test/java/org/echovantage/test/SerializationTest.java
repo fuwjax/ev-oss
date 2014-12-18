@@ -47,6 +47,7 @@ public class SerializationTest {
 		assertParse("hello\nworld", "\"hello\\nworld\"");
 		assertParse("hello\\world", "\"hello\\\\world\"");
 		assertParse("𐌀", "\"𐌀\"");
+		assertParse(singletonMap("x", 1), "{\n\tx\n\t\t:\n\t\t\t1\n}");
 	}
 
 	@Test

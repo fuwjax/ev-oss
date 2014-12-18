@@ -23,6 +23,6 @@ public abstract class AbstractWonton implements Wonton {
 	}
 
 	protected Object id(final Wonton value) {
-		return value();
+		return value.value();
 	}
 }
