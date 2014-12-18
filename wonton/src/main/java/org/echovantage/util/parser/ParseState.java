@@ -53,14 +53,19 @@ public class ParseState {
 		}
 
 		@Override
+		public synchronized Throwable getCause() {
+			return super.getCause() instanceof ParseException ? null : super.getCause();
+		}
+
+		@Override
 		public synchronized Throwable fillInStackTrace() {
 			return this;
 		}
 
 		@Override
 		public String getMessage() {
-			if(getCause() != null) {
-				return getCause().getMessage() + "\n" + super.getMessage();
+			if(super.getCause() instanceof ParseException) {
+				return super.getCause().getMessage() + "\n" + super.getMessage();
 			}
 			return super.getMessage();
 		}
