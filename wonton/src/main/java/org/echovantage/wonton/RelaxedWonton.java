@@ -53,7 +53,7 @@ public class RelaxedWonton implements Wonton {
                 }
                 break;
             default:
-                return this;
+                return wonton;
         }
         throw new InvalidTypeException();
     }
