@@ -3,7 +3,7 @@
 
 	<groupId>org.echovantage</groupId>
 	<artifactId>oss</artifactId>
-	<version>0.8-SNAPSHOT</version>
+	<version>0.9-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>EchoVantage Open Source</name>
