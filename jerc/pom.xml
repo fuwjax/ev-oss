@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.echovantage</groupId>
     <artifactId>oss</artifactId>
-    <version>0.11-SNAPSHOT</version>
+    <version>0.11</version>
   </parent>
   <artifactId>jerc</artifactId>
 </project>
