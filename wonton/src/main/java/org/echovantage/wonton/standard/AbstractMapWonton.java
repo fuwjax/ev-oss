@@ -1,6 +1,5 @@
 package org.echovantage.wonton.standard;
 
-import org.echovantage.util.MapDecorator;
 import org.echovantage.wonton.Wonton;
 
 import java.util.Map;
@@ -15,10 +14,6 @@ public abstract class AbstractMapWonton extends AbstractContainerWonton implemen
 				return map;
 			}
 		};
-	}
-
-	public static Wonton wontonOf(Map<String, ?> map){
-		return wrap(new MapDecorator<>(map, Wonton::wontonOf));
 	}
 
 	@Override

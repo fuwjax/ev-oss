@@ -1,6 +1,7 @@
 package org.echovantage.test;
 
 import org.echovantage.wonton.Wonton;
+import org.echovantage.wonton.WontonFactory;
 import org.echovantage.wonton.WontonParser;
 import org.echovantage.wonton.WontonSerial;
 import org.junit.Test;
@@ -66,11 +67,11 @@ public class SerializationTest {
 	}
 
 	private static void assertGet(final String input, final String property, final Object expected) throws Exception {
-		assertEquals(Wonton.wontonOf(expected), new WontonParser(input).parse().get(Wonton.path(property)));
+		assertEquals(WontonFactory.FACTORY.wontonOf(expected), new WontonParser(input).parse().get(Wonton.path(property)));
 	}
 
 	private static void assertParse(final Object value, final String json) throws Exception {
-		assertEquals(Wonton.wontonOf(value), parse(json));
+		assertEquals(WontonFactory.FACTORY.wontonOf(value), parse(json));
 	}
 
 	private static void failParse(final String json, final String message) {
@@ -87,6 +88,6 @@ public class SerializationTest {
 	}
 
 	private static void assertSerial(final Object value, final String json) throws Exception {
-		assertEquals(json, WontonSerial.toString(Wonton.wontonOf(value)));
+		assertEquals(json, WontonSerial.toString(WontonFactory.FACTORY.wontonOf(value)));
 	}
 }

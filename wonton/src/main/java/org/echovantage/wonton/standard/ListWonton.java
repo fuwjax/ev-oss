@@ -1,13 +1,18 @@
 package org.echovantage.wonton.standard;
 
 import org.echovantage.wonton.Wonton;
-import org.echovantage.wonton.Wonton.Mutable;
+import org.echovantage.wonton.WontonFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListWonton extends AbstractListWonton implements Mutable {
+public class ListWonton extends AbstractListWonton implements WontonFactory.MutableArray {
     private final List<Wonton> values = new ArrayList<>();
+    private final WontonFactory factory;
+
+    public ListWonton(WontonFactory factory){
+        this.factory = factory;
+    }
 
     @Override
     public List<Wonton> asArray() {
@@ -15,18 +20,22 @@ public class ListWonton extends AbstractListWonton implements Mutable {
     }
 
     @Override
-    public ListWonton append(final Wonton wonton) {
-        assert wonton != null;
-        values.add(wonton);
-        return this;
+    public Wonton get(int index) {
+        return super.get(index);
     }
 
     @Override
-    public ListWonton set(final String key, final Wonton value) {
-        return set(Integer.parseInt(key), value);
+    public void append(final Wonton wonton) {
+        assert wonton != null;
+        values.add(wonton);
     }
 
-    public ListWonton set(final int index, final Wonton value) {
+    @Override
+    public WontonFactory factory() {
+        return factory;
+    }
+
+    public void set(final int index, final Wonton value) {
         while (index > values.size()) {
             values.add(NULL);
         }
@@ -35,29 +44,10 @@ public class ListWonton extends AbstractListWonton implements Mutable {
         } else {
             values.set(index, value);
         }
-        return this;
-    }
-
-    @Override
-    public Mutable getOrCreate(String key) {
-        int index = Integer.parseInt(key);
-        Wonton child = get(index);
-        if (child == null) {
-            child = new MapWonton();
-            set(index, child);
-        } else if (!(child instanceof Mutable)) {
-            throw new IllegalArgumentException("Cannot mutate " + key);
-        }
-        return (Mutable) child;
     }
 
     public ListWonton remove(final int index) {
         values.remove(index);
-        return this;
-    }
-
-    @Override
-    public Wonton build() {
         return this;
     }
 }

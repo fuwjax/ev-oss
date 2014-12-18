@@ -1,11 +1,11 @@
 package org.echovantage.wonton.standard;
 
-import static org.echovantage.util.Strings.nullOrEmpty;
+import org.echovantage.wonton.Wonton.Path;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.echovantage.wonton.Wonton.Path;
+import static org.echovantage.util.Strings.nullOrEmpty;
 
 public class StandardPath implements Path {
 	public static Path pathOf(final String... keys) {
@@ -30,6 +30,11 @@ public class StandardPath implements Path {
 			return new StandardPath(matcher.group(1));
 		}
 		return new StandardPath(matcher.group(1), path(matcher.group(2)));
+	}
+
+	public static boolean isPath(String maybe){
+		Matcher matcher = KEY.matcher(maybe);
+		return matcher.matches() && !nullOrEmpty(matcher.group(2));
 	}
 
 	private static final Path EMPTY = new StandardPath();

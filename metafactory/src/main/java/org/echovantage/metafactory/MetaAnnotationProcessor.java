@@ -12,23 +12,9 @@
  */
 package org.echovantage.metafactory;
 
-import static org.echovantage.util.Elements.isAssignable;
-import static org.echovantage.util.Elements.isService;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
+import com.sun.tools.javac.util.ServiceLoader;
+import org.echovantage.metafactory.MetaInfContext.MetaInfContract;
+import org.echovantage.util.Elements;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -45,11 +31,23 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
-import org.echovantage.metafactory.MetaInfContext.MetaInfContract;
-import org.echovantage.util.Elements;
-
-import com.sun.tools.javac.util.ServiceLoader;
+import static org.echovantage.util.Elements.isAssignable;
+import static org.echovantage.util.Elements.isService;
 
 /**
  * @author Fuwjax
@@ -113,11 +111,9 @@ public class MetaAnnotationProcessor extends AbstractProcessor {
 					}
 				}
 			} catch(final IOException e) {
-				final Object[] args = { e.getLocalizedMessage() };
-				printMessage(Kind.ERROR, String.format("IO error while processing annotation: %s", args), annotation);
+				printMessage(Kind.ERROR, String.format("IO error while processing annotation: %s", e.getLocalizedMessage()), annotation);
 			} catch(final RuntimeException e) {
-				final Object[] args = { e.getClass(), e.getLocalizedMessage() };
-				printMessage(Kind.ERROR, String.format("Unexpected exception: %s: %s", args), annotation);
+				printMessage(Kind.ERROR, String.format("Unexpected exception: %s: %s", e.getClass(), e.getLocalizedMessage()), annotation);
 				e.printStackTrace();
 			}
 		}
@@ -133,8 +129,7 @@ public class MetaAnnotationProcessor extends AbstractProcessor {
 		if(c.services.isEmpty()) {
 			return;
 		}
-		final Object[] args = {};
-		printMessage(Kind.NOTE, String.format("Writing " + c.metaInfServices(), args));
+		printMessage(Kind.NOTE, String.format("Writing %s", c.metaInfServices()));
 		try {
 			loadExisting(c);
 			final FileObject metainfServices = createResource(StandardLocation.CLASS_OUTPUT, "", c.metaInfServices(), c.origins());
@@ -145,11 +140,9 @@ public class MetaAnnotationProcessor extends AbstractProcessor {
 				}
 			}
 		} catch(final IOException e) {
-			final Object[] args1 = { e.getLocalizedMessage() };
-			printMessage(Kind.ERROR, String.format("IO error while writing to meta-inf/services: %s", args1), c.contract);
+			printMessage(Kind.ERROR, String.format("IO error while writing to meta-inf/services: %s", e.getLocalizedMessage()), c.contract);
 		} catch(final RuntimeException e) {
-			final Object[] args1 = { e.getClass(), e.getLocalizedMessage() };
-			printMessage(Kind.ERROR, String.format("Unexpected exception: %s: %s", args1), c.contract);
+			printMessage(Kind.ERROR, String.format("Unexpected exception: %s: %s", e.getClass(), e.getLocalizedMessage()), c.contract);
 			e.printStackTrace();
 		}
 	}
@@ -166,8 +159,7 @@ public class MetaAnnotationProcessor extends AbstractProcessor {
 					if(isService(type) && isAssignable(c.contract, type)) {
 						c.add(line);
 					} else {
-						final Object[] args = { type, c.contract };
-						printMessage(Kind.ERROR, String.format("Existing service factory %s is not a public concrete class with a default constructor implementing %s, removing it from meta-inf/services", args), c.contract);
+						printMessage(Kind.ERROR, String.format("Existing service factory %s is not a public concrete class with a default constructor implementing %s, removing it from meta-inf/services", type, c.contract), c.contract);
 					}
 				}
 			}

@@ -1,6 +1,5 @@
 package org.echovantage.wonton.standard;
 
-import org.echovantage.util.ListDecorator;
 import org.echovantage.wonton.Wonton;
 
 import java.util.List;
@@ -13,10 +12,6 @@ public abstract class AbstractListWonton extends AbstractContainerWonton impleme
                 return list;
             }
         };
-    }
-
-    public static Wonton wontonOf(List<?> list) {
-        return wrap(new ListDecorator<>(list, Wonton::wontonOf));
     }
 
     @Override

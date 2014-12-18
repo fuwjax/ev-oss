@@ -6,10 +6,6 @@ import org.echovantage.util.parser.IntReader;
 import org.echovantage.util.parser.ParseState;
 import org.echovantage.util.parser.Parser;
 import org.echovantage.util.serial.IntWriter;
-import org.echovantage.wonton.standard.ListWonton;
-import org.echovantage.wonton.standard.MapWonton;
-import org.echovantage.wonton.standard.NumberWonton;
-import org.echovantage.wonton.standard.StringWonton;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,9 +18,10 @@ public class WontonParser {
     private static final IntPredicate WS = Character::isSpaceChar;
     private static final IntPredicate TERMINALS = WS.or(new IntSet().addAll('{', '[', '"', ':', ',', ']', '}', -1));
     private final Parser stream;
+    private final WontonFactory factory;
 
     public WontonParser(final IntReader stream) {
-        this.stream = new Parser(stream);
+        this(stream, WontonFactory.FACTORY);
     }
 
     public WontonParser(final ByteBuffer buffer) {
@@ -43,6 +40,11 @@ public class WontonParser {
         this(IntReader.codepoints(input));
     }
 
+    public WontonParser(IntReader stream, WontonFactory factory) {
+        this.stream = new Parser(stream);
+        this.factory = factory;
+    }
+
     public Wonton parse() throws ParseException, IOException {
         return parseValue();
     }
@@ -55,7 +57,7 @@ public class WontonParser {
             case '[':
                 return parseArray();
             case '"':
-                return new StringWonton(parseString());
+                return factory.wontonOf(parseString());
             default:
                 //continue
         }
@@ -91,7 +93,7 @@ public class WontonParser {
                 } catch (NumberFormatException e) {
                     throw start.fail("Value expected");
                 }
-                return new NumberWonton(number);
+                return factory.wontonOf(number);
         }
     }
 
@@ -144,7 +146,7 @@ public class WontonParser {
     private Wonton parseObject() throws IOException, ParseException {
         ParseState start = stream.expect('{');
         try {
-            MapWonton wonton = new MapWonton();
+            WontonFactory.MutableWonton wonton = factory.newStruct();
             if (!stream.skip(WS).isa('}')) {
                 do {
                     String key = parseKey();
@@ -163,7 +165,7 @@ public class WontonParser {
     private Wonton parseArray() throws IOException, ParseException {
         ParseState start = stream.expect('[');
         try {
-            ListWonton wonton = new ListWonton();
+            WontonFactory.MutableArray wonton = factory.newArray();
             if (!stream.skip(WS).isa(']')) {
                 do {
                     Wonton value = parseValue();
