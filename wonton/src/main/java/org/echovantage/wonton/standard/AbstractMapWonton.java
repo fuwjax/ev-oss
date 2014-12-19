@@ -26,11 +26,11 @@ public abstract class AbstractMapWonton extends AbstractContainerWonton implemen
 	@Override
 	public final String toString() {
 		final StringBuilder builder = new StringBuilder("{");
-		String delim = "";
+		String delim = "\n\t";
 		for(final Map.Entry<String, ? extends Wonton> entry : asStruct().entrySet()) {
-			builder.append(delim).append(escape(entry.getKey())).append(":").append(entry.getValue());
-			delim = ",";
+			builder.append(delim).append(escape(entry.getKey())).append(":").append(entry.getValue().toString().replaceAll("\n","\n\t"));
+			delim = ",\n\t";
 		}
-		return builder.append("}").toString();
+		return builder.append("\n}").toString();
 	}
 }

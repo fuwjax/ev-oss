@@ -25,11 +25,11 @@ public abstract class AbstractListWonton extends AbstractContainerWonton impleme
     @Override
     public final String toString() {
         final StringBuilder builder = new StringBuilder("[");
-        String delim = "";
+        String delim = "\n\t";
         for (final Wonton v : asArray()) {
-            builder.append(delim).append(v);
-            delim = ",";
+            builder.append(delim).append(v.toString().replaceAll("\n","\n\t"));
+            delim = ",\n\t";
         }
-        return builder.append("]").toString();
+        return builder.append("\n]").toString();
     }
 }
