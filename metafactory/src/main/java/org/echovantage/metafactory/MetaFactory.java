@@ -12,25 +12,26 @@
  */
 package org.echovantage.metafactory;
 
-import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
-import static java.lang.annotation.RetentionPolicy.SOURCE;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.RetentionPolicy.CLASS;
+
 /**
  * Indicates that this class name should be listed into the <tt>META-INF/services/CONTRACTNAME</tt>.
- * <p>
+ * <p/>
  * If the class for which this annotation is placaed only have one base class or one interface, then the CONTRACTNAME is
  * the fully qualified name of that type.
- * <p>
+ * <p/>
  * Otherwise, the {@link #value()} element is required to specify the contract type name.
+ *
  * @author Kohsuke Kawaguchi
  */
-@Retention(SOURCE)
+@Retention(CLASS)
 @Documented
 @Target(ANNOTATION_TYPE)
 public @interface MetaFactory {
-	Class<?> value() default void.class;
+    Class<?> value() default void.class;
 }

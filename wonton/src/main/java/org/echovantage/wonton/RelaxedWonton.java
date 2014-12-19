@@ -13,8 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 public class RelaxedWonton implements Wonton {
+    public static Wonton RELAXED_NULL = new RelaxedWonton(NULL);
     public static Wonton relaxed(Wonton wonton) {
-        return wonton == null ? NULL : wonton instanceof RelaxedWonton ? (RelaxedWonton) wonton : new RelaxedWonton(wonton);
+        return wonton == null ? RELAXED_NULL : wonton instanceof RelaxedWonton ? (RelaxedWonton) wonton : new RelaxedWonton(wonton);
     }
 
     private final Wonton wonton;

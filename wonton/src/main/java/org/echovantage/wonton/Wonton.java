@@ -203,6 +203,11 @@ public interface Wonton {
         throw new InvalidTypeException();
     }
 
+    default Integer asInteger() { return asNumber() == null ? null : asNumber().intValue();}
+    default Long asLong() { return asNumber() == null ? null : asNumber().longValue();}
+    default Float asFloat() { return asNumber() == null ? null : asNumber().floatValue();}
+    default Double asDouble() { return asNumber() == null ? null : asNumber().doubleValue();}
+
     default Map<String, ? extends Wonton> asStruct() {
         throw new InvalidTypeException();
     }

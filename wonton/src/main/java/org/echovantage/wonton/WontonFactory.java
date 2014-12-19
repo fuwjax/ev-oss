@@ -45,6 +45,18 @@ public interface WontonFactory {
             set(Wonton.path(path), factory().wontonOf(value));
             return this;
         }
+
+        default MutableWonton newStruct(String path){
+            MutableWonton wonton = factory().newStruct();
+            set(Wonton.path(path), wonton);
+            return wonton;
+        }
+
+        default MutableArray newArray(String path){
+            MutableArray wonton = factory().newArray();
+            set(Wonton.path(path), wonton);
+            return wonton;
+        }
     }
 
     public interface MutableArray extends MutableWonton{

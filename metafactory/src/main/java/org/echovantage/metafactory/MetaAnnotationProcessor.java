@@ -46,16 +46,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static org.echovantage.util.Elements.isAssignable;
-import static org.echovantage.util.Elements.isService;
-
 /**
  * @author Fuwjax
  */
 @SupportedAnnotationTypes("*")
 public class MetaAnnotationProcessor extends AbstractProcessor {
 	private final Map<String, MetaContract> metas = new HashMap<>();
-	private final ServiceLoader<AnnotationProcessor> processors = ServiceLoader.load(AnnotationProcessor.class);
+	private final ServiceLoader<AnnotationProcessor> processors = ServiceLoader.load(AnnotationProcessor.class, getClass().getClassLoader());
 
 	private class MetaContext implements MetaInfContext {
 		private final RoundEnvironment roundEnv;
@@ -102,6 +99,9 @@ public class MetaAnnotationProcessor extends AbstractProcessor {
 
 	@Override
 	public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {
+		if(!processors.iterator().hasNext()){
+			throw new RuntimeException("Could not find any " + AnnotationProcessor.class.getName() + " services");
+		}
 		final MetaInfContext context = new MetaContext(roundEnv);
 		for(final TypeElement annotation : annotations) {
 			try {
@@ -129,9 +129,9 @@ public class MetaAnnotationProcessor extends AbstractProcessor {
 		if(c.services.isEmpty()) {
 			return;
 		}
-		printMessage(Kind.NOTE, String.format("Writing %s", c.metaInfServices()));
+		printMessage(Kind.NOTE, String.format("Writing %s: %s", c.metaInfServices(), c.services));
 		try {
-			loadExisting(c);
+			loadExisting(StandardLocation.CLASS_OUTPUT, c);
 			final FileObject metainfServices = createResource(StandardLocation.CLASS_OUTPUT, "", c.metaInfServices(), c.origins());
 			try(Writer writer = metainfServices.openWriter();
 			      PrintWriter pw = new PrintWriter(writer)) {
@@ -147,20 +147,15 @@ public class MetaAnnotationProcessor extends AbstractProcessor {
 		}
 	}
 
-	private void loadExisting(final MetaContract c) throws IOException {
+	private void loadExisting(Location location, final MetaContract c) throws IOException {
 		try {
-			final FileObject f = getResource(StandardLocation.SOURCE_PATH, "", c.metaInfServices());
+			final FileObject f = getResource(location, "", c.metaInfServices());
 			try(InputStream input = f.openInputStream();
 			      Reader reader = new InputStreamReader(input, "UTF-8");
 			      final BufferedReader r = new BufferedReader(reader)) {
 				String line;
 				while((line = r.readLine()) != null) {
-					final TypeElement type = getTypeElement(line);
-					if(isService(type) && isAssignable(c.contract, type)) {
-						c.add(line);
-					} else {
-						printMessage(Kind.ERROR, String.format("Existing service factory %s is not a public concrete class with a default constructor implementing %s, removing it from meta-inf/services", type, c.contract), c.contract);
-					}
+					c.services.add(line);
 				}
 			}
 		} catch(final FileNotFoundException x) {
@@ -228,10 +223,12 @@ public class MetaAnnotationProcessor extends AbstractProcessor {
 	}
 
 	void printMessage(final Diagnostic.Kind kind, final CharSequence msg) {
+		System.out.println("INFO " + msg);
 		processingEnv.getMessager().printMessage(kind, msg);
 	}
 
 	void printMessage(final Diagnostic.Kind kind, final CharSequence msg, final Element e) {
+		System.err.println("ERROR " + msg);
 		processingEnv.getMessager().printMessage(kind, msg, e);
 	}
 }
