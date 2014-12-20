@@ -118,9 +118,7 @@ public class MetaAnnotationProcessor extends AbstractProcessor {
 			}
 		}
 		if(roundEnv.processingOver()) {
-			for(final MetaContract factory : metas.values()) {
-				writeMetaInfServices(factory);
-			}
+			metas.values().forEach(this::writeMetaInfServices);
 		}
 		return false;
 	}
@@ -135,9 +133,7 @@ public class MetaAnnotationProcessor extends AbstractProcessor {
 			final FileObject metainfServices = createResource(StandardLocation.CLASS_OUTPUT, "", c.metaInfServices(), c.origins());
 			try(Writer writer = metainfServices.openWriter();
 			      PrintWriter pw = new PrintWriter(writer)) {
-				for(final String value : c.services) {
-					pw.println(value);
-				}
+				c.services.forEach(pw::println);
 			}
 		} catch(final IOException e) {
 			printMessage(Kind.ERROR, String.format("IO error while writing to meta-inf/services: %s", e.getLocalizedMessage()), c.contract);

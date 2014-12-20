@@ -17,7 +17,7 @@ public class NumberWonton extends AbstractWonton implements Wonton.WNumber {
 
 	@Override
 	protected Object id(final Wonton wonton) {
-		return wonton.asNumber().doubleValue();
+		return wonton.asDouble();
 	}
 
 	@Override

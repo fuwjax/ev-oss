@@ -1,11 +1,6 @@
 package org.echovantage.gild.stage;
 
-import static org.echovantage.gild.stage.StandardStageFactory.FileType.FINAL_OUTPUT;
-import static org.echovantage.gild.stage.StandardStageFactory.FileType.RAW_OUTPUT;
-import static org.echovantage.gild.stage.StandardStageFactory.FileType.TEST_DATA;
-import static org.echovantage.gild.stage.StandardStageFactory.StageState.PREPARE;
-import static org.echovantage.gild.stage.StandardStageFactory.StageState.PRESERVE;
-import static org.echovantage.util.Files2.delete;
+import org.junit.runner.Description;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -13,7 +8,12 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.runner.Description;
+import static org.echovantage.gild.stage.StandardStageFactory.FileType.FINAL_OUTPUT;
+import static org.echovantage.gild.stage.StandardStageFactory.FileType.RAW_OUTPUT;
+import static org.echovantage.gild.stage.StandardStageFactory.FileType.TEST_DATA;
+import static org.echovantage.gild.stage.StandardStageFactory.StageState.PREPARE;
+import static org.echovantage.gild.stage.StandardStageFactory.StageState.PRESERVE;
+import static org.echovantage.util.Files2.delete;
 
 public class StandardStageFactory implements StageFactory {
 	public enum StageState {
@@ -46,7 +46,7 @@ public class StandardStageFactory implements StageFactory {
 		return Arrays.asList(path(FileType.FINAL_OUTPUT, desc), path(FileType.RAW_OUTPUT, desc));
 	}
 
-	private final Stage stage(final Description desc, final String stage) {
+	private Stage stage(final Description desc, final String stage) {
 		return new Stage() {
 			@Override
 			public Path comparePath(final String service) {

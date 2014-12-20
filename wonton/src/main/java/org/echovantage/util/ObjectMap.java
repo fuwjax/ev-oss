@@ -15,7 +15,7 @@ public class ObjectMap {
 		Class<? extends Enum<?>> value();
 	}
 
-	public static Map<String, Object> mapOf(final Object o) {
+	public static <T> Map<String, Object> mapOf(final T o) {
 		if(o == null) {
 			return null;
 		}
@@ -23,9 +23,9 @@ public class ObjectMap {
 			throw new IllegalArgumentException("class must be annotated with @MapEntries");
 		}
 		final MapEntries entries = o.getClass().getAnnotation(MapEntries.class);
-		final Map<String, Function> map = new HashMap<>();
+		final Map<String, Function<T, ?>> map = new HashMap<>();
 		for(final Object prop : entries.value().getEnumConstants()) {
-			map.put(prop.toString(), (Function)prop);
+			map.put(prop.toString(), (Function<T,?>)prop);
 		}
 		return new MapDecorator<>(map, f -> f.apply(o));
 	}

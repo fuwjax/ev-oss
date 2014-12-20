@@ -1,8 +1,5 @@
 package org.echovantage.util;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -13,6 +10,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Elements {
 	public static boolean hasConstructor(final TypeElement type, final ExecutableElement signature) {
@@ -62,16 +61,13 @@ public class Elements {
 	}
 
 	public static boolean isService(final TypeElement type) {
-		if(!type.getKind().isClass()) {
+		if (!type.getKind().isClass()) {
 			return false;
 		}
-		if(isAbstract(type)) {
+		if (isAbstract(type)) {
 			return false;
 		}
-		if(isNested(type) && !isStatic(type)) {
-			return false;
-		}
-		return hasPublicDefaultConstructor(type);
+		return !(isNested(type) && !isStatic(type)) && hasPublicDefaultConstructor(type);
 	}
 
 	public static boolean isStatic(final TypeElement type) {

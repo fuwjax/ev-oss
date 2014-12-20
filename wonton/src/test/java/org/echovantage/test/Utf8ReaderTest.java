@@ -12,7 +12,7 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 
 public class Utf8ReaderTest {
-    private static Charset UTF_8 = Charset.forName("UTF-8");
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
 
     @Test
     public void testReader() throws IOException {

@@ -10,13 +10,15 @@
  ******************************************************************************/
 package org.echovantage.compile;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.enumeration;
-import static java.util.Collections.singleton;
-import static javax.tools.ToolProvider.getSystemJavaCompiler;
-import static org.echovantage.compile.file.BaseFileObject.kindOf;
-import static org.echovantage.compile.file.BaseFileObject.toUri;
+import org.echovantage.compile.file.ClassFileObject;
+import org.echovantage.compile.file.StringSourceFileObject;
 
+import javax.tools.FileObject;
+import javax.tools.ForwardingJavaFileManager;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
+import javax.tools.StandardJavaFileManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,16 +42,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
-import javax.tools.FileObject;
-import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
-import javax.tools.StandardJavaFileManager;
-
-import org.echovantage.compile.file.ClassFileObject;
-import org.echovantage.compile.file.StringSourceFileObject;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
+import static javax.tools.ToolProvider.getSystemJavaCompiler;
+import static org.echovantage.compile.file.BaseFileObject.kindOf;
+import static org.echovantage.compile.file.BaseFileObject.toUri;
 
 /**
  * A ClassLoader which compiles source code at runtime in memory.
@@ -141,10 +140,7 @@ public class RuntimeClassLoader extends ClassLoader {
 	 * @return true if the source code compiled, false otherwise
 	 */
 	public boolean compile(final Map<String, String> sources, final String... options) {
-		final Set<StringSourceFileObject> compUnit = new HashSet<>();
-		for(final Map.Entry<String, String> entry : sources.entrySet()) {
-			compUnit.add(new StringSourceFileObject(entry.getKey(), entry.getValue()));
-		}
+		final Set<StringSourceFileObject> compUnit = sources.entrySet().stream().map(entry -> new StringSourceFileObject(entry.getKey(), entry.getValue())).collect(Collectors.toSet());
 		return compile(compUnit, options);
 	}
 

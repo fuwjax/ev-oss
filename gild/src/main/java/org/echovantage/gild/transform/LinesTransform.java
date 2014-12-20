@@ -28,9 +28,7 @@ public abstract class LinesTransform implements StreamTransform {
 
 	private static void writeLines(final OutputStream output, final Charset charset, final List<String> lines) {
 		try(final PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, charset))) {
-			for(final String line : lines) {
-				writer.println(line);
-			}
+			lines.forEach(writer::println);
 		}
 	}
 

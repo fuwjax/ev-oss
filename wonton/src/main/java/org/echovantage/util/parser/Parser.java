@@ -1,12 +1,14 @@
 package org.echovantage.util.parser;
 
+import org.echovantage.util.Strings;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.function.IntPredicate;
 
-import org.echovantage.util.Strings;
-
 public class Parser {
+	public static final IntPredicate EOF = cp -> cp == -1;
+
 	private long line = 1;
 	private long column;
 	private long offset;

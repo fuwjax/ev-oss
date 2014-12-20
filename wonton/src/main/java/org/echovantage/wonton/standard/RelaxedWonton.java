@@ -1,10 +1,10 @@
-package org.echovantage.wonton;
+package org.echovantage.wonton.standard;
 
 import org.echovantage.util.AccessListDecorator;
 import org.echovantage.util.AccessMapDecorator;
 import org.echovantage.util.ListDecorator;
 import org.echovantage.util.MapDecorator;
-import org.echovantage.wonton.standard.StandardPath;
+import org.echovantage.wonton.Wonton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public class RelaxedWonton implements Wonton {
-    public static Wonton RELAXED_NULL = new RelaxedWonton(NULL);
+    public static final Wonton RELAXED_NULL = new RelaxedWonton(NULL);
     public static Wonton relaxed(Wonton wonton) {
         return wonton == null ? RELAXED_NULL : wonton instanceof RelaxedWonton ? (RelaxedWonton) wonton : new RelaxedWonton(wonton);
     }
@@ -63,7 +63,7 @@ public class RelaxedWonton implements Wonton {
     public Boolean asBoolean() {
         switch (wonton.type()) {
             case NUMBER:
-                return wonton.asNumber().doubleValue() != 0.;
+                return wonton.asDouble() != 0.;
             case STRING:
                 return "true".equalsIgnoreCase(wonton.asString());
             case BOOLEAN:

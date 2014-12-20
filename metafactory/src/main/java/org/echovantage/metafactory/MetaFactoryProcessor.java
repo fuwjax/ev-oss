@@ -1,5 +1,20 @@
 package org.echovantage.metafactory;
 
+import org.echovantage.metafactory.MetaInfContext.MetaInfContract;
+import org.echovantage.util.Elements;
+
+import javax.annotation.Generated;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.tools.JavaFileObject;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+
 import static org.echovantage.util.Elements.functionalMethod;
 import static org.echovantage.util.Elements.hasConstructor;
 import static org.echovantage.util.Elements.invokeArgs;
@@ -8,23 +23,6 @@ import static org.echovantage.util.Elements.isInterface;
 import static org.echovantage.util.Elements.packageOf;
 import static org.echovantage.util.Elements.parameterDecl;
 import static org.echovantage.util.Elements.throwsDecl;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-
-import javax.annotation.Generated;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.tools.JavaFileObject;
-
-import org.echovantage.metafactory.MetaInfContext.MetaInfContract;
-import org.echovantage.util.Elements;
 
 public class MetaFactoryProcessor implements AnnotationProcessor {
 	private final DateFormat ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
@@ -75,9 +73,7 @@ public class MetaFactoryProcessor implements AnnotationProcessor {
 	private void writeFactory(final JavaFileObject f, final TypeElement service) throws IOException {
 		try(final PrintWriter pw = new PrintWriter(f.openWriter())) {
 			pw.printf("package %s;", packageOf(service)).println();
-			for(final AnnotationMirror a : service.getAnnotationMirrors()) {
-				pw.println(a);
-			}
+			service.getAnnotationMirrors().forEach(pw::println);
 			pw.printf("@javax.annotation.Generated(value=\"%s\", date=\"%s\")", genFlag(), ISO8601.format(new Date())).println();
 			pw.printf("public final class %sCgFactory %s %s {", service.getSimpleName(), isInterface(contract) ? "implements" : "extends", contract).println();
 			pw.printf("	public %s %s(%s)%s {", service.getSimpleName(), method.getSimpleName(), parameterDecl(method), throwsDecl(method)).println();

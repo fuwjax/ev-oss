@@ -1,7 +1,6 @@
 package org.echovantage.wonton;
 
-import org.echovantage.util.IntSet;
-import org.echovantage.util.StringNumber;
+import org.echovantage.util.BitSets;
 import org.echovantage.util.parser.IntReader;
 import org.echovantage.util.parser.ParseState;
 import org.echovantage.util.parser.Parser;
@@ -13,10 +12,13 @@ import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.util.function.IntPredicate;
+import java.util.regex.Pattern;
 
 public class WontonParser {
+    private static final Pattern DOUBLE = Pattern.compile("[.Ee]");
     private static final IntPredicate WS = Character::isWhitespace;
-    private static final IntPredicate TERMINALS = WS.or(new IntSet().addAll('{', '[', '"', ':', ',', ']', '}', -1));
+    private static final IntPredicate RESERVED = BitSets.bitSetOf('{', '[', '"', ':', ',', ']', '}')::get;
+    private static final IntPredicate LITERALS = Parser.EOF.or(WS).or(RESERVED).negate();
     private final Parser stream;
     private final WontonFactory factory;
 
@@ -87,19 +89,28 @@ public class WontonParser {
             case "false":
                 return Wonton.FALSE;
             default:
-                StringNumber number = new StringNumber(buffer);
                 try {
-                    number.doubleValue(); // test validity
+                    return factory.wontonOf(numberOf(buffer));
                 } catch (NumberFormatException e) {
                     throw start.fail("Value expected");
                 }
-                return factory.wontonOf(number);
         }
+    }
+
+    private Number numberOf(String buffer) {
+        if(DOUBLE.matcher(buffer).find()){
+            return Double.parseDouble(buffer);
+        }
+        long l = Long.parseLong(buffer);
+        if((int)l == l){
+            return (int)l;
+        }
+        return l;
     }
 
     private String parseLiteralString() throws IOException, ParseException {
         IntWriter buffer = IntWriter.codepointBuffer();
-        while (!TERMINALS.test(stream.peek())) {
+        while (LITERALS.test(stream.peek())) {
             buffer.write(stream.read());
         }
         return buffer.toString();

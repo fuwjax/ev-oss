@@ -89,8 +89,9 @@ public class WontonTest {
     public void testList() {
         final Wonton wonton = FACTORY.wontonOf(asList(1, 2, 3));
         assertEquals(Wonton.Type.ARRAY, wonton.type());
-        assertEquals(asList(FACTORY.wontonOf(1), FACTORY.wontonOf(2), FACTORY.wontonOf(3)), wonton.value());
-        assertEquals(wonton.value(), wonton.asArray());
+        assertEquals(asList(1, 2, 3), wonton.value());
+        // no longer true
+        //assertEquals(wonton.value(), wonton.asArray());
         assertWrongType(wonton::asBoolean);
         assertWrongType(wonton::asNumber);
         assertWrongType(wonton::asStruct);
@@ -107,8 +108,9 @@ public class WontonTest {
     public void testPrimitiveArray() {
         final Wonton wonton = FACTORY.wontonOf(new int[]{1, 2, 3});
         assertEquals(Wonton.Type.ARRAY, wonton.type());
-        assertEquals(asList(FACTORY.wontonOf(1), FACTORY.wontonOf(2), FACTORY.wontonOf(3)), wonton.value());
-        assertEquals(wonton.value(), wonton.asArray());
+        assertEquals(asList(1, 2, 3), wonton.value());
+        // no longer true
+        //assertEquals(wonton.value(), wonton.asArray());
         assertWrongType(wonton::asBoolean);
         assertWrongType(wonton::asNumber);
         assertWrongType(wonton::asStruct);
@@ -119,8 +121,9 @@ public class WontonTest {
     public void testObjectArray() {
         final Wonton wonton = FACTORY.wontonOf(new Object[]{1, 2, 3});
         assertEquals(Wonton.Type.ARRAY, wonton.type());
-        assertEquals(asList(FACTORY.wontonOf(1), FACTORY.wontonOf(2), FACTORY.wontonOf(3)), wonton.value());
-        assertEquals(wonton.value(), wonton.asArray());
+        assertEquals(asList(1, 2, 3), wonton.value());
+        // no longer true
+        //assertEquals(wonton.value(), wonton.asArray());
         assertWrongType(wonton::asBoolean);
         assertWrongType(wonton::asNumber);
         assertWrongType(wonton::asStruct);
@@ -131,11 +134,12 @@ public class WontonTest {
     public void testMap() {
         final Wonton wonton = FACTORY.wontonOf(singletonMap("bob", "hope"));
         assertEquals(Wonton.Type.STRUCT, wonton.type());
-        assertEquals(singletonMap("bob", FACTORY.wontonOf("hope")), wonton.value());
+        assertEquals(singletonMap("bob", "hope"), wonton.value());
         assertWrongType(wonton::asArray);
         assertWrongType(wonton::asBoolean);
         assertWrongType(wonton::asNumber);
-        assertEquals(wonton.value(), wonton.asStruct());
+        // no longer true
+        //assertEquals(wonton.value(), wonton.asStruct());
         assertWrongType(wonton::asString);
         assertEquals(FACTORY.wontonOf("hope"), wonton.get(Wonton.path("bob")));
         assertEquals(FACTORY.wontonOf("hope"), wonton.get(Wonton.path("[bob]")));
@@ -150,11 +154,12 @@ public class WontonTest {
         map.put("id", 5);
         map.put("name", "bob");
         map.put("description", "hope");
-        assertEquals(FACTORY.wontonOf(map).value(), wonton.value());
+        assertEquals(map, wonton.value());
         assertWrongType(wonton::asArray);
         assertWrongType(wonton::asBoolean);
         assertWrongType(wonton::asNumber);
-        assertEquals(wonton.value(), wonton.asStruct());
+        // no longer true
+        // assertEquals(wonton.value(), wonton.asStruct());
         assertWrongType(wonton::asString);
         assertEquals(FACTORY.wontonOf("hope"), wonton.get(Wonton.path("description")));
         assertEquals(FACTORY.wontonOf("bob"), wonton.get(Wonton.path("[name]")));
@@ -186,7 +191,8 @@ public class WontonTest {
         assertWrongType(wonton::asArray);
         assertWrongType(wonton::asBoolean);
         assertWrongType(wonton::asNumber);
-        assertEquals(wonton.value(), wonton.asStruct());
+        // no longer true
+        //assertEquals(wonton.value(), wonton.asStruct());
         assertWrongType(wonton::asString);
         assertEquals(FACTORY.wontonOf(asList(singletonMap("bob", "hope"), singletonMap("bob", "newhart"))), wonton.get(Wonton.path("root")));
         assertEquals(FACTORY.wontonOf(singletonMap("bob", "hope")), wonton.get(Wonton.path("root[0]")));

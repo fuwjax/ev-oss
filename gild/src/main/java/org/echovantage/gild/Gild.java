@@ -1,17 +1,5 @@
 package org.echovantage.gild;
 
-import static org.echovantage.util.Assert2.assertCompletes;
-import static org.echovantage.util.Assert2.assertEquals;
-import static org.echovantage.util.Files2.delete;
-import static org.echovantage.util.ReadOnlyPath.readOnly;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.echovantage.gild.proxy.ServiceProxy;
 import org.echovantage.gild.stage.Stage;
 import org.echovantage.gild.stage.StageFactory;
@@ -21,6 +9,17 @@ import org.echovantage.util.Files2;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import static org.echovantage.util.Assert2.assertCompletes;
+import static org.echovantage.util.Assert2.assertEquals;
+import static org.echovantage.util.Files2.delete;
+import static org.echovantage.util.ReadOnlyPath.readOnly;
+import static org.junit.Assert.*;
 
 /**
  * The Gilded Test Harness jUnit Rule. The Gilded harness does a gold copy
@@ -145,7 +144,7 @@ public class Gild implements TestRule {
 		preserve();
 	}
 
-	private void prepare() throws Exception {
+	private void prepare() {
 		assertFalse("Stage has already been prepared", prepared);
 		for(final Map.Entry<String, ServiceProxy> entry : proxies.entrySet()) {
 			String service = entry.getKey();

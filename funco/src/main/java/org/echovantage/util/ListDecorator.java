@@ -27,7 +27,7 @@ public final class ListDecorator<O, T> extends AbstractList<T> {
 
 	@Override
 	public Iterator<T> iterator() {
-		return new IteratorDecorator(list.iterator(), encoder);
+		return new IteratorDecorator<>(list.iterator(), encoder);
 	}
 
 	@Override

@@ -2,11 +2,16 @@ package org.echovantage.wonton;
 
 import org.echovantage.wonton.standard.BooleanWonton;
 import org.echovantage.wonton.standard.NullWonton;
+import org.echovantage.wonton.standard.RelaxedWonton;
 import org.echovantage.wonton.standard.StandardPath;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import static org.echovantage.util.Decorators.decorateList;
+import static org.echovantage.util.Decorators.decorateMap;
+import static org.echovantage.util.function.Functions.function;
 
 /**
  * The standard transport interface for Whatever Object NotaTiON. Wontons all
@@ -55,11 +60,11 @@ public interface Wonton {
         BOOLEAN(Wonton::asBoolean),
         NUMBER(Wonton::asNumber),
         STRING(Wonton::asString),
-        ARRAY(Wonton::asArray),
-        STRUCT(Wonton::asStruct);
-        private final Function<Wonton, Object> value;
+        ARRAY(function(Wonton::asArray).andThen(decorateList(Wonton::value))),
+        STRUCT(function(Wonton::asStruct).andThen(decorateMap(Wonton::value)));
+        private final Function<Wonton, ?> value;
 
-        private Type(final Function<Wonton, Object> value) {
+        private Type(final Function<Wonton, ?> value) {
             this.value = value;
         }
 
@@ -240,5 +245,9 @@ public interface Wonton {
 
     default void accept(final Visitor visitor) {
         // do nothing
+    }
+
+    default Wonton relax(){
+        return RelaxedWonton.relaxed(this);
     }
 }
