@@ -1,4 +1,4 @@
-package org.echovantage.util;
+package org.echovantage.util.collection;
 
 import java.util.AbstractList;
 import java.util.Iterator;

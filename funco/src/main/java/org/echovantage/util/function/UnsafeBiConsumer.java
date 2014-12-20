@@ -12,7 +12,7 @@ public interface UnsafeBiConsumer<T, U> extends BiConsumer<T, U> {
 		} catch(final RuntimeException e) {
 			throw e;
 		} catch(final Exception e) {
-			throw new UnsafeException("biConsumer did not accept safely", e);
+			throw new UnsafeException(e, "biConsumer did not accept safely");
 		}
 	}
 }

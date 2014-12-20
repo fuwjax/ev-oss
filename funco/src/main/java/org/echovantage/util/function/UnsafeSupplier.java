@@ -12,7 +12,7 @@ public interface UnsafeSupplier<T> extends Supplier<T> {
 		} catch(final RuntimeException e) {
 			throw e;
 		} catch(final Exception e) {
-			throw new UnsafeException("supplier did not get safely", e);
+			throw new UnsafeException(e, "supplier did not get safely");
 		}
 	}
 }

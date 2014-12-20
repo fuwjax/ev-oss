@@ -1,4 +1,4 @@
-package org.echovantage.util;
+package org.echovantage.util.collection;
 
 import java.util.List;
 import java.util.Map;

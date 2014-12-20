@@ -1,4 +1,4 @@
-package org.echovantage.util;
+package org.echovantage.util.collection;
 
 import java.util.AbstractList;
 import java.util.Iterator;
@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.IntFunction;
 
-public final class AccessListDecorator<T> extends AbstractList<T> {
+public final class DefaultAccessListDecorator<T> extends AbstractList<T> {
 	private final List<T> list;
 	private final IntFunction<? extends T> function;
 
-	public AccessListDecorator(final List<T> list, final IntFunction<? extends T> function) {
+	public DefaultAccessListDecorator(final List<T> list, final IntFunction<? extends T> function) {
 		this.list = list;
 		this.function = function;
 	}
@@ -47,6 +47,6 @@ public final class AccessListDecorator<T> extends AbstractList<T> {
 
 	@Override
 	public List<T> subList(final int fromIndex, final int toIndex) {
-		return new AccessListDecorator<>(list.subList(Math.min(fromIndex, list.size()), Math.min(toIndex, list.size())), function);
+		return new DefaultAccessListDecorator<>(list.subList(Math.min(fromIndex, list.size()), Math.min(toIndex, list.size())), function);
 	}
 }

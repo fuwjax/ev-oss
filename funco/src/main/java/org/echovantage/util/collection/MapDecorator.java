@@ -1,10 +1,6 @@
-package org.echovantage.util;
+package org.echovantage.util.collection;
 
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 public class MapDecorator<K, O, T> extends AbstractMap<K, T> {

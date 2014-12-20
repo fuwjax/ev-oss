@@ -1,16 +1,12 @@
 package org.echovantage.wonton.standard;
 
-import org.echovantage.util.AccessListDecorator;
-import org.echovantage.util.AccessMapDecorator;
-import org.echovantage.util.ListDecorator;
-import org.echovantage.util.MapDecorator;
+import org.echovantage.util.collection.DefaultAccessListDecorator;
+import org.echovantage.util.collection.DefaultAccessMapDecorator;
+import org.echovantage.util.collection.ListDecorator;
+import org.echovantage.util.collection.MapDecorator;
 import org.echovantage.wonton.Wonton;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class RelaxedWonton implements Wonton {
     public static final Wonton RELAXED_NULL = new RelaxedWonton(NULL);
@@ -116,7 +112,7 @@ public class RelaxedWonton implements Wonton {
             default:
                 throw new InvalidTypeException();
         }
-        return new AccessMapDecorator<>(map, key -> NULL);
+        return new DefaultAccessMapDecorator<>(map, key -> NULL);
     }
 
     @Override
@@ -138,7 +134,7 @@ public class RelaxedWonton implements Wonton {
             default:
                 throw new InvalidTypeException();
         }
-        return new AccessListDecorator<>(list, key -> NULL);
+        return new DefaultAccessListDecorator<>(list, key -> NULL);
     }
 
     @Override

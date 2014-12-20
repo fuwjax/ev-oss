@@ -1,17 +1,13 @@
-package org.echovantage.util;
+package org.echovantage.util.collection;
 
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
-public class AccessMapDecorator<K, T> extends AbstractMap<K, T> {
+public class DefaultAccessMapDecorator<K, T> extends AbstractMap<K, T> {
 	private final Map<K, T> map;
 	private final Function<? super K, ? extends T> tempFunction;
 
-	public AccessMapDecorator(final Map<K, T> map, final Function<? super K, ? extends T> tempFunction) {
+	public DefaultAccessMapDecorator(final Map<K, T> map, final Function<? super K, ? extends T> tempFunction) {
 		this.map = map;
 		this.tempFunction = tempFunction;
 	}

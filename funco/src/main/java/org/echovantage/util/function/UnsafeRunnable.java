@@ -10,7 +10,7 @@ public interface UnsafeRunnable extends Runnable {
 		} catch(final RuntimeException e) {
 			throw e;
 		} catch(final Exception e) {
-			throw new UnsafeException("runnable did not run safely", e);
+			throw new UnsafeException(e, "runnable did not run safely");
 		}
 	}
 }

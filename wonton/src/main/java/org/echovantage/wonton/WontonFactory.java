@@ -1,15 +1,9 @@
 package org.echovantage.wonton;
 
-import org.echovantage.util.ListDecorator;
 import org.echovantage.util.Lists;
-import org.echovantage.util.MapDecorator;
-import org.echovantage.util.ObjectMap;
-import org.echovantage.wonton.standard.AbstractListWonton;
-import org.echovantage.wonton.standard.AbstractMapWonton;
-import org.echovantage.wonton.standard.ListWonton;
-import org.echovantage.wonton.standard.MapWonton;
-import org.echovantage.wonton.standard.NumberWonton;
-import org.echovantage.wonton.standard.StringWonton;
+import org.echovantage.util.collection.ListDecorator;
+import org.echovantage.util.collection.MapDecorator;
+import org.echovantage.wonton.standard.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -131,9 +125,6 @@ public interface WontonFactory {
         }
         if(object.getClass().isArray()) {
             return wontonOf(Lists.reflectiveList(object));
-        }
-        if(object.getClass().isAnnotationPresent(ObjectMap.MapEntries.class)) {
-            return wontonOf(ObjectMap.mapOf(object));
         }
         throw new IllegalArgumentException("No standard transformation for " + object.getClass());
 

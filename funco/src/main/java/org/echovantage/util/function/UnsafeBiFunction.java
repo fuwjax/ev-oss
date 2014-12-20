@@ -12,7 +12,7 @@ public interface UnsafeBiFunction<T, U, R> extends BiFunction<T, U, R> {
 		} catch(final RuntimeException e) {
 			throw e;
 		} catch(final Exception e) {
-			throw new UnsafeException("biFunction did not apply safely", e);
+			throw new UnsafeException(e, "biFunction did not apply safely");
 		}
 	}
 }

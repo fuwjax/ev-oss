@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static org.echovantage.util.Decorators.decorateList;
-import static org.echovantage.util.Decorators.decorateMap;
+import static org.echovantage.util.collection.Decorators.decorateList;
+import static org.echovantage.util.collection.Decorators.decorateMap;
 import static org.echovantage.util.function.Functions.function;
 
 /**

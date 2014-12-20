@@ -12,7 +12,7 @@ public interface UnsafeFunction<T, R> extends Function<T, R> {
 		} catch(final RuntimeException e) {
 			throw e;
 		} catch(final Exception e) {
-			throw new UnsafeException("function did not apply safely", e);
+			throw new UnsafeException(e, "function did not apply safely");
 		}
 	}
 }

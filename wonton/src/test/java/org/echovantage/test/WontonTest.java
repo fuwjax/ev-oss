@@ -1,21 +1,17 @@
 package org.echovantage.test;
 
-import org.echovantage.sample.SampleMapObject;
 import org.echovantage.wonton.Wonton;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.singletonMap;
 import static org.echovantage.wonton.WontonFactory.FACTORY;
 import static org.junit.Assert.*;
 
 public class WontonTest {
     @Test
     public void testNull() {
-        final Wonton wonton = FACTORY.wontonOf((Object)null);
+        final Wonton wonton = FACTORY.wontonOf((Object) null);
         assertEquals(Wonton.Type.VOID, wonton.type());
         assertNull(wonton.value());
         assertNull(wonton.asArray());
@@ -143,26 +139,6 @@ public class WontonTest {
         assertWrongType(wonton::asString);
         assertEquals(FACTORY.wontonOf("hope"), wonton.get(Wonton.path("bob")));
         assertEquals(FACTORY.wontonOf("hope"), wonton.get(Wonton.path("[bob]")));
-        wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
-    }
-
-    @Test
-    public void testObject() {
-        final Wonton wonton = FACTORY.wontonOf(new SampleMapObject(5, "bob", "hope"));
-        assertEquals(Wonton.Type.STRUCT, wonton.type());
-        final Map<String, Object> map = new HashMap<>();
-        map.put("id", 5);
-        map.put("name", "bob");
-        map.put("description", "hope");
-        assertEquals(map, wonton.value());
-        assertWrongType(wonton::asArray);
-        assertWrongType(wonton::asBoolean);
-        assertWrongType(wonton::asNumber);
-        // no longer true
-        // assertEquals(wonton.value(), wonton.asStruct());
-        assertWrongType(wonton::asString);
-        assertEquals(FACTORY.wontonOf("hope"), wonton.get(Wonton.path("description")));
-        assertEquals(FACTORY.wontonOf("bob"), wonton.get(Wonton.path("[name]")));
         wonton.accept((key, value) -> assertEquals(value, wonton.get(key)));
     }
 

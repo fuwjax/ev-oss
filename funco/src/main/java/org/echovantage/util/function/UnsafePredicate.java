@@ -12,7 +12,7 @@ public interface UnsafePredicate<T> extends Predicate<T> {
 		} catch(final RuntimeException e) {
 			throw e;
 		} catch(final Exception e) {
-			throw new UnsafeException("consumer did not accept safely", e);
+			throw new UnsafeException(e, "consumer did not accept safely");
 		}
 	}
 }

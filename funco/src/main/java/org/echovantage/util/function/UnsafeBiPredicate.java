@@ -12,7 +12,7 @@ public interface UnsafeBiPredicate<T, U> extends BiPredicate<T, U> {
 		} catch(final RuntimeException e) {
 			throw e;
 		} catch(final Exception e) {
-			throw new UnsafeException("biPredicate did not test safely", e);
+			throw new UnsafeException(e, "biPredicate did not test safely");
 		}
 	}
 }
