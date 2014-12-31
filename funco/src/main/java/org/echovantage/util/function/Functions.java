@@ -11,6 +11,14 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 public class Functions {
+	public static <T> Supplier<T> defer(Supplier<T> supplier){
+		return new Deferred<>(supplier);
+	}
+
+	public static <T> Supplier<T> defer(UnsafeSupplier<T> supplier){
+		return new Deferred<>(supplier);
+	}
+
 	public static <T, U> BiConsumer<T, U> biConsumer(final UnsafeBiConsumer<T, U> biConsumer) {
 		return biConsumer;
 	}
