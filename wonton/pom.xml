@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.echovantage</groupId>
     <artifactId>oss</artifactId>
-    <version>0.15-SNAPSHOT</version>
+    <version>0-SNAPSHOT</version>
   </parent>
   <artifactId>wonton</artifactId>
   <dependencies>
