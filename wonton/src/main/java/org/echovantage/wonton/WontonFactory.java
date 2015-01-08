@@ -3,14 +3,25 @@ package org.echovantage.wonton;
 import org.echovantage.util.Lists;
 import org.echovantage.util.collection.ListDecorator;
 import org.echovantage.util.collection.MapDecorator;
-import org.echovantage.wonton.standard.*;
+import org.echovantage.wonton.standard.AbstractListWonton;
+import org.echovantage.wonton.standard.AbstractMapWonton;
+import org.echovantage.wonton.standard.ListWonton;
+import org.echovantage.wonton.standard.MapWonton;
+import org.echovantage.wonton.standard.NumberWonton;
+import org.echovantage.wonton.standard.StringWonton;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public interface WontonFactory {
     WontonFactory FACTORY = new WontonFactory(){};
+
+    public interface Wontonable {
+        Wonton toWonton();
+    }
 
     public interface MutableWonton extends Wonton {
         default void set(Wonton.Path path, Wonton value) {
@@ -98,12 +109,30 @@ public interface WontonFactory {
         return AbstractListWonton.wrap(new ListDecorator<>(list, this::wontonOf));
     }
 
+    default Wonton wontonOf(Stream<?> stream) { return AbstractListWonton.wrap(stream.map(this::wontonOf).collect(Collectors.toList())); }
+
+    default boolean canWonton(Class<?> type){
+        return Wonton.class.isAssignableFrom(type) ||
+                Wontonable.class.isAssignableFrom(type) ||
+                type.isPrimitive() ||
+                Boolean.class.equals(type) ||
+                Number.class.isAssignableFrom(type) ||
+                CharSequence.class.isAssignableFrom(type) ||
+                Map.class.isAssignableFrom(type) ||
+                Iterable.class.isAssignableFrom(type) ||
+                Stream.class.isAssignableFrom(type) ||
+                type.isArray();
+    }
+
     default Wonton wontonOf(Object object){
         if(object == null) {
             return Wonton.NULL;
         }
         if(object instanceof Wonton) {
             return (Wonton) object;
+        }
+        if(object instanceof Wontonable){
+            return ((Wontonable)object).toWonton();
         }
         if(object instanceof Boolean) {
             return wontonOf((Boolean) object);
@@ -120,12 +149,16 @@ public interface WontonFactory {
         if(object instanceof Iterable) {
             return wontonOf(Lists.toList((Iterable<?>) object));
         }
+        if(object instanceof Stream){
+            return wontonOf((Stream<?>)object);
+        }
         if(object instanceof Object[]) {
             return wontonOf(Arrays.asList((Object[]) object));
         }
         if(object.getClass().isArray()) {
             return wontonOf(Lists.reflectiveList(object));
         }
+        assert !canWonton(object.getClass());
         throw new IllegalArgumentException("No standard transformation for " + object.getClass());
 
     }
