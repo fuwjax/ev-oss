@@ -18,5 +18,8 @@ public class IntReaderStreamTest {
 
         reader = IntReader.codepoints("hello");
         assertEquals("ehllo", reader.stream().sorted().mapToObj(Character::toChars).map(String::new).collect(Collectors.joining()));
+
+        reader = IntReader.codepoints("hello");
+        assertEquals("hello", reader.stream().boxed().map(Character::toChars).map(String::new).collect(Collectors.joining()));
     }
 }

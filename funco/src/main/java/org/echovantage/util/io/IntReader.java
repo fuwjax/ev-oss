@@ -8,10 +8,10 @@ import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.util.PrimitiveIterator.OfInt;
 import java.util.Spliterators.AbstractIntSpliterator;
+import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
-
-import static java.util.stream.StreamSupport.intStream;
+import java.util.stream.StreamSupport;
 
 public interface IntReader {
     static IntReader codepoints(final CharSequence chars) {
@@ -53,7 +53,7 @@ public interface IntReader {
     int read() throws IOException;
 
     default IntStream stream() {
-        return intStream(new AbstractIntSpliterator(Long.MAX_VALUE, 0) {
+        return StreamSupport.intStream(new AbstractIntSpliterator(Long.MAX_VALUE, 0) {
             @Override
             public boolean tryAdvance(IntConsumer action) {
                 try {
@@ -62,7 +62,20 @@ public interface IntReader {
                         action.accept(c);
                     }
                     return c != -1;
-                }catch(IOException e){
+                } catch (IOException e) {
+                    throw new RunWrapException(e, "Failed reading from IntReader");
+                }
+            }
+
+            @Override
+            public boolean tryAdvance(Consumer<? super Integer> action) {
+                try {
+                    int c = read();
+                    if (c != -1) {
+                        action.accept(c);
+                    }
+                    return c != -1;
+                } catch (IOException e) {
                     throw new RunWrapException(e, "Failed reading from IntReader");
                 }
             }
