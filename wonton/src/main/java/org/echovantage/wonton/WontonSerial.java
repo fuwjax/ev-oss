@@ -1,6 +1,6 @@
 package org.echovantage.wonton;
 
-import org.echovantage.util.serial.IntWriter;
+import org.echovantage.util.io.IntWriter;
 
 import java.io.IOException;
 import java.util.List;

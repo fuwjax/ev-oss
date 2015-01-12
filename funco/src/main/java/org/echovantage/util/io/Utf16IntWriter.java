@@ -1,6 +1,8 @@
-package org.echovantage.util.serial;
+package org.echovantage.util.io;
 
 import java.io.IOException;
+
+import static org.echovantage.util.function.Functions.intConsumer;
 
 public class Utf16IntWriter implements IntWriter{
 	private final IntWriter writer;
@@ -16,6 +18,11 @@ public class Utf16IntWriter implements IntWriter{
 			writer.write(cp - 0x10000 >>> 10 | 0xD800);
 			writer.write(cp & 0x3FF | 0xDC00);
 		}
+	}
+
+	@Override
+	public void write(CharSequence value) throws IOException {
+		value.chars().forEach(intConsumer(this::write));
 	}
 
 	@Override

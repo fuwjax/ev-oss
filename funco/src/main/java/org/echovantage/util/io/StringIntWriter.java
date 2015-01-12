@@ -1,4 +1,6 @@
-package org.echovantage.util.serial;
+package org.echovantage.util.io;
+
+import java.io.IOException;
 
 public class StringIntWriter implements IntWriter {
     private final StringBuilder builder = new StringBuilder();
@@ -6,6 +8,11 @@ public class StringIntWriter implements IntWriter {
     @Override
     public void write(int value) {
         builder.appendCodePoint(value);
+    }
+
+    @Override
+    public void write(CharSequence value) throws IOException {
+        builder.append(value);
     }
 
     @Override

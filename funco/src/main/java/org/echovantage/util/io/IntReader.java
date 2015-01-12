@@ -1,4 +1,4 @@
-package org.echovantage.util.parser;
+package org.echovantage.util.io;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,14 +1,6 @@
 package org.echovantage.util.function;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+import java.util.function.*;
 
 public class Functions {
 	public static <T> Supplier<T> defer(Supplier<T> supplier){
@@ -59,6 +51,14 @@ public class Functions {
 		return consumer;
 	}
 
+	public static IntConsumer intConsumer(final UnsafeIntConsumer intConsumer) {
+		return intConsumer;
+	}
+
+	public static IntConsumer intConsumer(final IntConsumer intConsumer) {
+		return intConsumer;
+	}
+
 	public static <T, R> Function<T, R> function(final UnsafeFunction<T, R> function) {
 		return function;
 	}
@@ -97,5 +97,13 @@ public class Functions {
 
 	public static <T> UnaryOperator<T> unaryOperator(final UnaryOperator<T> unaryOperator) {
 		return unaryOperator;
+	}
+
+	public static <T, U> Supplier<U> supplier(Function<T, U> function, T value) {
+		return () -> function.apply(value);
+	}
+
+	public static <T, U> Supplier<U> supplier(UnsafeFunction<T, U> function, T value) {
+		return () -> function.apply(value);
 	}
 }

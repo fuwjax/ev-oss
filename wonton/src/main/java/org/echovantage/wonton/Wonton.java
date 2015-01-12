@@ -5,10 +5,13 @@ import org.echovantage.wonton.standard.NullWonton;
 import org.echovantage.wonton.standard.RelaxedWonton;
 import org.echovantage.wonton.standard.StandardPath;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.echovantage.util.Charsets.UTF_8;
+import static org.echovantage.util.MessageDigests.MD5;
 import static org.echovantage.util.collection.Decorators.decorateList;
 import static org.echovantage.util.collection.Decorators.decorateMap;
 import static org.echovantage.util.function.Functions.function;
@@ -249,5 +252,10 @@ public interface Wonton {
 
     default Wonton relax(){
         return RelaxedWonton.relaxed(this);
+    }
+
+    default long tag(){
+        ByteBuffer buffer = ByteBuffer.wrap(MD5.digest(toString().getBytes(UTF_8)));
+        return buffer.getLong() ^ buffer.getLong();
     }
 }

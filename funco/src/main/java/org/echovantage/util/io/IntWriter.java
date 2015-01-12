@@ -1,4 +1,4 @@
-package org.echovantage.util.serial;
+package org.echovantage.util.io;
 
 import java.io.IOException;
 import java.io.OutputStream;

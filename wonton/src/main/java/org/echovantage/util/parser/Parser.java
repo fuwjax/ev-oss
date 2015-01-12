@@ -1,6 +1,7 @@
 package org.echovantage.util.parser;
 
 import org.echovantage.util.Strings;
+import org.echovantage.util.io.IntReader;
 
 import java.io.IOException;
 import java.text.ParseException;

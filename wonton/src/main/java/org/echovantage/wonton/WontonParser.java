@@ -1,10 +1,10 @@
 package org.echovantage.wonton;
 
 import org.echovantage.util.BitSets;
-import org.echovantage.util.parser.IntReader;
+import org.echovantage.util.io.IntReader;
+import org.echovantage.util.io.IntWriter;
 import org.echovantage.util.parser.ParseState;
 import org.echovantage.util.parser.Parser;
-import org.echovantage.util.serial.IntWriter;
 
 import java.io.IOException;
 import java.io.InputStream;

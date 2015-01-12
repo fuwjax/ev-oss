@@ -1,7 +1,7 @@
 package org.echovantage.test;
 
 import org.echovantage.util.io.ByteCountingInputStream;
-import org.echovantage.util.parser.IntReader;
+import org.echovantage.util.io.IntReader;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class Utf8ReaderTest {
     private static final Charset UTF_8 = Charset.forName("UTF-8");
