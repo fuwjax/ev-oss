@@ -7,6 +7,9 @@ import java.nio.ByteBuffer;
 import java.util.PrimitiveIterator.OfInt;
 import java.util.stream.IntStream;
 
+import static java.util.stream.IntStream.generate;
+import static org.echovantage.util.function.Functions.intSupplier;
+
 public interface IntReader {
     static IntReader codepoints(final CharSequence chars) {
         return new StringIntReader(chars);
@@ -46,4 +49,7 @@ public interface IntReader {
      */
     int read() throws IOException;
 
+    default IntStream stream() {
+        return generate(intSupplier(this::read));
+    }
 }

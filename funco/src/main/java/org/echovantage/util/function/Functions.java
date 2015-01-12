@@ -91,6 +91,14 @@ public class Functions {
 		return supplier;
 	}
 
+	public static IntSupplier intSupplier(final UnsafeIntSupplier intSupplier) {
+		return intSupplier;
+	}
+
+	public static IntSupplier intSupplier(final IntSupplier intSupplier) {
+		return intSupplier;
+	}
+
 	public static <T> UnaryOperator<T> unaryOperator(final UnsafeUnaryOperator<T> unaryOperator) {
 		return unaryOperator;
 	}
