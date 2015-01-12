@@ -1,14 +1,17 @@
 package org.echovantage.util.io;
 
+import org.echovantage.util.RunWrapException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.util.PrimitiveIterator.OfInt;
+import java.util.Spliterators.AbstractIntSpliterator;
+import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
 
-import static java.util.stream.IntStream.generate;
-import static org.echovantage.util.function.Functions.intSupplier;
+import static java.util.stream.StreamSupport.intStream;
 
 public interface IntReader {
     static IntReader codepoints(final CharSequence chars) {
@@ -50,6 +53,19 @@ public interface IntReader {
     int read() throws IOException;
 
     default IntStream stream() {
-        return generate(intSupplier(this::read));
+        return intStream(new AbstractIntSpliterator(Long.MAX_VALUE, 0) {
+            @Override
+            public boolean tryAdvance(IntConsumer action) {
+                try {
+                    int c = read();
+                    if (c != -1) {
+                        action.accept(c);
+                    }
+                    return c != -1;
+                }catch(IOException e){
+                    throw new RunWrapException(e, "Failed reading from IntReader");
+                }
+            }
+        }, false);
     }
 }
