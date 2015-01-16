@@ -1,10 +1,7 @@
 package org.echovantage.util;
 
-import static java.nio.file.Files.newInputStream;
-import static java.nio.file.Files.walkFileTree;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.echovantage.util.function.UnsafeRunnable;
+import org.junit.Assert;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -16,22 +13,12 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.Callable;
 
-import org.junit.Assert;
+import static java.nio.file.Files.newInputStream;
+import static java.nio.file.Files.walkFileTree;
+import static org.junit.Assert.*;
 
 public class Assert2 {
-	/**
-	 * Just like a normal {@link Runnable} with throws.
-	 * @author fuwjax
-	 */
-	public interface Runnable {
-		/**
-		 * Executes the runnable.
-		 * @throws Exception if the run cannot complete
-		 */
-		void run() throws Exception;
-	}
-
-	public static void assertCompletes(final Runnable whenCalled) {
+	public static void assertCompletes(final UnsafeRunnable whenCalled) {
 		try {
 			whenCalled.run();
 		} catch(final AssertionError e) {
@@ -49,6 +36,28 @@ public class Assert2 {
 		} catch(final Throwable t) {
 			fail(description(null, t));
 			return null; // never happens
+		}
+	}
+
+	public static void assertFails(final UnsafeRunnable whenCalled) {
+		try {
+			whenCalled.run();
+			fail("Expected to fail");
+		} catch(final AssertionError e) {
+			throw e;
+		} catch(final Throwable t) {
+			// continue;
+		}
+	}
+
+	public static void assertFails(final Callable<?> whenCalled) {
+		try {
+			whenCalled.call();
+			fail("Expected to fail");
+		} catch(final AssertionError e) {
+			throw e;
+		} catch(final Throwable t) {
+			// continue;
 		}
 	}
 
