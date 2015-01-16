@@ -12,5 +12,9 @@
 			<artifactId>junit</artifactId>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.echovantage</groupId>
+			<artifactId>funco</artifactId>
+		</dependency>
 	</dependencies>
 </project>
