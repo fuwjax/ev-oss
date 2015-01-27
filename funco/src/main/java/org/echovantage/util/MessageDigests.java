@@ -1,9 +1,11 @@
 package org.echovantage.util;
 
 import java.security.MessageDigest;
+import java.util.function.Function;
 
-import static org.echovantage.util.function.Functions.supplier;
+import static org.echovantage.util.function.Functions.function;
 
 public class MessageDigests {
-	public static final MessageDigest MD5 = supplier(MessageDigest::getInstance, "MD5").get();
+	private static final Function<String, MessageDigest> F = function(MessageDigest::getInstance);
+	public static final MessageDigest MD5 = F.apply("MD5");
 }

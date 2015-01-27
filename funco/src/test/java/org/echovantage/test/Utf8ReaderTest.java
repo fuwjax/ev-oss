@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.echovantage.util.assertion.Assertions.assertThat;
+import static org.echovantage.util.assertion.Assertions.is;
 
 public class Utf8ReaderTest {
     private static final Charset UTF_8 = Charset.forName("UTF-8");
@@ -22,7 +22,7 @@ public class Utf8ReaderTest {
                     && !Character.isHighSurrogate((char) cp)
                     && !Character.isLowSurrogate((char) cp)) {
                 assertCodepoint(cp, cp);
-                assertArrayEquals(realcode(cp), fauxcode(cp));
+                assertThat(realcode(cp), is(fauxcode(cp)));
             }
         }
     }
@@ -114,8 +114,8 @@ public class Utf8ReaderTest {
              ByteCountingInputStream counter = new ByteCountingInputStream(input)) {
             IntReader reader = IntReader.utf8ToCodepoint(counter);
             int codepoint = reader.read();
-            assertEquals(bytes.length, counter.count());
-            assertEquals(expected, codepoint);
+            assertThat((long) bytes.length, is(counter.count()));
+            assertThat(expected, is(codepoint));
         }
     }
 }

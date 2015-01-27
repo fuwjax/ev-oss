@@ -14,5 +14,4 @@ public class Decorators {
             Function<? super O, ? extends T> encoder){
         return list -> new ListDecorator<>(list, encoder);
     }
-
 }

@@ -5,7 +5,9 @@ import org.junit.Test;
 
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.echovantage.util.assertion.Assertions.assertThat;
+import static org.echovantage.util.assertion.Assertions.is;
+
 
 /**
  * Created by fuwjax on 1/11/15.
@@ -14,12 +16,12 @@ public class IntReaderStreamTest {
     @Test
     public void testIntReaderStream(){
         IntReader reader = IntReader.codepoints("hello");
-        assertEquals(5, reader.stream().count());
+        assertThat(5L, is(reader.stream().count()));
 
         reader = IntReader.codepoints("hello");
-        assertEquals("ehllo", reader.stream().sorted().mapToObj(Character::toChars).map(String::new).collect(Collectors.joining()));
+        assertThat("ehllo", is(reader.stream().sorted().mapToObj(Character::toChars).map(String::new).collect(Collectors.joining())));
 
         reader = IntReader.codepoints("hello");
-        assertEquals("hello", reader.stream().boxed().map(Character::toChars).map(String::new).collect(Collectors.joining()));
+        assertThat("hello", is(reader.stream().boxed().map(Character::toChars).map(String::new).collect(Collectors.joining())));
     }
 }
