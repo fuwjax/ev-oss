@@ -1,9 +1,9 @@
 package org.echovantage.gild.proxy.db;
 
-import static java.nio.file.Files.newBufferedWriter;
-import static org.echovantage.util.Assert2.assertCompletes;
-import static org.junit.Assert.assertNotEquals;
+import org.echovantage.gild.proxy.AbstractServiceProxy;
+import org.echovantage.util.ReadOnlyPath;
 
+import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -17,27 +17,23 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.sql.Timestamp;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.TreeMap;
 
-import javax.sql.DataSource;
-
-import org.echovantage.gild.proxy.AbstractServiceProxy;
-import org.echovantage.util.ReadOnlyPath;
+import static java.nio.file.Files.newBufferedWriter;
+import static org.echovantage.util.Assert2.assertCompletes;
+import static org.junit.Assert.*;
 
 public class DataSourceProxy extends AbstractServiceProxy {
 	private Charset charset = Charset.forName("UTF-8");
-	private final DateFormat GMT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS+00");
-	{
-		GMT.setTimeZone(TimeZone.getTimeZone("GMT"));
-	}
+	private final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("UTC"));
+	private final DateTimeFormatter GMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSx").withZone(ZoneId.of("UTC"));
 	private DataSource db;
 
 	@Override
@@ -145,8 +141,11 @@ public class DataSourceProxy extends AbstractServiceProxy {
 		if(object instanceof String) {
 			return "'" + object.toString().replaceAll("'", "''") + "'";
 		}
-		if(object instanceof Date) {
-			return "'" + GMT.format((Date) object) + "'";
+		if(object instanceof java.sql.Date){
+			return "'" + DATE.format(((java.sql.Date) object).toLocalDate()) +"'";
+		}
+		if(object instanceof Timestamp) {
+			return "'" + GMT.format(((Timestamp) object).toInstant()) + "'";
 		}
 		if(object instanceof Map) {
 			final StringBuilder builder = new StringBuilder("'");

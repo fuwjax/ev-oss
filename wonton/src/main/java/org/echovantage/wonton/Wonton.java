@@ -212,6 +212,8 @@ public interface Wonton {
     }
 
     default Integer asInteger() { return asNumber() == null ? null : asNumber().intValue();}
+    default Byte asByte() { return asNumber() == null ? null : asNumber().byteValue();}
+    default Short asShort() { return asNumber() == null ? null : asNumber().shortValue();}
     default Long asLong() { return asNumber() == null ? null : asNumber().longValue();}
     default Float asFloat() { return asNumber() == null ? null : asNumber().floatValue();}
     default Double asDouble() { return asNumber() == null ? null : asNumber().doubleValue();}

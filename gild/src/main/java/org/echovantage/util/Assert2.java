@@ -24,7 +24,7 @@ public class Assert2 {
 		} catch(final AssertionError e) {
 			throw e;
 		} catch(final Throwable t) {
-			fail(description(null, t));
+			throw new AssertionError(description(null, t), t);
 		}
 	}
 
@@ -34,8 +34,7 @@ public class Assert2 {
 		} catch(final AssertionError e) {
 			throw e;
 		} catch(final Throwable t) {
-			fail(description(null, t));
-			return null; // never happens
+			throw new AssertionError(description(null, t), t);
 		}
 	}
 
@@ -68,7 +67,9 @@ public class Assert2 {
 		} catch(final Throwable t) {
 			thrown = t;
 		}
-		assertInstance(expected, thrown);
+		if(!expected.isInstance(thrown)){
+			throw new AssertionError("expected:<"+expected+"> but was:<"+(thrown == null ? null : thrown.getClass())+">", thrown);
+		}
 	}
 
 	public static void assertThrown(final Throwable expected, final Runnable whenCalled) {
@@ -109,10 +110,17 @@ public class Assert2 {
 		if(expected == null && actual == null) {
 			return;
 		}
-		assertFalse(description(expected, actual), expected == null ^ actual == null);
-		Assert.assertEquals(expected.getClass(), actual.getClass());
-		Assert.assertEquals(expected.getMessage(), actual.getMessage());
-		assertEquals(expected.getCause(), actual.getCause());
+		try {
+			assertFalse(description(expected, actual), expected == null ^ actual == null);
+			Assert.assertEquals(expected.getClass(), actual.getClass());
+			Assert.assertEquals(expected.getMessage(), actual.getMessage());
+			assertEquals(expected.getCause(), actual.getCause());
+		}catch(AssertionError e){
+			if(e.getCause() == null && actual != null) {
+				e.initCause(actual);
+			}
+			throw e;
+		}
 	}
 
 	private static String description(final Object expected, final Object actual) {
