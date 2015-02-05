@@ -1,23 +1,21 @@
 package org.echovantage.test;
 
-import static java.nio.charset.Charset.forName;
-import static java.nio.file.Files.deleteIfExists;
-import static java.nio.file.Files.newBufferedReader;
-import static java.nio.file.Files.write;
-import static java.util.Arrays.asList;
-import static org.echovantage.util.Assert2.assertThrown;
-import static org.junit.Assert.assertEquals;
+import org.echovantage.gild.Gild;
+import org.echovantage.gild.proxy.FileSystemProxy;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.echovantage.gild.Gild;
-import org.echovantage.gild.proxy.FileSystemProxy;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import static java.nio.charset.Charset.forName;
+import static java.nio.file.Files.*;
+import static java.util.Arrays.asList;
+import static org.echovantage.util.Assert2.assertThrown;
+import static org.junit.Assert.*;
 
 public class FileSystemTest {
 	private final FileSystemProxy files = new FileSystemProxy();
@@ -52,6 +50,6 @@ public class FileSystemTest {
 	@Test
 	public void testMissingOutput() throws IOException {
 		write(working.resolve("response.txt"), asList("I think so, but burlap chafes me so."));
-		assertThrown(AssertionError.class, () -> gild.assertGolden());
+		assertThrown(AssertionError.class, gild::assertGolden);
 	}
 }

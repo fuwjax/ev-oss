@@ -1,16 +1,6 @@
 package org.echovantage.util.function;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
+import java.util.function.*;
 
 public class Functions {
 	public static <T> Supplier<T> defer(Supplier<T> supplier){
@@ -21,7 +11,7 @@ public class Functions {
 		return new Deferred<>(supplier);
 	}
 
-	public static <T, U> BiConsumer<T, U> biConsumer(final UnsafeBiConsumer<T, U> biConsumer) {
+	public static <T, U> UnsafeBiConsumer<T, U> biConsumer(final UnsafeBiConsumer<T, U> biConsumer) {
 		return biConsumer;
 	}
 
@@ -29,7 +19,7 @@ public class Functions {
 		return biConsumer;
 	}
 
-	public static <T, U, R> BiFunction<T, U, R> biFunction(final UnsafeBiFunction<T, U, R> biFunction) {
+	public static <T, U, R> UnsafeBiFunction<T, U, R> biFunction(final UnsafeBiFunction<T, U, R> biFunction) {
 		return biFunction;
 	}
 
@@ -37,7 +27,7 @@ public class Functions {
 		return biFunction;
 	}
 
-	public static <T> BinaryOperator<T> binaryOperator(final UnsafeBinaryOperator<T> binaryOperator) {
+	public static <T> UnsafeBinaryOperator<T> binaryOperator(final UnsafeBinaryOperator<T> binaryOperator) {
 		return binaryOperator;
 	}
 
@@ -45,7 +35,7 @@ public class Functions {
 		return binaryOperator;
 	}
 
-	public static <T, U> BiPredicate<T, U> biPredicate(final UnsafeBiPredicate<T, U> biPredicate) {
+	public static <T, U> UnsafeBiPredicate<T, U> biPredicate(final UnsafeBiPredicate<T, U> biPredicate) {
 		return biPredicate;
 	}
 
@@ -53,7 +43,7 @@ public class Functions {
 		return biPredicate;
 	}
 
-	public static <T> Consumer<T> consumer(final UnsafeConsumer<T> consumer) {
+	public static <T> UnsafeConsumer<T> consumer(final UnsafeConsumer<T> consumer) {
 		return consumer;
 	}
 
@@ -61,7 +51,7 @@ public class Functions {
 		return consumer;
 	}
 
-	public static IntConsumer intConsumer(final UnsafeIntConsumer intConsumer) {
+	public static UnsafeIntConsumer intConsumer(final UnsafeIntConsumer intConsumer) {
 		return intConsumer;
 	}
 
@@ -69,7 +59,7 @@ public class Functions {
 		return intConsumer;
 	}
 
-	public static <T, R> Function<T, R> function(final UnsafeFunction<T, R> function) {
+	public static <T, R> UnsafeFunction<T, R> function(final UnsafeFunction<T, R> function) {
 		return function;
 	}
 
@@ -77,7 +67,7 @@ public class Functions {
 		return function;
 	}
 
-	public static <T> Predicate<T> predicate(final UnsafePredicate<T> predicate) {
+	public static <T> UnsafePredicate<T> predicate(final UnsafePredicate<T> predicate) {
 		return predicate;
 	}
 
@@ -85,7 +75,7 @@ public class Functions {
 		return predicate;
 	}
 
-	public static Runnable runnable(final UnsafeRunnable runnable) {
+	public static UnsafeRunnable runnable(final UnsafeRunnable runnable) {
 		return runnable;
 	}
 
@@ -93,7 +83,7 @@ public class Functions {
 		return runnable;
 	}
 
-	public static <T> Supplier<T> supplier(final UnsafeSupplier<T> supplier) {
+	public static <T> UnsafeSupplier<T> supplier(final UnsafeSupplier<T> supplier) {
 		return supplier;
 	}
 
@@ -101,7 +91,7 @@ public class Functions {
 		return supplier;
 	}
 
-	public static IntSupplier intSupplier(final UnsafeIntSupplier intSupplier) {
+	public static UnsafeIntSupplier intSupplier(final UnsafeIntSupplier intSupplier) {
 		return intSupplier;
 	}
 
@@ -109,19 +99,11 @@ public class Functions {
 		return intSupplier;
 	}
 
-	public static <T> UnaryOperator<T> unaryOperator(final UnsafeUnaryOperator<T> unaryOperator) {
+	public static <T> UnsafeUnaryOperator<T> unaryOperator(final UnsafeUnaryOperator<T> unaryOperator) {
 		return unaryOperator;
 	}
 
 	public static <T> UnaryOperator<T> unaryOperator(final UnaryOperator<T> unaryOperator) {
 		return unaryOperator;
-	}
-
-	public static <T, U> Supplier<U> supplier(Function<T, U> function, T value) {
-		return () -> function.apply(value);
-	}
-
-	public static <T, U> Supplier<U> supplier(UnsafeFunction<T, U> function, T value) {
-		return () -> function.apply(value);
 	}
 }
