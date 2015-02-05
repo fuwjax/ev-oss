@@ -37,7 +37,7 @@ public class StandardPath implements Path {
 		return matcher.matches() && !nullOrEmpty(matcher.group(2));
 	}
 
-	private static final Path EMPTY = new StandardPath();
+	public static final Path EMPTY = new StandardPath();
 	private final String key;
 	private final Path tail;
 

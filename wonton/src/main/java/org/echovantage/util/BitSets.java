@@ -17,4 +17,23 @@ public class BitSets {
 		}
 		return bits;
 	}
+
+    public static void main(String... args){
+        BitSet part = new BitSet();
+        for(int i=Character.MIN_CODE_POINT; i<= Character.MAX_CODE_POINT; i++){
+            if(!Character.isJavaIdentifierStart(i) && Character.isJavaIdentifierPart(i) && !Character.isIdentifierIgnorable(i)){
+                part.set(i);
+            }
+        }
+        int p = part.nextSetBit(0);
+        while(p > -1){
+            int p1 = part.nextClearBit(p);
+            if(p +1 == p1){
+                System.out.println(String.format("\"\\u%04x\",",p));
+            }else{
+                System.out.println(String.format("\"\\u%04x\"-\"\\u%04x\",",p, p1-1));
+            }
+            p = part.nextSetBit(p1);
+        }
+    }
 }
