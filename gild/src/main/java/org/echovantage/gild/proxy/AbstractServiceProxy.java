@@ -1,6 +1,7 @@
 package org.echovantage.gild.proxy;
 
 import static org.echovantage.util.Assert2.assertCompletes;
+import static org.echovantage.util.Assert2.assertReturns;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -34,7 +35,7 @@ public abstract class AbstractServiceProxy implements ServiceProxy {
 	@Override
 	public final void preserve(final Path output, final ReadOnlyPath golden) {
 		assertTrue("Proxy is not configured", configured);
-		configured = assertCompletes(() -> preserveImpl(output, golden));
+		configured = assertReturns(() -> preserveImpl(output, golden));
 	}
 
 	protected abstract boolean preserveImpl(final Path output, final ReadOnlyPath golden) throws Exception;

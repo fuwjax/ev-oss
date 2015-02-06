@@ -30,7 +30,7 @@ public class Assert2 {
         }
     }
 
-    public static <T> T assertCompletes(final Callable<T> whenCalled) {
+    public static <T> T assertReturns(final Callable<T> whenCalled) {
         try {
             return whenCalled.call();
         } catch (final AssertionError e) {
