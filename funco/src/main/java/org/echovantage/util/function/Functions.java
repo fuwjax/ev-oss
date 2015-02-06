@@ -3,7 +3,7 @@ package org.echovantage.util.function;
 import java.util.function.*;
 
 public class Functions {
-	public static <T> Supplier<T> defer(UnsafeSupplier<T> supplier){
+	public static <T> Supplier<T> defer(Supplier<T> supplier){
 		return new Deferred<>(supplier);
 	}
 
@@ -56,7 +56,7 @@ public class Functions {
 	}
 
 	/* Eclipse is ridiculous about overloading generics right now... */
-//	public static <T> Supplier<T> defer(Supplier<T> supplier){
+//	public static <T> Supplier<T> defer(UnsafeSupplier<T> supplier){
 //		return new Deferred<>(supplier);
 //	}
 //	
