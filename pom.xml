@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2014 EchoVantage (info@echovantage.com)
+    Copyright (C) 2015 EchoVantage (info@echovantage.com)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@
 		<maven>3.2.3</maven>
 	</prerequisites>
 
-	<inceptionYear>2014</inceptionYear>
+	<inceptionYear>2015</inceptionYear>
 	<organization>
 		<name>EchoVantage</name>
 		<url>http://echovantage.com</url>
@@ -286,9 +286,14 @@
 							<email>info@echovantage.com</email>
 						</properties>
 						<excludes>
-							<exclude>**/README.*</exclude>
 							<exclude>src/test/gild/**</exclude>
+							<exclude>LICENSE</exclude>
 						</excludes>
+						<mapping>
+							<java>SLASHSTAR_STYLE</java>
+							<jj>SLASHSTAR_STYLE</jj>
+							<md>SLASHSTAR_STYLE</md>
+						</mapping>
 					</configuration>
 					<executions>
 						<execution>
