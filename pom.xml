@@ -292,16 +292,15 @@
 						<mapping>
 							<java>SLASHSTAR_STYLE</java>
 							<jj>SLASHSTAR_STYLE</jj>
-							<md>SLASHSTAR_STYLE</md>
+							<md>XML_STYLE</md>
 						</mapping>
 					</configuration>
 					<executions>
 						<execution>
-							<id>update-license</id>
+							<id>check-license</id>
 							<goals>
-								<goal>format</goal>
+								<goal>check</goal>
 							</goals>
-							<phase>process-sources</phase>
 						</execution>
 					</executions>
 				</plugin>
