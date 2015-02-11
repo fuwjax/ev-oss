@@ -23,6 +23,8 @@
 		<version>0-SNAPSHOT</version>
 	</parent>
 	<artifactId>gild</artifactId>
+	<name>Gilded Lily Test Harness</name>
+	<description>JUnit Rule for gold-copy testing</description>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>

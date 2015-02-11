@@ -23,6 +23,8 @@
 		<version>0-SNAPSHOT</version>
 	</parent>
 	<artifactId>metafactory</artifactId>
+	<name>MetaFactory ServiceLoader extension</name>
+	<description>Annotations for ServiceLoader META-INF/services descriptors</description>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>

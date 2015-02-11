@@ -24,6 +24,8 @@
         <version>0-SNAPSHOT</version>
     </parent>
     <artifactId>wonton</artifactId>
+    <name>Wonderful Transport Object Notation</name>
+    <description>Transport-agnostic data access layer</description>
     <build>
         <plugins>
             <plugin>

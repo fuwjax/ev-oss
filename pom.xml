@@ -25,6 +25,8 @@
 	<packaging>pom</packaging>
 
 	<name>EchoVantage Open Source</name>
+	<description>EchoVantage open source and experimental projects</description>
+	<url>http://echovantage.org</url>
 
 	<licenses>
 		<license>
@@ -56,6 +58,24 @@
 		<name>EchoVantage</name>
 		<url>http://echovantage.com</url>
 	</organization>
+	
+	<developers>
+		<developer>
+			<id>fuwjax</id>
+			<name>Michael Doberenz</name>
+			<url>http://fuwjax.org</url>
+			<email>mike.doberenz@echovantage.com</email>
+			<organization>EchoVantage</organization>
+			<organizationUrl>http://echovantage.com</organizationUrl>
+			<roles>
+				<role>Spoon Bender</role>
+			</roles>
+			<timezone>America/Chicago</timezone>
+			<properties>
+				<linkedIn>https://www.linkedin.com/in/mikedoberenz/en</linkedIn>
+			</properties>
+		</developer>
+	</developers>
 
 	<scm>
 		<url>git@github.com:EchoVantage/ev-oss.git</url>

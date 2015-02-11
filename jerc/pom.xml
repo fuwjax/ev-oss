@@ -23,6 +23,8 @@
         <version>0-SNAPSHOT</version>
     </parent>
     <artifactId>jerc</artifactId>
+    <name>Java Runtime Compiler</name>
+    <description>Runtime code generation support</description>
     <dependencies>
         <dependency>
             <groupId>com.sun</groupId>
