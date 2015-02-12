@@ -15,20 +15,26 @@
     limitations under the License.
 
 -->
-ev-org
-======
+#EchoVantage OSS
 
-EchoVantage open source and experimental projects
+At EchoVantage we use plenty of open source software. When we can, we try to give back to the excellent projects we use, but our contributions to those projects don't measure up to the benefit we derive from them.
 
-funco - Functions, Collections, Input/Output, and Assertions
+We are a small shop, focused on products that we simply cannot share. However, as in any well-factored project, some tools we've written are generic enough that we can share them without any impact to our core business.
 
-gild - Gold Copy Test Harness
+These are all tools we use, but they may or may not fit your needs, even where they overlap with our own. We share these only as a way of giving back to the community that has given so much to us.
 
-jerc - Java Runtime Compiler
 
-metafactory - ServiceLoader META-INF code generator
+##Projects
 
-wonton - Transport Object Notation
+* [funco](funco) - Functions, Collections, Input/Output, and Assertions
+
+* [gild](gild) - Gold Copy Test Harness
+
+* [jerc](jerc) - Java Runtime Compiler
+
+* [metafactory](metafactory) - ServiceLoader META-INF code generator
+
+* [wonton](wonton) - Transport Object Notation
 
 
 Copyright (C) 2015 EchoVantage (info@echovantage.com)
