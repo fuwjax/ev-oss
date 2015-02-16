@@ -36,5 +36,34 @@ These are all tools we use, but they may or may not fit your needs, even where t
 
 * [wonton](wonton) - Transport Object Notation
 
+##Usage
+
+We recommend using the import scope in your maven project.
+
+```
+	...
+	<dependencyManagement>
+		<dependencies>
+			...
+			<dependency>
+				<groupId>org.echovantage</groupId>
+				<artifactId>oss</artifactId>
+				<version>0.54</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+```
+
+Then to include a project in your build, you no longer need to specify versions. For example to have a test
+dependency on gild:
+
+```
+	<dependencies>
+		...
+		<dependency>
+			<groupId>org.echovantage</groupId>
+			<artifactId>gild</artifactId>
+		</dependency>
+```
 
 Copyright (C) 2015 EchoVantage (info@echovantage.com)

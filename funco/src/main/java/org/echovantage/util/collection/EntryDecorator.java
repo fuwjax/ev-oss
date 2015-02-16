@@ -49,7 +49,7 @@ public class EntryDecorator<K, O, T> implements Map.Entry<K, T> {
 		if(obj == null || !(obj instanceof Map.Entry)) {
 			return false;
 		}
-		final Map.Entry o = (Map.Entry)obj;
+		final Map.Entry<?, ?> o = (Map.Entry<?, ?>) obj;
 		return Objects.equals(getKey(), o.getKey()) && Objects.equals(getValue(), o.getValue());
 	}
 

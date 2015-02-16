@@ -24,6 +24,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardJavaFileManager;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
@@ -63,7 +65,7 @@ public class RuntimeClassLoader extends ClassLoader {
 	private static final JavaCompiler compiler = getSystemJavaCompiler();
 	private final ConcurrentMap<URI, ClassFileObject> files = new ConcurrentHashMap<>();
 	private final ForwardingJavaFileManager<StandardJavaFileManager> manager = new ForwardingJavaFileManager<StandardJavaFileManager>(
-			compiler.getStandardFileManager(null, null, null)) {
+	      compiler.getStandardFileManager(null, null, null)) {
 		@Override
 		public FileObject getFileForOutput(final Location location, final String packageName, final String relativeName, final FileObject sibling) throws IOException {
 			final String className = className(packageName, relativeName);
@@ -107,7 +109,7 @@ public class RuntimeClassLoader extends ClassLoader {
 
 		@Override
 		public JavaFileObject getJavaFileForOutput(final Location location, final String className, final Kind kind,
-				final FileObject sibling) throws IOException {
+		      final FileObject sibling) throws IOException {
 			final ClassFileObject file = new ClassFileObject(className, kind, UTF_8);
 			final ClassFileObject old = files.putIfAbsent(toUri(className, kind), file);
 			return old == null ? file : old;
@@ -147,6 +149,10 @@ public class RuntimeClassLoader extends ClassLoader {
 	public boolean compile(final Map<String, String> sources, final String... options) {
 		final Set<StringSourceFileObject> compUnit = sources.entrySet().stream().map(entry -> new StringSourceFileObject(entry.getKey(), entry.getValue())).collect(Collectors.toSet());
 		return compile(compUnit, options);
+	}
+
+	public boolean compile(final String name, final String source, final String... options) {
+		return compile(Collections.singletonMap(name, source), options);
 	}
 
 	public boolean compile(final Set<? extends JavaFileObject> compUnit, final String... options) {

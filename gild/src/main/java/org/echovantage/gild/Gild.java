@@ -15,6 +15,19 @@
  */
 package org.echovantage.gild;
 
+import static org.echovantage.util.Assert2.assertCompletes;
+import static org.echovantage.util.Assert2.assertEquals;
+import static org.echovantage.util.Files2.delete;
+import static org.echovantage.util.ReadOnlyPath.readOnly;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.echovantage.gild.proxy.ServiceProxy;
 import org.echovantage.gild.stage.Stage;
 import org.echovantage.gild.stage.StageFactory;
@@ -25,32 +38,21 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static org.echovantage.util.Assert2.assertCompletes;
-import static org.echovantage.util.Assert2.assertEquals;
-import static org.echovantage.util.Files2.delete;
-import static org.echovantage.util.ReadOnlyPath.readOnly;
-import static org.junit.Assert.*;
-
 /**
  * The Gilded Test Harness jUnit Rule. The Gilded harness does a gold copy
- * restore and compare through various services
- * generally external to the system under test.
+ * restore and compare through various services generally external to the system
+ * under test.
  * <p>
  * Standard Usage:
  *
  * <pre>
  * package org.example.test;
- *
+ * 
  * public class TestClass {
  * 	private DatabaseProxy db = new DatabaseProxy(dataSource);
  * 	\@Rule
  * 	public Gilded harness = new Gilded().with("db", db);
- *
+ * 
  * 	\@Test
  * 	public void testSomething() throws Exception {
  * 		// loads src/test/gilded/org.example.test.TestClass/testSomething/input/db/* into the dataSource
@@ -67,7 +69,7 @@ import static org.junit.Assert.*;
  * <pre>
  * 	\@Rule
  * 	public Gilded harness = new Gilded().with("db", db).staged(StandardStageFactory.startingAt("stage1"));
- *
+ * 
  * 	\@Test
  * 	public void testProcess() throws Exception {
  * 		// loads src/test/gilded/org.example.test.TestClass/testProcess/stage1/input/db/* into the dataSource
@@ -91,7 +93,6 @@ import static org.junit.Assert.*;
  *
  * By default, the harness uses the standard path locations detailed in
  * {@link StandardStageFactory} and has no {@link Transformer}.
- *
  * @author fuwjax
  */
 public class Gild implements TestRule {
@@ -104,11 +105,8 @@ public class Gild implements TestRule {
 
 	/**
 	 * Adds a service proxy to this harness.
-	 *
-	 * @param serviceName
-	 *           the name of the service
-	 * @param proxy
-	 *           the service proxy
+	 * @param serviceName the name of the service
+	 * @param proxy the service proxy
 	 * @return this harness
 	 */
 	public Gild with(final String serviceName, final ServiceProxy proxy) {
@@ -128,16 +126,11 @@ public class Gild implements TestRule {
 
 	/**
 	 * Turns this test execution into a gold copy create instead of a gold copy
-	 * assert. This method may have vairous
-	 * safeguards to prevent it from being accidentally left in code during a
-	 * release.
-	 *
+	 * assert. This method may have vairous safeguards to prevent it from being
+	 * accidentally left in code during a release.
 	 * @return this harness
 	 */
 	public Gild updateGoldCopy() {
-		if(Boolean.getBoolean("mavenTest")) {
-			throw new RuntimeException("Cannot update gold copy during surefire testing");
-		}
 		isAssert = false;
 		return this;
 	}
@@ -162,10 +155,10 @@ public class Gild implements TestRule {
 	private void prepare() {
 		assertFalse("Stage has already been prepared", prepared);
 		for(final Map.Entry<String, ServiceProxy> entry : proxies.entrySet()) {
-			String service = entry.getKey();
-			ServiceProxy proxy = entry.getValue();
+			final String service = entry.getKey();
+			final ServiceProxy proxy = entry.getValue();
 			final Path in = stage.inputPath(service);
-			Path output = transform == null ? stage.comparePath(service) : stage.transformPath(service);
+			final Path output = transform == null ? stage.comparePath(service) : stage.transformPath(service);
 			proxy.prepare(readOnly(in), output);
 		}
 		prepared = true;
@@ -201,14 +194,13 @@ public class Gild implements TestRule {
 		} else {
 			delete(expected);
 			Files2.copy(actual, expected);
+			fail("Gold copy has been updated");
 		}
 	}
 
 	/**
 	 * Moves to the next stage in the staged test run.
-	 *
-	 * @param stageName
-	 *           the next stage name
+	 * @param stageName the next stage name
 	 */
 	public void nextStage(final String stageName) {
 		assertNotNull("Cannot move to a null stage", stageName);
