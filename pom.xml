@@ -47,6 +47,7 @@
 		<module>jerc</module>
 		<module>metafactory</module>
 		<module>funco</module>
+		<module>wheatgrass</module>
 	</modules>
 
 	<prerequisites>
