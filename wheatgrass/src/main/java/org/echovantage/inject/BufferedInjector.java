@@ -1,18 +1,11 @@
 package org.echovantage.inject;
 
-import org.echovantage.rei.Generic;
-import org.echovantage.rei.Rei;
-import org.echovantage.util.function.Functions;
+import org.echovantage.generic.Generic;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static org.echovantage.util.function.Functions.function;
 
 /**
  * Created by fuwjax on 2/17/15.

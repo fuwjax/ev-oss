@@ -1,4 +1,4 @@
-package org.echovantage.rei;
+package org.echovantage.generic;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -8,15 +8,13 @@ import java.util.List;
  */
 public class Spec implements Generic{
     public static Spec of(Class<?> type){
-        return new Spec(type);
+        return type == null ? null : new Spec(type);
     }
+
+    private final Spec owner;
 
     private Spec(Class<?> type) {
-
-    }
-
-    public Generic[] args(Type[] args) {
-        return new Generic[0];
+        owner = of(type.getDeclaringClass());
     }
 
     @Override
@@ -29,7 +27,7 @@ public class Spec implements Generic{
         return null;
     }
 
-    public List<GenericMember> membersFor(Generic[] args) {
+    public List<GenericMember> membersFor(TypeVariables library) {
         return null;
     }
 }

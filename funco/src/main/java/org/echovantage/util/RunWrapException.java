@@ -23,6 +23,10 @@ import java.util.function.Supplier;
 public class RunWrapException extends RuntimeException {
 	private final Supplier<String> message;
 
+	public RunWrapException(final Throwable cause) {
+		this(cause, "Wrapped %s: %s", cause.getClass().getCanonicalName(), cause.getMessage());
+	}
+
 	public RunWrapException(final Throwable cause, final String pattern, final Object... args) {
 		this(cause, () -> String.format(pattern, args));
 	}
@@ -34,10 +38,6 @@ public class RunWrapException extends RuntimeException {
 	public RunWrapException(final Throwable cause, final Supplier<String> message) {
 		super(cause);
 		this.message = message;
-	}
-
-	public RunWrapException(final Throwable cause) {
-		this(cause, () -> "Wrapped " + cause.getClass().getCanonicalName() + ": " + cause.getLocalizedMessage());
 	}
 
 	protected Supplier<String> message() {

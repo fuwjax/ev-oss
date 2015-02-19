@@ -1,10 +1,8 @@
-package org.echovantage.rei;
+package org.echovantage.generic;
 
 import org.echovantage.inject.Injector;
 
 import java.lang.annotation.Annotation;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /**
  * Created by fuwjax on 2/18/15.

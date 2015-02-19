@@ -1,13 +1,7 @@
 package org.echovantage.inject;
 
-import static org.echovantage.util.Members.fields;
-import static org.echovantage.util.Members.methods;
-import static org.echovantage.util.function.Functions.function;
 import static org.echovantage.util.function.Functions.predicate;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,13 +9,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.echovantage.rei.Generic;
-import org.echovantage.rei.GenericMember;
-import org.echovantage.rei.GenericMember.MemberAccess;
-import org.echovantage.rei.Rei;
-import org.echovantage.rei.Spec;
-import org.echovantage.util.Members;
-import org.echovantage.util.function.Functions;
+import org.echovantage.generic.Generic;
+import org.echovantage.generic.GenericMember;
+import org.echovantage.generic.GenericMember.MemberAccess;
+import org.echovantage.generic.Spec;
 
 public class ReflectInjector extends Injector {
 	private final Map<Generic, Function<Injector, ?>> providers = new HashMap<>();

@@ -1,8 +1,8 @@
 package org.echovantage.inject;
 
-import org.echovantage.rei.Generic;
-import org.echovantage.rei.Rei;
-import org.echovantage.rei.Spec;
+import org.echovantage.generic.Generic;
+import org.echovantage.generic.Rei;
+import org.echovantage.generic.Spec;
 import org.echovantage.util.Arrays2;
 
 import static org.echovantage.util.function.Functions.function;

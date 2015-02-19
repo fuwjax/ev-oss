@@ -1,22 +1,25 @@
-package org.echovantage.rei;
-
-import org.echovantage.util.Arrays2;
-import org.echovantage.util.Types;
+package org.echovantage.generic;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 /**
  * Created by fuwjax on 2/18/15.
  */
-public class Rei<T> implements Generic{
-    private Spec type;
-    private Generic[] args;
+public class ParameterizedGeneric implements Generic {
+    private final Spec type;
+    private final TypeVariables args;
+    private final Generic owner; // either null, a ParameterizedGeneric or a Spec
 
-    public Rei(){
+    public ParameterizedGeneric(ParameterizedType parameterizedType) {
+        owner = Generic.of(parameterizedType.getOwnerType());
+        type = Spec.of((Class<?>)parameterizedType.getRawType());
+        args = owner == null ? new TypeVariables(parameterizedType) : owner.library().with(parameterizedType);
+    }
+
+    protected ParameterizedGeneric(){
         ParameterizedType t = (ParameterizedType)getClass().getGenericSuperclass();
         if(!Rei.class.equals(t.getRawType())){
             throw new IllegalStateException("Rei instances must be direct anonymous classes");
@@ -25,18 +28,19 @@ public class Rei<T> implements Generic{
         if(!(arg instanceof ParameterizedType)){
             throw new IllegalStateException("Rei anonymous instances should be for generic types");
         }
-        ParameterizedType p = (ParameterizedType)arg;
-        type = Spec.of((Class<?>) p.getRawType());
-        args = type.args(p.getActualTypeArguments());
-    }
-
-    private Rei(Spec type, Generic... args){
-        this.type = type;
-        this.args = args;
+        ParameterizedType parameterizedType = (ParameterizedType)arg;
+        owner = Generic.of(parameterizedType.getOwnerType());
+        type = Spec.of((Class<?>)parameterizedType.getRawType());
+        args = owner == null ? new TypeVariables(parameterizedType) : owner.library().with(parameterizedType);
     }
 
     public boolean isAssignableFrom(Generic value) {
         return type.isAssignableFrom(value);
+    }
+
+    @Override
+    public TypeVariables library() {
+        return args;
     }
 
     @Override

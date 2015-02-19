@@ -1,34 +1,18 @@
 package org.echovantage.inject;
 
-import static org.echovantage.rei.GenericMember.MemberType.CONSTRUCTOR;
-import static org.echovantage.util.Members.access;
-import static org.echovantage.util.Members.constructors;
-import static org.echovantage.util.Members.fields;
-import static org.echovantage.util.Members.methods;
-import static org.echovantage.util.function.Functions.consumer;
+import static org.echovantage.generic.GenericMember.MemberType.CONSTRUCTOR;
 import static org.echovantage.util.function.Functions.function;
 import static org.echovantage.util.function.Functions.predicate;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.echovantage.rei.Generic;
-import org.echovantage.rei.GenericMember;
-import org.echovantage.rei.Rei;
+import org.echovantage.generic.Generic;
+import org.echovantage.generic.GenericMember;
 import org.echovantage.util.RunWrapException;
-import org.echovantage.util.function.Functions;
 
 public class InjectSpec {
 	private static ConcurrentMap<Generic, InjectSpec> specs = new ConcurrentHashMap<>();

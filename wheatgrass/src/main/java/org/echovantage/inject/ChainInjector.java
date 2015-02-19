@@ -1,6 +1,6 @@
 package org.echovantage.inject;
 
-import org.echovantage.rei.Generic;
+import org.echovantage.generic.Generic;
 
 public class ChainInjector extends Injector {
 	private final Injector[] injectors;
