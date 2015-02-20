@@ -1,34 +1,85 @@
 package org.echovantage.generic;
 
 import org.echovantage.inject.Injector;
+import org.echovantage.util.Arrays2;
+import org.echovantage.util.RunWrapException;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.function.Predicate;
+
+import static org.echovantage.util.function.Functions.function;
 
 /**
  * Created by fuwjax on 2/18/15.
  */
 public interface GenericMember {
-    enum MemberAccess{
-        PUBLIC, PRIVATE, PROTECTED, PACKAGE
+    enum MemberAccess implements Predicate<GenericMember> {
+        PUBLIC, PROTECTED, PACKAGE, PRIVATE;
+
+        @Override
+        public boolean test(GenericMember member) {
+            return member.access().ordinal() < ordinal();
+        }
+
+        public static MemberAccess of(int modifiers) {
+            if (Modifier.isPublic(modifiers)) {
+                return PUBLIC;
+            }
+            if(Modifier.isProtected(modifiers)){
+                return PROTECTED;
+            }
+            if(Modifier.isPrivate(modifiers)){
+                return PRIVATE;
+            }
+            return PACKAGE;
+        }
     }
 
-    enum MemberType{
-        CONSTRUCTOR, METHOD, FIELD
+    enum MemberType implements Predicate<GenericMember>{
+        CONSTRUCTOR, METHOD, FIELD_GET, FIELD_SET;
+
+        @Override
+        public boolean test(GenericMember member) {
+            return member.type() == this;
+        }
     }
 
-    Object invoke(Injector source);
+    enum TargetType implements Predicate<GenericMember>{
+        TYPE, INSTANCE;
 
-    Object invoke(Injector source, Object target);
+        @Override
+        public boolean test(GenericMember member) {
+            return member.target() == this;
+        }
 
-    Annotation[] getAnnotations();
+        public static TargetType of(int modifiers) {
+            return Modifier.isStatic(modifiers) ? TYPE : INSTANCE;
+        }
+    }
 
-    Generic[] paramTypes();
+    default Object inject(Injector source) {
+        return inject(source, null);
+    }
 
-    Generic returnType();
+    default Object inject(Injector source, Object target) {
+        return source.invoke(this, target);
+    }
 
-    boolean isStatic();
+    Object invoke(Object target, Object... args) throws ReflectiveOperationException;
+
+    String name();
+
+    Annotation[] annotations();
+
+    Type[] paramTypes();
+
+    Type returnType();
 
     MemberAccess access();
 
     MemberType type();
+
+    TargetType target();
 }

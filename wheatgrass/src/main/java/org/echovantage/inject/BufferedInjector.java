@@ -1,7 +1,8 @@
 package org.echovantage.inject;
 
-import org.echovantage.generic.Generic;
+import org.echovantage.util.Types;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,29 +12,24 @@ import java.util.stream.Collectors;
  * Created by fuwjax on 2/17/15.
  */
 public class BufferedInjector extends Injector {
-    private final Map<Generic, Object> objects = new HashMap<>();
+    private final Map<Type, Object> objects = new HashMap<>();
     private final Injector injector;
 
     public BufferedInjector(Injector injector, Object object) {
         this.injector = injector;
-        if(object != null){
-            objects.put(Generic.of(object.getClass()), object);
+        if (object != null) {
+            objects.put(object.getClass(), object);
         }
     }
 
     @Override
-    protected Injector internal() {
-        return injector;
-    }
-
-    @Override
-    protected Object get(Injector source, Generic type) throws ReflectiveOperationException {
+    protected Object get(Injector source, Type type) {
         Object object = objects.get(type);
-        if(object == null) {
-            final List<Object> assigns = objects.entrySet().stream().filter(e -> type.isAssignableFrom(e.getKey())).map(Map.Entry::getValue).collect(Collectors.toList());
-            if(assigns.size() == 1) {
+        if (object == null) {
+            final List<Object> assigns = objects.entrySet().stream().filter(e -> Types.isAssignable(type, e.getKey())).map(Map.Entry::getValue).collect(Collectors.toList());
+            if (assigns.size() == 1) {
                 object = assigns.get(0);
-            } else if(assigns.size() > 1) {
+            } else if (assigns.size() > 1) {
                 throw new IllegalStateException("Multiple bindings for " + type);
             } else {
                 object = injector.get(source, type);

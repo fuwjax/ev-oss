@@ -1,6 +1,6 @@
 package org.echovantage.inject;
 
-import org.echovantage.generic.Generic;
+import java.lang.reflect.Type;
 
 public class SpawnInjector extends Injector {
     @Override
@@ -9,8 +9,8 @@ public class SpawnInjector extends Injector {
     }
 
     @Override
-	protected Object get(final Injector source, final Generic type) throws ReflectiveOperationException {
-		final InjectSpec spec = InjectSpec.get(type);
-		return spec.create(source);
-	}
+    protected Object get(final Injector source, final Type type) {
+        final InjectSpec spec = InjectSpec.get(type);
+        return spec.create(source);
+    }
 }

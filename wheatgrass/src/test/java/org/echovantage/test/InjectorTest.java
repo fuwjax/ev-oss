@@ -1,7 +1,7 @@
 package org.echovantage.test;
 
 import org.echovantage.inject.Injector;
-import org.echovantage.inject.Rei;
+import org.echovantage.generic.Rei;
 import org.echovantage.sample.SampleMethodModule;
 import org.echovantage.sample.SampleModule;
 import org.echovantage.sample.SampleResource;

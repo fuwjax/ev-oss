@@ -36,4 +36,9 @@ public class Members {
     public static boolean isProtected(final Member member) {
         return Modifier.isProtected(member.getModifiers());
     }
+
+    public static boolean isNotStatic(Member member){
+        return !Modifier.isStatic(member.getModifiers());
+    }
+
 }
