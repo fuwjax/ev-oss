@@ -41,4 +41,9 @@ public class ConstructorMember extends AbstractMember<Constructor<?>> {
     public MemberType type() {
         return MemberType.CONSTRUCTOR;
     }
+
+    @Override
+    public TargetType target() {
+        return TargetType.TYPE;
+    }
 }

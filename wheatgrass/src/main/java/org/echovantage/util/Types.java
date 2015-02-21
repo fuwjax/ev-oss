@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -14,6 +15,7 @@ import java.util.Objects;
  * Created by fuwjax on 2/18/15.
  */
 public class Types {
+    public static final Type[] NO_PARAMS = new Type[0];
     private static Map<Class<?>, Class<?>> parent = new HashMap<>();
     private static Map<Class<?>, Class<?>> box = new HashMap<>();
 
@@ -33,6 +35,19 @@ public class Types {
         box(float.class, Float.class);
         box(double.class, Double.class);
     }
+
+    public static final Comparator<Type> TYPE_COMPARATOR = (t1, t2) -> {
+        if(Objects.equals(t1, t2)){
+            return 0;
+        }
+        if (Types.isAssignable(t1, t2)){
+            return 1;
+        }
+        if (Types.isAssignable(t2, t1)){
+            return -1;
+        }
+        return t1.getTypeName().compareTo(t2.getTypeName());
+    };
 
     private static void box(Class<?> primitive, Class<?> boxed) {
         box.put(primitive, boxed);
@@ -160,7 +175,7 @@ public class Types {
             return w(t).getLowerBounds();
         }
         if(t instanceof TypeVariable){
-            return new Type[0];
+            return NO_PARAMS;
         }
         return new Type[]{t};
     }
@@ -188,7 +203,7 @@ public class Types {
                 throw new IllegalArgumentException("Variable "+t+" is not present in "+mapping);
             }
             Type arg = mapping.getActualTypeArguments()[index];
-            result = subst(arg == null ? wildcardOf(v.getBounds(), new Type[0]) : arg, mapping);
+            result = subst(arg == null ? wildcardOf(v.getBounds(), NO_PARAMS) : arg, mapping);
         }else if(t instanceof GenericArrayType){
             final GenericArrayType array = a(t);
             Type comp = subst(array.getGenericComponentType(), mapping);
@@ -212,7 +227,7 @@ public class Types {
     }
 
     public static Type[] subst(Type[] types, ParameterizedType mapping){
-        return Arrays2.transform(types, t -> subst(t, mapping));
+        return Arrays2.transform(types, NO_PARAMS, t -> subst(t, mapping));
     }
 
     private static ParameterizedType paramOf(Type owner, Type raw, Type[] args){
@@ -329,5 +344,9 @@ public class Types {
             return true;
         }
         return type instanceof Class;
+    }
+
+    public static boolean isVoid(Type type) {
+        return void.class.equals(type) || Void.class.equals(type);
     }
 }

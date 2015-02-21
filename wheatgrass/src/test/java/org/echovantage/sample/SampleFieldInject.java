@@ -1,7 +1,7 @@
 package org.echovantage.sample;
 
-import org.echovantage.inject.Inject;
 
+import javax.inject.Inject;
 import java.util.Objects;
 
 /**

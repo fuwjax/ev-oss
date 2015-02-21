@@ -1,14 +1,12 @@
 package org.echovantage.generic;
 
-import org.echovantage.inject.Injector;
 import org.echovantage.util.ObjectAssist;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
 import java.lang.reflect.Member;
-import java.util.Objects;
+import java.lang.reflect.Type;
 
 /**
  * Created by fuwjax on 2/19/15.
@@ -21,7 +19,7 @@ public abstract class AbstractMember<M extends AccessibleObject & Member & Annot
         this.m = m;
     }
 
-    protected M member(){
+    protected M member() {
         return m;
     }
 
@@ -36,6 +34,16 @@ public abstract class AbstractMember<M extends AccessibleObject & Member & Annot
     }
 
     @Override
+    public <A extends Annotation> A[] annotation(Class<A> type) {
+        return m.getDeclaredAnnotationsByType(type);
+    }
+
+    @Override
+    public Type declaringClass() {
+        return m.getDeclaringClass();
+    }
+
+    @Override
     public MemberAccess access() {
         return MemberAccess.of(m.getModifiers());
     }
@@ -47,6 +55,7 @@ public abstract class AbstractMember<M extends AccessibleObject & Member & Annot
 
     @Override
     public Object[] ids() {
-        return new Object[]{GenericMember.class, member().getDeclaringClass(), type(), name(), paramTypes()};
+        return GenericMember.ids(this);
     }
 }
+

@@ -49,6 +49,6 @@ public class InjectorTest {
     public void testSupplier() throws ReflectiveOperationException {
         final Injector injector = Injector.newInjector(new SampleModule());
         Supplier<SampleResource> supplier = injector.get(new Rei<Supplier<SampleResource>>(){});
-        assertThat(supplier.get(), is(new SampleResource(7)));
+        assertThat(supplier.get(), is(new SampleResource(8)));
     }
 }

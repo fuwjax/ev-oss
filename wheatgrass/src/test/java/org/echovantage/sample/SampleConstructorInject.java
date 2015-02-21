@@ -1,7 +1,7 @@
 package org.echovantage.sample;
 
-import org.echovantage.inject.Inject;
 
+import javax.inject.Inject;
 import java.util.Objects;
 
 /**
@@ -12,17 +12,17 @@ public class SampleConstructorInject {
     private final String name;
 
     @Inject
-    public SampleConstructorInject(int id, String name){
+    public SampleConstructorInject(int id, String name) {
         this.id = id;
         this.name = name;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(!(obj instanceof SampleConstructorInject)){
+        if (!(obj instanceof SampleConstructorInject)) {
             return false;
         }
-        SampleConstructorInject o = (SampleConstructorInject)obj;
+        SampleConstructorInject o = (SampleConstructorInject) obj;
         return Objects.equals(getClass(), o.getClass()) && id == o.id && Objects.equals(name, o.name);
     }
 

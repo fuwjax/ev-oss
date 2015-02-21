@@ -4,35 +4,42 @@ import org.echovantage.generic.GenericMember;
 import org.echovantage.generic.Spec;
 import org.echovantage.util.RunWrapException;
 
-import java.lang.annotation.Annotation;
+import javax.inject.Inject;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.echovantage.generic.GenericMember.MemberType.CONSTRUCTOR;
 import static org.echovantage.generic.GenericMember.TargetType.INSTANCE;
+import static org.echovantage.util.function.Functions.function;
 
-public class InjectSpec {
+public class InjectSpec implements Binding {
     private static ConcurrentMap<Type, InjectSpec> specs = new ConcurrentHashMap<>();
 
     public static InjectSpec get(final Type type) {
-        return type == null ? null : specs.computeIfAbsent(type, t -> new InjectSpec(Spec.of(t)));
+        try {
+            return type == null ? null : specs.computeIfAbsent(type, function(InjectSpec::new));
+        } catch (RunWrapException e) {
+            return null;
+        }
     }
 
     private final GenericMember constructor;
     private final List<GenericMember> members;
 
-    private InjectSpec(final Spec type) {
-        constructor = constructor(type);
-        members = type.members().filter(INSTANCE.and(InjectSpec::isInject)).collect(Collectors.toList());
+    private InjectSpec(final Type type) throws ReflectiveOperationException {
+        Spec spec = Spec.of(type);
+        constructor = constructor(spec);
+        members = spec.members().filter(INSTANCE.and(InjectSpec::isInject)).collect(Collectors.toList());
     }
 
-    private static GenericMember constructor(final Spec type) {
+    private static GenericMember constructor(final Spec type) throws ReflectiveOperationException {
         final List<GenericMember> constructors = type.members().filter(CONSTRUCTOR).collect(Collectors.toList());
         if (constructors.size() == 0) {
-            throw new IllegalArgumentException("Inject specifications require " + type + " to be constructible");
+            throw new ReflectiveOperationException("Inject specifications require " + type + " to be constructible");
         }
         GenericMember best;
         if (constructors.size() == 1) {
@@ -51,31 +58,19 @@ public class InjectSpec {
     }
 
     private static boolean isInject(final GenericMember member) {
-        for (final Annotation anno : member.annotations()) {
-            if ("Inject".equals(anno.annotationType().getSimpleName())) {
-                return true;
-            }
-        }
-        return false;
+        return member.annotation(Inject.class).length > 0;
     }
 
-    public void inject(final Injector source, final Object object) {
-        try {
-            for (GenericMember member : members) {
-                member.invoke(source, object);
-            }
-        } catch (ReflectiveOperationException e) {
-            throw new RunWrapException(e);
-        }
+    public Stream<GenericMember> members() {
+        return members.stream();
     }
 
-    public Object create(final Injector source) {
-        try {
-            final Object o = constructor.invoke(source);
-            inject(source, o);
-            return o;
-        } catch (ReflectiveOperationException e) {
-            throw new RunWrapException(e);
+    @Override
+    public Object get(ObjectFactory injector) throws ReflectiveOperationException {
+        final Object o = injector.invoke(null, constructor);
+        for (GenericMember member : members) {
+            injector.invoke(o, member);
         }
+        return o;
     }
 }

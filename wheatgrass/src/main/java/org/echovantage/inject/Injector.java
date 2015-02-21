@@ -3,55 +3,57 @@ package org.echovantage.inject;
 import org.echovantage.generic.GenericMember;
 import org.echovantage.generic.GenericMember.MemberAccess;
 import org.echovantage.generic.Rei;
-import org.echovantage.generic.Spec;
-import org.echovantage.util.Arrays2;
-import org.echovantage.util.RunWrapException;
+import org.echovantage.util.Streams;
 
 import java.lang.reflect.Type;
 
 import static org.echovantage.generic.GenericMember.MemberAccess.PROTECTED;
 import static org.echovantage.generic.GenericMember.MemberAccess.PUBLIC;
-import static org.echovantage.util.function.Functions.function;
 
-public abstract class Injector {
-    public static Injector newInjector(final Object... modules) {
-        Injector[] injectors = new Injector[modules.length + 1];
+public class Injector implements ObjectFactory{
+    public static Injector newInjector(final Object... modules) throws ReflectiveOperationException {
+        InjectorStrategy[] injectors = new InjectorStrategy[modules.length + 1];
         injectors[modules.length] = new SpawnInjector();
-        Injector injector = new ChainInjector(injectors);
+        Injector injector = new Injector(new ChainStrategy(injectors));
         for (int i = 0; i < modules.length; i++) {
-            Object module = modules[i] instanceof Type ? injector.get(modules[i]) : modules[i];
-            injectors[i] = module instanceof Injector ? (Injector) module : new ReflectInjector(module);
+            Object module = modules[i] instanceof Type ? injector.get((Type)modules[i], PUBLIC) : modules[i];
+            injectors[i] = module instanceof InjectorStrategy ? (InjectorStrategy) module : new ReflectInjector(module);
         }
         return injector;
     }
 
-    public void inject(final Object object) {
+    private final InjectorStrategy strategy;
+
+    protected Injector(final InjectorStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public void inject(final Object object) throws ReflectiveOperationException {
         if (object != null) {
+            ObjectFactory factory = factory();
             final InjectSpec spec = InjectSpec.get(object.getClass());
-            spec.inject(this, object);
+            if(spec == null){
+                throw new IllegalArgumentException("Object type is not injectable");
+            }
+            for (GenericMember member : Streams.over(spec.members())) {
+                factory.invoke(object, member);
+            }
         }
     }
 
-    public <T> T get(final Class<T> type) {
+    public <T> T get(final Class<T> type) throws ReflectiveOperationException {
         return (T) get(type, PUBLIC);
     }
 
-    public <T> T get(final Rei<T> type) {
+    public <T> T get(final Rei<T> type) throws ReflectiveOperationException {
         return (T) get(type, PUBLIC);
     }
 
-    protected Object get(Type type){
-        return get(type, PUBLIC);
+    protected ObjectFactory factory(){
+        return new BufferedFactory(strategy);
     }
 
-    protected abstract Object get(Type type, MemberAccess access);
-
-    public Object invoke(GenericMember member, Object target) {
-        try{
-            Object[] args = Arrays2.transform(member.paramTypes(), function(t -> get(t, PROTECTED)));
-            return member.invoke(target, args);
-        }catch(ReflectiveOperationException e){
-            throw new RunWrapException(e);
-        }
+    public Object get(Type type, MemberAccess access) throws ReflectiveOperationException {
+        return strategy.get(factory(), type, access);
     }
 }

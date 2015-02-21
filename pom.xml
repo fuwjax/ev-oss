@@ -39,6 +39,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<nexus.url>http://mvn.echo-v.net</nexus.url>
+        <buildNumber>SNAPSHOT</buildNumber>
 	</properties>
 
 	<modules>
@@ -160,8 +161,8 @@
 								<Group-Id>${project.groupId}</Group-Id>
 								<Artifact-Id>${project.artifactId}</Artifact-Id>
 								<Artifact-Version>${project.version}</Artifact-Version>
-								<Source-Revision>${buildNumber}</Source-Revision>
-							</manifestEntries>
+                                <Source-Revision>${buildNumber}</Source-Revision>
+                            </manifestEntries>
 						</archive>
 					</configuration>
 				</plugin>
@@ -376,8 +377,13 @@
 				<scope>system</scope>
 				<systemPath>${java.home}/../lib/tools.jar</systemPath>
 			</dependency>
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>1</version>
+            </dependency>
 
-			<!-- Testing -->
+            <!-- Testing -->
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>

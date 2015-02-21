@@ -1,6 +1,7 @@
 package org.echovantage.sample;
 
-import org.echovantage.inject.Inject;
+
+import javax.inject.Inject;
 
 /**
  * Created by fuwjax on 2/18/15.

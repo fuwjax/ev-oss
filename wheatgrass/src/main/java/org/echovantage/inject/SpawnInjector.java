@@ -1,16 +1,13 @@
 package org.echovantage.inject;
 
+import org.echovantage.generic.GenericMember;
+import org.echovantage.generic.GenericMember.MemberAccess;
+
 import java.lang.reflect.Type;
 
-public class SpawnInjector extends Injector {
+public class SpawnInjector implements InjectorStrategy {
     @Override
-    protected Injector internal() {
-        return this;
-    }
-
-    @Override
-    protected Object get(final Injector source, final Type type) {
-        final InjectSpec spec = InjectSpec.get(type);
-        return spec.create(source);
+    public Binding bindingFor(Type type, MemberAccess access) {
+        return InjectSpec.get(type);
     }
 }

@@ -31,9 +31,4 @@ public class MethodMember extends AbstractMember<Method> {
     public MemberType type() {
         return MemberType.METHOD;
     }
-
-    @Override
-    public Object[] ids() {
-        return new Object[]{GenericMember.class, type(), name(), paramTypes()};
-    }
 }

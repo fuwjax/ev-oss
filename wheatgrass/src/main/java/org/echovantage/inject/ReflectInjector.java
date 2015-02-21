@@ -1,5 +1,6 @@
 package org.echovantage.inject;
 
+import org.echovantage.generic.GenericMember;
 import org.echovantage.generic.GenericMember.MemberAccess;
 import org.echovantage.generic.Spec;
 import org.echovantage.util.Types;
@@ -8,51 +9,44 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.echovantage.generic.GenericMember.MemberAccess.PROTECTED;
 import static org.echovantage.generic.GenericMember.TargetType.INSTANCE;
-import static org.echovantage.util.function.Functions.function;
 
-public class ReflectInjector extends Injector {
-    private final Map<Type, Function<Injector, ?>> providers = new HashMap<>();
+public class ReflectInjector implements InjectorStrategy {
+    private final Map<Type, GenericMember> bindings = new HashMap<>();
     private final Object obj;
 
     public ReflectInjector(final Object obj) {
-        this(obj, MemberAccess.PUBLIC);
-    }
-
-    private ReflectInjector(Object obj, MemberAccess access) {
         this.obj = obj;
         Spec spec = Spec.of(obj.getClass());
-        register(obj.getClass(), i -> obj);
-        spec.members().filter(INSTANCE.and(access)).forEach(m -> register(m.returnType(), function(m::invoke)));
+        spec.members().filter(INSTANCE.and(PROTECTED).and(m -> !Types.isVoid(m.returnType())).and(m -> Types.isAssignable(obj.getClass(), m.declaringClass()))).forEach(this::register);
     }
 
-    private void register(final Type type, final Function<Injector, ?> function) {
-        final Function<Injector, ?> old = providers.put(type, function);
+    private void register(final GenericMember binding) {
+        final GenericMember old = bindings.put(binding.returnType(), binding);
         if (old != null) {
-            throw new IllegalStateException("Multiple bindings for " + type);
+            throw new IllegalStateException("Multiple bindings for " + binding.returnType());
         }
     }
 
     @Override
-    protected Object get(final Injector source, final Type type) {
-        Function<Injector, ?> provider = providers.get(type);
-        if (provider == null) {
-            final List<Function<Injector, ?>> assigns = providers.entrySet().stream().filter(e -> Types.isAssignable(type, e.getKey())).map(Map.Entry::getValue).collect(Collectors.toList());
-            if (assigns.size() == 1) {
-                provider = assigns.get(0);
-            } else if (assigns.size() > 1) {
-                throw new IllegalStateException("Multiple bindings for " + type);
-            }
+    public Binding bindingFor(Type type, MemberAccess access) {
+        if (Types.isAssignable(type, obj.getClass())) {
+            return i -> obj;
         }
-        // can't type.cast() here as the type may be primitive
-        return provider == null ? null : provider.apply(source);
-    }
-
-    @Override
-    protected Injector internal() {
-        return new ReflectInjector(obj, MemberAccess.PROTECTED);
+        GenericMember binding = bindings.get(type);
+        if (binding != null) {
+            return access.test(binding) ? i -> i.invoke(obj, binding) : null;
+        }
+        final List<GenericMember> assigns = bindings.entrySet().stream().filter(e -> access.test(e.getValue()) && Types.isAssignable(type, e.getKey())).map(Map.Entry::getValue).collect(Collectors.toList());
+        if (assigns.isEmpty()) {
+            return null;
+        }
+        if (assigns.size() == 1) {
+            return assigns.get(0)::invoke;
+        }
+        throw new IllegalArgumentException("Multiple bindings for " + type);
     }
 }
