@@ -357,11 +357,16 @@
 				<version>${project.version}</version>
 				<optional>true</optional>
 			</dependency>
-			<dependency>
-				<groupId>org.echovantage</groupId>
-				<artifactId>wonton</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.echovantage</groupId>
+                <artifactId>wonton</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.echovantage</groupId>
+                <artifactId>wheatgrass</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 			<dependency>
 				<groupId>org.echovantage</groupId>
 				<artifactId>gild</artifactId>
