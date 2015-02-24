@@ -14,11 +14,11 @@ import java.util.stream.Collectors;
 import static org.echovantage.generic.GenericMember.MemberAccess.PROTECTED;
 import static org.echovantage.generic.GenericMember.TargetType.INSTANCE;
 
-public class ReflectInjector implements InjectorStrategy {
+public class ReflectStrategy implements InjectorStrategy {
     private final Map<Type, GenericMember> bindings = new HashMap<>();
     private final Object obj;
 
-    public ReflectInjector(final Object obj) {
+    public ReflectStrategy(final Object obj) {
         this.obj = obj;
         Spec spec = Spec.of(obj.getClass());
         spec.members().filter(INSTANCE.and(PROTECTED).and(m -> !Types.isVoid(m.returnType())).and(m -> Types.isAssignable(obj.getClass(), m.declaringClass()))).forEach(this::register);

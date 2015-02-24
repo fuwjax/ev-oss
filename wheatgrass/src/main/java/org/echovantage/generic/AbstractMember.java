@@ -35,7 +35,7 @@ public abstract class AbstractMember<M extends AccessibleObject & Member & Annot
 
     @Override
     public <A extends Annotation> A[] annotation(Class<A> type) {
-        return m.getDeclaredAnnotationsByType(type);
+        return m.getAnnotationsByType(type);
     }
 
     @Override

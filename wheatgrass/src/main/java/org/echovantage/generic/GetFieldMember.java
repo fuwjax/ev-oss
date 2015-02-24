@@ -1,8 +1,5 @@
 package org.echovantage.generic;
 
-import org.echovantage.inject.Injector;
-
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 

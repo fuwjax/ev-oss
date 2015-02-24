@@ -19,11 +19,11 @@ import static org.echovantage.util.function.Functions.function;
 public class InjectSpec implements Binding {
     private static ConcurrentMap<Type, InjectSpec> specs = new ConcurrentHashMap<>();
 
-    public static InjectSpec get(final Type type) {
+    public static InjectSpec of(final Type type) throws ReflectiveOperationException {
         try {
             return type == null ? null : specs.computeIfAbsent(type, function(InjectSpec::new));
         } catch (RunWrapException e) {
-            return null;
+            throw e.throwIf(ReflectiveOperationException.class);
         }
     }
 
@@ -65,12 +65,14 @@ public class InjectSpec implements Binding {
         return members.stream();
     }
 
+    public Type type(){
+        return constructor.returnType();
+    }
+
     @Override
     public Object get(ObjectFactory injector) throws ReflectiveOperationException {
         final Object o = injector.invoke(null, constructor);
-        for (GenericMember member : members) {
-            injector.invoke(o, member);
-        }
+        injector.injectMembers(this, o);
         return o;
     }
 }

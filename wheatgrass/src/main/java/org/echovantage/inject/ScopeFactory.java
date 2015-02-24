@@ -13,12 +13,13 @@ import java.util.stream.Collectors;
 /**
  * Created by fuwjax on 2/17/15.
  */
-public class BufferedFactory implements ObjectFactory {
+public class ScopeFactory implements ObjectFactory {
     private final Map<Type, Object> objects = new HashMap<>();
     private final InjectorStrategy injector;
 
-    public BufferedFactory(InjectorStrategy injector) {
+    public ScopeFactory(InjectorStrategy injector) {
         this.injector = injector;
+        objects.put(ObjectFactory.class, this);
     }
 
     @Override
@@ -39,17 +40,17 @@ public class BufferedFactory implements ObjectFactory {
     }
 
     private void buffer(Type type, Object object) {
-        Object old = objects.put(type, object);
-        if(old != null && old != object){
-            throw new IllegalArgumentException("Multiple bindings for "+type);
+        if(object != null) {
+            Object old = objects.put(type, object);
+            if (old != null && old != object) {
+                throw new IllegalArgumentException("Multiple bindings for " + type);
+            }
         }
     }
 
     @Override
-    public Object invoke(Object target, GenericMember member) throws ReflectiveOperationException {
-        if(target != null){
-            buffer(target.getClass(), target);
-        }
-        return ObjectFactory.super.invoke(target, member);
+    public void injectMembers(InjectSpec spec, Object object) throws ReflectiveOperationException {
+        buffer(spec.type(), object);
+        ObjectFactory.super.injectMembers(spec, object);
     }
 }

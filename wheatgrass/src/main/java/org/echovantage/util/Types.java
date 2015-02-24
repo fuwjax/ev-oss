@@ -40,10 +40,10 @@ public class Types {
         if(Objects.equals(t1, t2)){
             return 0;
         }
-        if (Types.isAssignable(t1, t2)){
+        if (Types.isAssignable(t1, t2, true)){
             return 1;
         }
-        if (Types.isAssignable(t2, t1)){
+        if (Types.isAssignable(t2, t1, true)){
             return -1;
         }
         return t1.getTypeName().compareTo(t2.getTypeName());
@@ -62,7 +62,7 @@ public class Types {
     }
 
     public static boolean isAssignable(Type lhs, Type rhs) {
-        return rhs == null || lhs != null && isAssignable(lhs, rhs, true);
+        return (rhs == null || lhs != null) && (isAssignable(componentType(lhs), componentType(rhs), true) || isAssignable(lhs, rhs, true) || isAssignable(lhs, box.get(rhs), true));
     }
 
     private static boolean isAssignable(Type lhs, Type rhs, boolean allowUnchecked){
@@ -72,18 +72,12 @@ public class Types {
         if(lhs.equals(rhs)){
             return true;
         }
-        if (isAssignable(componentType(lhs), componentType(rhs), allowUnchecked)) {
-            return true;
-        }
         if(rhs instanceof Class) {
             Class<?> right = c(rhs);
             if (allowUnchecked && lhs instanceof ParameterizedType) {
                 if (p(lhs).getRawType().equals(rhs)) {
                     return true;
                 }
-            }
-            if(isAssignable(lhs, box.get(right), allowUnchecked)){
-                return true;
             }
             if (isAssignable(lhs, superType(right), allowUnchecked)) {
                 return true;
@@ -93,8 +87,7 @@ public class Types {
                     return true;
                 }
             }
-        }
-        if(rhs instanceof ParameterizedType){
+        }else if(rhs instanceof ParameterizedType){
             ParameterizedType right = p(rhs);
             if(isAssignable(lhs, right.getRawType(), false)){
                 return true;
@@ -117,8 +110,7 @@ public class Types {
                     return true;
                 }
             }
-        }
-        if(rhs instanceof GenericArrayType){
+        }else if(rhs instanceof GenericArrayType){
             if (isAssignable(lhs, Object.class, allowUnchecked)) {
                 return true;
             }
@@ -127,8 +119,7 @@ public class Types {
                     return true;
                 }
             }
-        }
-        if(rhs instanceof TypeVariable){
+        }else if(rhs instanceof TypeVariable){
             TypeVariable right = v(rhs);
             for(Type bound: right.getBounds()){
                 if(isAssignable(lhs, bound, allowUnchecked)){

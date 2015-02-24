@@ -2,25 +2,23 @@ package org.echovantage.generic;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by fuwjax on 2/18/15.
  */
-public abstract class Rei<T> implements ParameterizedType {
+public abstract class TypeTemplate<T> implements ParameterizedType {
     private final ParameterizedType type;
 
-    protected Rei(){
-        ParameterizedType t = (ParameterizedType)getClass().getGenericSuperclass();
-        if(!Rei.class.equals(t.getRawType())){
-            throw new IllegalStateException("Rei instances must be direct anonymous classes");
+    protected TypeTemplate() {
+        ParameterizedType t = (ParameterizedType) getClass().getGenericSuperclass();
+        if (!TypeTemplate.class.equals(t.getRawType())) {
+            throw new IllegalStateException("Template instances must be direct anonymous classes");
         }
         Type arg = t.getActualTypeArguments()[0];
-        if(!(arg instanceof ParameterizedType)){
-            throw new IllegalStateException("Rei anonymous instances should be for generic types");
+        if (!(arg instanceof ParameterizedType)) {
+            throw new IllegalStateException("Template anonymous instances should be for generic, non-array types");
         }
-        type = (ParameterizedType)arg;
+        type = (ParameterizedType) arg;
     }
 
     @Override

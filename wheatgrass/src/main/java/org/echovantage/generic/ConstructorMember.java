@@ -1,12 +1,7 @@
 package org.echovantage.generic;
 
-import org.echovantage.inject.Injector;
-import org.echovantage.util.Arrays2;
-
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
-import java.util.Objects;
 
 /**
  * Created by fuwjax on 2/19/15.

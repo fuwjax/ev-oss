@@ -1,7 +1,7 @@
 package org.echovantage.test;
 
 import org.echovantage.inject.Injector;
-import org.echovantage.generic.Rei;
+import org.echovantage.generic.TypeTemplate;
 import org.echovantage.sample.SampleMethodModule;
 import org.echovantage.sample.SampleModule;
 import org.echovantage.sample.SampleResource;
@@ -48,7 +48,7 @@ public class InjectorTest {
     @Test
     public void testSupplier() throws ReflectiveOperationException {
         final Injector injector = Injector.newInjector(new SampleModule());
-        Supplier<SampleResource> supplier = injector.get(new Rei<Supplier<SampleResource>>(){});
+        Supplier<SampleResource> supplier = injector.get(new TypeTemplate<Supplier<SampleResource>>(){});
         assertThat(supplier.get(), is(new SampleResource(8)));
     }
 }

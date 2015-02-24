@@ -1,15 +1,12 @@
 package org.echovantage.generic;
 
-import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.Comparator;
 import java.util.function.Predicate;
 
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.comparingInt;
-import static java.util.Comparator.nullsLast;
+import static java.util.Comparator.*;
 import static org.echovantage.generic.GenericMember.MemberType.METHOD;
 import static org.echovantage.util.Arrays2.comparingArray;
 import static org.echovantage.util.Types.TYPE_COMPARATOR;
