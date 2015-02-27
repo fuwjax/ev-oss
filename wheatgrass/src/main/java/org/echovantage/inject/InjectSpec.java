@@ -2,7 +2,9 @@ package org.echovantage.inject;
 
 import org.echovantage.generic.GenericMember;
 import org.echovantage.generic.Spec;
+import org.echovantage.generic.TypeTemplate;
 import org.echovantage.util.RunWrapException;
+import org.echovantage.util.Streams;
 
 import javax.inject.Inject;
 import java.lang.reflect.Type;
@@ -16,12 +18,12 @@ import static org.echovantage.generic.GenericMember.MemberType.CONSTRUCTOR;
 import static org.echovantage.generic.GenericMember.TargetType.INSTANCE;
 import static org.echovantage.util.function.Functions.function;
 
-public class InjectSpec implements Binding {
+public class InjectSpec {
     private static ConcurrentMap<Type, InjectSpec> specs = new ConcurrentHashMap<>();
 
     public static InjectSpec of(final Type type) throws ReflectiveOperationException {
         try {
-            return type == null ? null : specs.computeIfAbsent(type, function(InjectSpec::new));
+            return specs.computeIfAbsent(type, function(InjectSpec::new));
         } catch (RunWrapException e) {
             throw e.throwIf(ReflectiveOperationException.class);
         }
@@ -61,18 +63,11 @@ public class InjectSpec implements Binding {
         return member.annotation(Inject.class).length > 0;
     }
 
-    public Stream<GenericMember> members() {
+    public Stream<GenericMember> members(){
         return members.stream();
     }
 
-    public Type type(){
-        return constructor.returnType();
-    }
-
-    @Override
-    public Object get(ObjectFactory injector) throws ReflectiveOperationException {
-        final Object o = injector.invoke(null, constructor);
-        injector.injectMembers(this, o);
-        return o;
+    public GenericMember constructor(){
+        return constructor;
     }
 }
