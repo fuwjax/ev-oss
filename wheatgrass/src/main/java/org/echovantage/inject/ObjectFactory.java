@@ -7,6 +7,7 @@ import org.echovantage.util.Arrays2;
 import org.echovantage.util.RunWrapException;
 import org.echovantage.util.Streams;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 import static org.echovantage.generic.GenericMember.MemberAccess.PROTECTED;
@@ -32,11 +33,11 @@ public interface ObjectFactory {
         return object;
     }
 
-    default <T> T get(final Class<T> type) throws ReflectiveOperationException {
-        return (T) get(new BindConstraint(type, PUBLIC));
+    default <T> T get(final Class<T> type, Annotation... annotations) throws ReflectiveOperationException {
+        return (T) get(new BindConstraint(type, annotations));
     }
 
-    default <T> T get(final TypeTemplate<T> type) throws ReflectiveOperationException {
-        return (T) get(new BindConstraint(type, PUBLIC));
+    default <T> T get(final TypeTemplate<T> type, Annotation... annotations) throws ReflectiveOperationException {
+        return (T) get(new BindConstraint(type, annotations));
     }
 }

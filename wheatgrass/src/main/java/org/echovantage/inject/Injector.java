@@ -1,23 +1,24 @@
 package org.echovantage.inject;
 
-import org.echovantage.generic.GenericMember;
-import org.echovantage.generic.GenericMember.MemberAccess;
-import org.echovantage.generic.TypeTemplate;
+import org.echovantage.util.Annotations;
 
+import javax.inject.Named;
 import java.lang.reflect.Type;
 
-import static org.echovantage.generic.GenericMember.MemberAccess.PUBLIC;
-
-public class Injector implements ObjectFactory{
+public class Injector implements ObjectFactory {
     public static Injector newInjector(final Object... modules) throws ReflectiveOperationException {
         InjectorStrategy[] injectors = new InjectorStrategy[modules.length + 1];
         Injector injector = new Injector(new ChainStrategy(injectors));
         injectors[modules.length] = injector::spawn;
         for (int i = 0; i < modules.length; i++) {
-            Object module = modules[i] instanceof Type ? injector.get(new BindConstraint((Type)modules[i], PUBLIC)) : modules[i];
+            Object module = modules[i] instanceof Type ? injector.get(new BindConstraint((Type) modules[i])) : modules[i];
             injectors[i] = module instanceof InjectorStrategy ? (InjectorStrategy) module : new ReflectStrategy(module);
         }
         return injector;
+    }
+
+    public static Named named(String name) {
+        return Annotations.of(Named.class, name);
     }
 
     private Binding spawn(BindConstraint constraint) {
@@ -35,7 +36,7 @@ public class Injector implements ObjectFactory{
         scope().inject(constraint, target);
     }
 
-    public Scope scope(){
+    public Scope scope() {
         return new Scope(strategy);
     }
 

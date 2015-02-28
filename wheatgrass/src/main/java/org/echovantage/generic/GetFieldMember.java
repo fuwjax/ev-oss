@@ -1,5 +1,6 @@
 package org.echovantage.generic;
 
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
@@ -14,17 +15,17 @@ public class GetFieldMember extends AbstractMember<Field> {
     @Override
     public Object invoke(Object target, Object... args) throws ReflectiveOperationException {
         assert args.length == 0;
-        return member().get(target);
+        return source().get(target);
     }
 
     @Override
-    public Type[] paramTypes() {
-        return new Type[0];
+    public AnnotatedType[] paramTypes() {
+        return new AnnotatedType[0];
     }
 
     @Override
-    public Type returnType() {
-        return member().getGenericType();
+    public AnnotatedType returnType() {
+        return source().getAnnotatedType();
     }
 
     @Override

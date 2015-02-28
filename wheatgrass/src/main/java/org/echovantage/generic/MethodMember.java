@@ -1,5 +1,6 @@
 package org.echovantage.generic;
 
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
@@ -14,17 +15,17 @@ public class MethodMember extends AbstractMember<Method> {
 
     @Override
     public Object invoke(Object target, Object... args) throws ReflectiveOperationException {
-        return member().invoke(target, args);
+        return source().invoke(target, args);
     }
 
     @Override
-    public Type[] paramTypes() {
-        return member().getGenericParameterTypes();
+    public AnnotatedType[] paramTypes() {
+        return source().getAnnotatedParameterTypes();
     }
 
     @Override
-    public Type returnType() {
-        return member().getGenericReturnType();
+    public AnnotatedType returnType() {
+        return source().getAnnotatedReturnType();
     }
 
     @Override

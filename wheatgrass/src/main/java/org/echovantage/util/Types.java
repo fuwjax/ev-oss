@@ -1,5 +1,8 @@
 package org.echovantage.util;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -10,12 +13,15 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by fuwjax on 2/18/15.
  */
 public class Types {
     public static final Type[] NO_PARAMS = new Type[0];
+    public static final AnnotatedType[] NO_ANNOTATED_PARAMS = new AnnotatedType[0];
     private static Map<Class<?>, Class<?>> parent = new HashMap<>();
     private static Map<Class<?>, Class<?>> box = new HashMap<>();
 
@@ -48,6 +54,8 @@ public class Types {
         }
         return t1.getTypeName().compareTo(t2.getTypeName());
     };
+
+    public static final Comparator<AnnotatedType> ANNOTATED_TYPE_COMPARATOR = Comparator.comparing(AnnotatedType::getType, TYPE_COMPARATOR);
 
     private static void box(Class<?> primitive, Class<?> boxed) {
         box.put(primitive, boxed);
@@ -339,5 +347,85 @@ public class Types {
 
     public static boolean isVoid(Type type) {
         return void.class.equals(type) || Void.class.equals(type);
+    }
+
+    public static AnnotatedType annotatedType(Class<?> cls) {
+        return annotatedType(cls, cls);
+    }
+
+    public static AnnotatedType annotatedType(Type t, Annotation... annotations){
+        return annotatedType(t, annotatedElement(annotations));
+    }
+
+    private static AnnotatedElement annotatedElement(Annotation... annotations) {
+        Map<Class<?>, Annotation> map = Arrays.asList(annotations).stream().collect(Collectors.toMap(Annotation::annotationType, Function.identity()));
+        return new AnnotatedElement() {
+            @Override
+            public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                return annotationClass.cast(map.get(annotationClass));
+            }
+
+            @Override
+            public Annotation[] getAnnotations() {
+                return annotations;
+            }
+
+            @Override
+            public Annotation[] getDeclaredAnnotations() {
+                return getAnnotations();
+            }
+        };
+    }
+
+    public static AnnotatedType annotatedType(Type t, AnnotatedElement e) {
+        return new AnnotatedType(){
+            @Override
+            public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                return e.getAnnotation(annotationClass);
+            }
+
+            @Override
+            public Annotation[] getAnnotations() {
+                return e.getAnnotations();
+            }
+
+            @Override
+            public Annotation[] getDeclaredAnnotations() {
+                return e.getDeclaredAnnotations();
+            }
+
+            @Override
+            public <T extends Annotation> T[] getAnnotationsByType(Class<T> annotationClass) {
+                return e.getAnnotationsByType(annotationClass);
+            }
+
+            @Override
+            public <T extends Annotation> T getDeclaredAnnotation(Class<T> annotationClass) {
+                return e.getDeclaredAnnotation(annotationClass);
+            }
+
+            @Override
+            public <T extends Annotation> T[] getDeclaredAnnotationsByType(Class<T> annotationClass) {
+                return e.getDeclaredAnnotationsByType(annotationClass);
+            }
+
+            @Override
+            public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+                return e.isAnnotationPresent(annotationClass);
+            }
+
+            @Override
+            public Type getType() {
+                return t;
+            }
+        };
+    }
+
+    public static AnnotatedType[] subst(AnnotatedType[] types, ParameterizedType mapping) {
+        return Arrays2.transform(types, NO_ANNOTATED_PARAMS, t -> subst(t, mapping));
+    }
+
+    public static AnnotatedType subst(AnnotatedType type, ParameterizedType mapping) {
+        return annotatedType(subst(type.getType(), mapping), type);
     }
 }

@@ -49,13 +49,12 @@ public class Scope implements ObjectFactory {
 
     public Object invoke(Object target, GenericMember member) throws ReflectiveOperationException {
         try {
-            Object[] args = Arrays2.transform(member.paramTypes(), new Object[0], function(t -> get(new BindConstraint(t, PROTECTED))));
+            Object[] args = Arrays2.transform(member.paramTypes(), new Object[0], function(t -> get(new BindConstraint(t))));
             return member.invoke(target, args);
         }catch(RunWrapException e){
             throw e.throwIf(ReflectiveOperationException.class);
         }
     }
-
 
     private Binding binding(BindConstraint constraint) throws ReflectiveOperationException {
         Binding binding = injector.bindingFor(constraint);

@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 public class SampleAnnotatedModule {
     @Named("first")
-    public final SampleResource publicResource = new SampleResource(7);
+    public final SampleResource firstResource = new SampleResource(7);
     @Named("second")
-	public final SampleResource privateResource = new SampleResource(8);
+	public final SampleResource secondResource = new SampleResource(8);
 }

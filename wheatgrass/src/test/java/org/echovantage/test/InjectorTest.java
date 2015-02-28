@@ -55,6 +55,6 @@ public class InjectorTest {
     @Test
     public void testAnnotated() throws ReflectiveOperationException {
         final Injector injector = Injector.newInjector(new SampleAnnotatedModule());
-        assertThat(injector.get(new BindConstraint(SampleResource.class, Annotations.of(Named.class, "first"))), is(new SampleResource(7)));
+        assertThat(injector.get(SampleResource.class, Injector.named("first")), is(new SampleResource(7)));
     }
 }

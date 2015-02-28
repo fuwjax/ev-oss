@@ -20,11 +20,11 @@ public class ReflectStrategy implements InjectorStrategy {
     public ReflectStrategy(final Object obj) {
         this.obj = obj;
         Spec spec = Spec.of(obj.getClass());
-        spec.members().filter(INSTANCE.and(PROTECTED).and(m -> !Types.isVoid(m.returnType())).and(m -> Types.isAssignable(obj.getClass(), m.declaringClass()))).forEach(this::register);
+        spec.members().filter(INSTANCE.and(PROTECTED).and(m -> !Types.isVoid(m.returnType().getType())).and(m -> Types.isAssignable(obj.getClass(), m.declaringClass().getType()))).forEach(this::register);
     }
 
     private void register(final GenericMember member) {
-        bindings.computeIfAbsent(member.returnType(), k -> new HashSet<>()).add(member);
+        bindings.computeIfAbsent(member.returnType().getType(), k -> new HashSet<>()).add(member);
     }
 
     @Override
