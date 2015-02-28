@@ -30,7 +30,7 @@ public class BindConstraint extends ObjectAssist.Base implements Predicate<Gener
     private final Set<Annotation> annotations;
 
     private BindConstraint(Type type, MemberAccess access, Annotation... annotations) {
-        super(type, access, annotations);
+        super(type, annotations); // access intentionally omitted
         this.type = type;
         this.access = access;
         this.annotations = Arrays.asList(annotations).stream().filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).collect(toSet());
