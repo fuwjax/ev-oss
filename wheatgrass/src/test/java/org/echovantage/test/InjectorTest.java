@@ -15,14 +15,14 @@
  */
 package org.echovantage.test;
 
+import org.echovantage.inject.BindConstraint;
 import org.echovantage.inject.Injector;
 import org.echovantage.generic.TypeTemplate;
-import org.echovantage.sample.SampleMethodModule;
-import org.echovantage.sample.SampleModule;
-import org.echovantage.sample.SampleResource;
-import org.echovantage.sample.SelfReferencingType;
+import org.echovantage.sample.*;
+import org.echovantage.util.Annotations;
 import org.junit.Test;
 
+import javax.inject.Named;
 import java.util.function.Supplier;
 
 import static org.echovantage.util.assertion.Assertions.assertThat;
@@ -65,5 +65,11 @@ public class InjectorTest {
         final Injector injector = Injector.newInjector(new SampleModule());
         Supplier<SampleResource> supplier = injector.get(new TypeTemplate<Supplier<SampleResource>>(){});
         assertThat(supplier.get(), is(new SampleResource(8)));
+    }
+
+    @Test
+    public void testAnnotated() throws ReflectiveOperationException {
+        final Injector injector = Injector.newInjector(new SampleAnnotatedModule());
+        assertThat(injector.get(SampleResource.class, Injector.named("first")), is(new SampleResource(7)));
     }
 }

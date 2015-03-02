@@ -30,10 +30,10 @@ public class ChainStrategy implements InjectorStrategy {
     }
 
     @Override
-    public Binding bindingFor(Type type, GenericMember.MemberAccess access) {
+    public Binding bindingFor(BindConstraint constraint) {
         for (final InjectorStrategy injector : injectors) {
             if (injector != null) {
-                final Binding result = injector.bindingFor(type, access);
+                final Binding result = injector.bindingFor(constraint);
                 if (result != null) {
                     return result;
                 }

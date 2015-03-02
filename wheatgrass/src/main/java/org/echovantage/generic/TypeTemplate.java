@@ -15,8 +15,14 @@
  */
 package org.echovantage.generic;
 
+import org.echovantage.util.Types;
+
+import javax.inject.Named;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.function.Predicate;
 
 /**
  * Created by fuwjax on 2/18/15.
@@ -34,6 +40,10 @@ public abstract class TypeTemplate<T> implements ParameterizedType {
             throw new IllegalStateException("Template anonymous instances should be for generic, non-array types");
         }
         type = (ParameterizedType) arg;
+    }
+
+    public AnnotatedType with(Annotation... annotations){
+        return Types.annotatedType(this, annotations);
     }
 
     @Override

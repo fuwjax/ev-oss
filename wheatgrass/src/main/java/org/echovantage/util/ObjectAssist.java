@@ -29,7 +29,7 @@ public interface ObjectAssist {
 	}
 
 	default int hashCodeImpl() {
-		return Arrays.hashCode(ids());
+		return Arrays.deepHashCode(ids());
 	}
 
 	default String toStringImpl() {

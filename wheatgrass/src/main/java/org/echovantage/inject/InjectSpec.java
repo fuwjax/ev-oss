@@ -31,12 +31,12 @@ import static org.echovantage.generic.GenericMember.MemberType.CONSTRUCTOR;
 import static org.echovantage.generic.GenericMember.TargetType.INSTANCE;
 import static org.echovantage.util.function.Functions.function;
 
-public class InjectSpec implements Binding {
+public class InjectSpec {
     private static ConcurrentMap<Type, InjectSpec> specs = new ConcurrentHashMap<>();
 
     public static InjectSpec of(final Type type) throws ReflectiveOperationException {
         try {
-            return type == null ? null : specs.computeIfAbsent(type, function(InjectSpec::new));
+            return specs.computeIfAbsent(type, function(InjectSpec::new));
         } catch (RunWrapException e) {
             throw e.throwIf(ReflectiveOperationException.class);
         }
@@ -54,40 +54,33 @@ public class InjectSpec implements Binding {
     private static GenericMember constructor(final Spec type) throws ReflectiveOperationException {
         final List<GenericMember> constructors = type.members().filter(CONSTRUCTOR).collect(Collectors.toList());
         if (constructors.size() == 0) {
-            throw new ReflectiveOperationException("Inject specifications require " + type + " to be constructible");
+            return null;
         }
-        GenericMember best;
         if (constructors.size() == 1) {
-            best = constructors.get(0);
-        } else {
-            final List<GenericMember> injects = constructors.stream().filter(InjectSpec::isInject).collect(Collectors.toList());
-            if (injects.isEmpty()) {
-                best = constructors.stream().filter(m -> m.paramTypes().length == 0).findAny().get();
-            } else if (injects.size() == 1) {
-                best = injects.get(0);
-            } else {
-                throw new IllegalArgumentException("Inject specifications require a single @Inject constructor in " + type);
-            }
+            return constructors.get(0);
         }
-        return best;
+        final List<GenericMember> injects = constructors.stream().filter(InjectSpec::isInject).collect(Collectors.toList());
+        if (injects.isEmpty()) {
+            return constructors.stream().filter(m -> m.paramTypes().length == 0).findAny().orElse(null);
+        }
+        if (injects.size() == 1) {
+            return injects.get(0);
+        }
+        return null;
     }
 
     private static boolean isInject(final GenericMember member) {
-        return member.annotation(Inject.class).length > 0;
+        return member.source().isAnnotationPresent(Inject.class);
     }
 
     public Stream<GenericMember> members() {
         return members.stream();
     }
 
-    public Type type(){
-        return constructor.returnType();
-    }
-
-    @Override
-    public Object get(ObjectFactory injector) throws ReflectiveOperationException {
-        final Object o = injector.invoke(null, constructor);
-        injector.injectMembers(this, o);
-        return o;
+    public GenericMember constructor() {
+        if (constructor == null) {
+            throw new IllegalArgumentException("Inject specifications require a single @Inject constructor");
+        }
+        return constructor;
     }
 }

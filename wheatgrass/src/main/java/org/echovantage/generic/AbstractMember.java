@@ -16,10 +16,12 @@
 package org.echovantage.generic;
 
 import org.echovantage.util.ObjectAssist;
+import org.echovantage.util.Types;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Member;
 import java.lang.reflect.Type;
 
@@ -34,7 +36,7 @@ public abstract class AbstractMember<M extends AccessibleObject & Member & Annot
         this.m = m;
     }
 
-    protected M member() {
+    public M source() {
         return m;
     }
 
@@ -44,18 +46,8 @@ public abstract class AbstractMember<M extends AccessibleObject & Member & Annot
     }
 
     @Override
-    public Annotation[] annotations() {
-        return m.getAnnotations();
-    }
-
-    @Override
-    public <A extends Annotation> A[] annotation(Class<A> type) {
-        return m.getAnnotationsByType(type);
-    }
-
-    @Override
-    public Type declaringClass() {
-        return m.getDeclaringClass();
+    public AnnotatedType declaringClass() {
+        return Types.annotatedType(source().getDeclaringClass());
     }
 
     @Override

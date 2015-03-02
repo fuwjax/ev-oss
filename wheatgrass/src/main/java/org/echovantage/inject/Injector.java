@@ -15,23 +15,29 @@
  */
 package org.echovantage.inject;
 
-import org.echovantage.generic.GenericMember.MemberAccess;
-import org.echovantage.generic.TypeTemplate;
+import org.echovantage.util.Annotations;
 
+import javax.inject.Named;
 import java.lang.reflect.Type;
 
-import static org.echovantage.generic.GenericMember.MemberAccess.PUBLIC;
-
-public class Injector implements ObjectFactory{
+public class Injector implements ObjectFactory {
     public static Injector newInjector(final Object... modules) throws ReflectiveOperationException {
         InjectorStrategy[] injectors = new InjectorStrategy[modules.length + 1];
-        injectors[modules.length] = new SpawnStrategy();
         Injector injector = new Injector(new ChainStrategy(injectors));
+        injectors[modules.length] = injector::spawn;
         for (int i = 0; i < modules.length; i++) {
-            Object module = modules[i] instanceof Type ? injector.get((Type)modules[i], PUBLIC) : modules[i];
+            Object module = modules[i] instanceof Type ? injector.get(new BindConstraint((Type) modules[i])) : modules[i];
             injectors[i] = module instanceof InjectorStrategy ? (InjectorStrategy) module : new ReflectStrategy(module);
         }
         return injector;
+    }
+
+    public static Named named(String name) {
+        return Annotations.of(Named.class, name);
+    }
+
+    private Binding spawn(BindConstraint constraint) {
+        return scope -> scope.create(constraint);
     }
 
     private final InjectorStrategy strategy;
@@ -41,21 +47,16 @@ public class Injector implements ObjectFactory{
     }
 
     @Override
-    public <T> T inject(final T object) throws ReflectiveOperationException {
-        return scope().inject(object);
+    public void inject(BindConstraint constraint, Object target) throws ReflectiveOperationException {
+        scope().inject(constraint, target);
+    }
+
+    public Scope scope() {
+        return new Scope(strategy);
     }
 
     @Override
-    public <T> T inject(TypeTemplate<T> type, T object) throws ReflectiveOperationException {
-        return scope().inject(type, object);
-    }
-
-    protected ObjectFactory scope(){
-        return new ScopeFactory(strategy);
-    }
-
-    @Override
-    public Object get(Type type, MemberAccess access) throws ReflectiveOperationException {
-        return scope().get(type, access);
+    public Object get(BindConstraint constraint) throws ReflectiveOperationException {
+        return scope().get(constraint);
     }
 }

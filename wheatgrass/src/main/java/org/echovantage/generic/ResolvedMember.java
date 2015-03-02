@@ -19,6 +19,8 @@ import org.echovantage.util.ObjectAssist;
 import org.echovantage.util.Types;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -27,13 +29,13 @@ import java.lang.reflect.Type;
  */
 public class ResolvedMember extends ObjectAssist.Impl implements GenericMember {
     private final GenericMember member;
-    private final Type type;
-    private final Type[] params;
-    private final Type returns;
+    private final AnnotatedType type;
+    private final AnnotatedType[] params;
+    private final AnnotatedType returns;
 
     public ResolvedMember(GenericMember member, ParameterizedType type) {
         this.member = member;
-        this.type = type;
+        this.type = Types.annotatedType(type, member.returnType());
         params = Types.subst(member.paramTypes(), type);
         returns = Types.subst(member.returnType(), type);
     }
@@ -49,27 +51,22 @@ public class ResolvedMember extends ObjectAssist.Impl implements GenericMember {
     }
 
     @Override
-    public Annotation[] annotations() {
-        return member.annotations();
+    public AnnotatedElement source() {
+        return member.source();
     }
 
     @Override
-    public <A extends Annotation> A[] annotation(Class<A> type) {
-        return member.annotation(type);
-    }
-
-    @Override
-    public Type[] paramTypes() {
+    public AnnotatedType[] paramTypes() {
         return params;
     }
 
     @Override
-    public Type returnType() {
+    public AnnotatedType returnType() {
         return returns;
     }
 
     @Override
-    public Type declaringClass() {
+    public AnnotatedType declaringClass() {
         return type;
     }
 

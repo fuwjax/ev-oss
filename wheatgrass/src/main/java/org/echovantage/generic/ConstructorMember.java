@@ -15,6 +15,7 @@
  */
 package org.echovantage.generic;
 
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 
@@ -29,7 +30,7 @@ public class ConstructorMember extends AbstractMember<Constructor<?>> {
 
     @Override
     public Object invoke(Object target, Object... args) throws ReflectiveOperationException {
-        return member().newInstance(args);
+        return source().newInstance(args);
     }
 
     @Override
@@ -38,13 +39,13 @@ public class ConstructorMember extends AbstractMember<Constructor<?>> {
     }
 
     @Override
-    public Type[] paramTypes() {
-        return member().getGenericParameterTypes();
+    public AnnotatedType[] paramTypes() {
+        return source().getAnnotatedParameterTypes();
     }
 
     @Override
-    public Type returnType() {
-        return member().getDeclaringClass();
+    public AnnotatedType returnType() {
+        return source().getAnnotatedReturnType();
     }
 
     @Override
