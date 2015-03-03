@@ -15,14 +15,7 @@
  */
 package org.echovantage.generic;
 
-import org.echovantage.inject.Injector;
-import org.echovantage.util.Types;
-
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-
-import static org.echovantage.util.Types.annotatedType;
 
 /**
  * Created by fuwjax on 2/19/15.
@@ -41,13 +34,13 @@ public class SetFieldMember extends AbstractMember<Field> {
     }
 
     @Override
-    public AnnotatedType[] paramTypes() {
-        return new AnnotatedType[]{source().getAnnotatedType()};
+    public AnnotatedDeclaration[] paramTypes() {
+        return new AnnotatedDeclaration[]{new AnnotatedDeclaration(source().getGenericType(), source())};
     }
 
     @Override
-    public AnnotatedType returnType() {
-        return annotatedType(void.class);
+    public AnnotatedDeclaration returnType() {
+        return new AnnotatedDeclaration(void.class);
     }
 
     @Override

@@ -15,18 +15,16 @@
  */
 package org.echovantage.generic;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.util.Comparator;
 import java.util.function.Predicate;
 
-import static java.util.Comparator.*;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.comparingInt;
+import static java.util.Comparator.nullsLast;
 import static org.echovantage.generic.GenericMember.MemberType.METHOD;
 import static org.echovantage.util.Arrays2.comparingArray;
-import static org.echovantage.util.Types.ANNOTATED_TYPE_COMPARATOR;
 import static org.echovantage.util.Types.TYPE_COMPARATOR;
 
 /**
@@ -83,11 +81,11 @@ public interface GenericMember {
 
     AnnotatedElement source();
 
-    AnnotatedType[] paramTypes();
+    AnnotatedDeclaration[] paramTypes();
 
-    AnnotatedType returnType();
+    AnnotatedDeclaration returnType();
 
-    AnnotatedType declaringClass();
+    AnnotatedDeclaration declaringClass();
 
     MemberAccess access();
 
@@ -100,7 +98,7 @@ public interface GenericMember {
     }
 
     Comparator<GenericMember> COMPARATOR = comparing(GenericMember::type, comparingInt(MemberType::ordinal))
-            .thenComparing(nullsLast(comparing(GenericMember::declaringClass, ANNOTATED_TYPE_COMPARATOR)))
+            .thenComparing(nullsLast(comparing(GenericMember::declaringClass, comparing(AnnotatedDeclaration::type, TYPE_COMPARATOR))))
             .thenComparing(GenericMember::name)
-            .thenComparing(GenericMember::paramTypes, comparingArray(ANNOTATED_TYPE_COMPARATOR));
+            .thenComparing(GenericMember::paramTypes, comparingArray(comparing(AnnotatedDeclaration::type, TYPE_COMPARATOR)));
 }

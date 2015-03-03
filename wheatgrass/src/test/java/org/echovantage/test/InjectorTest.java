@@ -72,4 +72,10 @@ public class InjectorTest {
         final Injector injector = Injector.newInjector(new SampleAnnotatedModule());
         assertThat(injector.get(SampleResource.class, Injector.named("first")), is(new SampleResource(7)));
     }
+
+    @Test
+    public void testFieldAnnotated() throws ReflectiveOperationException {
+        final Injector injector = Injector.newInjector(new SampleAnnotatedModule());
+        assertThat(injector.get(SampleNamedDependency.class).resource(), is(new SampleResource(8)));
+    }
 }

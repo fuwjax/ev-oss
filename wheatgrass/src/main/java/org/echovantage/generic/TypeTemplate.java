@@ -42,8 +42,8 @@ public abstract class TypeTemplate<T> implements ParameterizedType {
         type = (ParameterizedType) arg;
     }
 
-    public AnnotatedType with(Annotation... annotations){
-        return Types.annotatedType(this, annotations);
+    public AnnotatedDeclaration with(Annotation... annotations){
+        return new AnnotatedDeclaration(this, annotations);
     }
 
     @Override

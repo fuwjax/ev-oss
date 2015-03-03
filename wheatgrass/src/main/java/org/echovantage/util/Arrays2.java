@@ -15,9 +15,12 @@
  */
 package org.echovantage.util;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.Comparator;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -45,5 +48,14 @@ public class Arrays2 {
             }
             return 0;
         });
+    }
+
+    public static <F1, F2, T> T[] zip(F1[] source1, F2[] source2, T[] dest, BiFunction<F1, F2, T> transform) {
+        assert source1 != null && source2 != null && dest != null;
+        assert source1.length == source2.length && source1.length == dest.length;
+        for(int i=0;i<dest.length;i++){
+            dest[i] = transform.apply(source1[i], source2[i]);
+        }
+        return dest;
     }
 }

@@ -35,11 +35,11 @@ public class ReflectStrategy implements InjectorStrategy {
     public ReflectStrategy(final Object obj) {
         this.obj = obj;
         Spec spec = Spec.of(obj.getClass());
-        spec.members().filter(INSTANCE.and(PROTECTED).and(m -> !Types.isVoid(m.returnType().getType())).and(m -> Types.isAssignable(obj.getClass(), m.declaringClass().getType()))).forEach(this::register);
+        spec.members().filter(INSTANCE.and(PROTECTED).and(m -> !Types.isVoid(m.returnType().type())).and(m -> Types.isAssignable(obj.getClass(), m.declaringClass().type()))).forEach(this::register);
     }
 
     private void register(final GenericMember member) {
-        bindings.computeIfAbsent(member.returnType().getType(), k -> new HashSet<>()).add(member);
+        bindings.computeIfAbsent(member.returnType().type(), k -> new HashSet<>()).add(member);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class ReflectStrategy implements InjectorStrategy {
             possibles = bindings.get(constraint.type());
         }else{
             possibles = new HashSet<>();
-            bindings.entrySet().stream().filter(e -> Types.isAssignable(constraint.type(), e.getKey())).map(Map.Entry::getValue).forEach(list -> possibles.addAll(list));
+            bindings.entrySet().stream().filter(e -> Types.isAssignable(constraint.type(), e.getKey())).map(Map.Entry::getValue).forEach(possibles::addAll);
             bindings.put(constraint.type(), possibles);
         }
         final List<GenericMember> assigns = possibles.stream().filter(constraint).collect(Collectors.toList());

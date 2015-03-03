@@ -15,6 +15,7 @@
  */
 package org.echovantage.inject;
 
+import org.echovantage.generic.AnnotatedDeclaration;
 import org.echovantage.generic.GenericMember;
 import org.echovantage.generic.GenericMember.MemberAccess;
 import org.echovantage.util.ObjectAssist;
@@ -32,6 +33,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.echovantage.generic.GenericMember.MemberAccess.PROTECTED;
 import static org.echovantage.generic.GenericMember.MemberAccess.PUBLIC;
@@ -45,18 +47,26 @@ public class BindConstraint extends ObjectAssist.Base implements Predicate<Gener
     private final Set<Annotation> annotations;
 
     private BindConstraint(Type type, MemberAccess access, Annotation... annotations) {
+        this(access, type, asList(annotations).stream().filter(BindConstraint::isQualified).collect(toSet()));
+    }
+
+    private BindConstraint(MemberAccess access, Type type, Set<Annotation> annotations) {
         super(type, annotations); // access intentionally omitted
-        this.type = type;
         this.access = access;
-        this.annotations = Arrays.asList(annotations).stream().filter(a -> a.annotationType().isAnnotationPresent(Qualifier.class)).collect(toSet());
+        this.type = type;
+        this.annotations = annotations;
+    }
+
+    private static boolean isQualified(Annotation annotation) {
+        return annotation.annotationType().isAnnotationPresent(Qualifier.class);
     }
 
     BindConstraint(Type type, Annotation... annotations) {
         this(type, PUBLIC, annotations);
     }
 
-    BindConstraint(AnnotatedType type){
-        this(type.getType(), PROTECTED, type.getAnnotations());
+    BindConstraint(AnnotatedDeclaration type){
+        this(type.type(), PROTECTED, type.element().getAnnotations());
     }
 
     public Type type() {
@@ -65,7 +75,7 @@ public class BindConstraint extends ObjectAssist.Base implements Predicate<Gener
 
     @Override
     public boolean test(GenericMember member) {
-        if (!Types.isAssignable(member.returnType().getType(), type)) {
+        if (!Types.isAssignable(member.returnType().type(), type)) {
             return false;
         }
         if (!access.test(member)) {
@@ -73,7 +83,7 @@ public class BindConstraint extends ObjectAssist.Base implements Predicate<Gener
         }
         for (Annotation annotation : annotations) {
             Annotation[] a = member.source().getAnnotationsByType(annotation.annotationType());
-            if (!Arrays.asList(a).contains(annotation)) {
+            if (!asList(a).contains(annotation)) {
                 return false;
             }
         }

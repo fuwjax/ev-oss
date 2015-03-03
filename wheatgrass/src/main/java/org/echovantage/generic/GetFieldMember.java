@@ -34,13 +34,13 @@ public class GetFieldMember extends AbstractMember<Field> {
     }
 
     @Override
-    public AnnotatedType[] paramTypes() {
-        return new AnnotatedType[0];
+    public AnnotatedDeclaration[] paramTypes() {
+        return new AnnotatedDeclaration[0];
     }
 
     @Override
-    public AnnotatedType returnType() {
-        return source().getAnnotatedType();
+    public AnnotatedDeclaration returnType() {
+        return new AnnotatedDeclaration(source().getGenericType(), source());
     }
 
     @Override

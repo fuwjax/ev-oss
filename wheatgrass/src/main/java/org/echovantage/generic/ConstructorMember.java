@@ -15,6 +15,8 @@
  */
 package org.echovantage.generic;
 
+import org.echovantage.util.Types;
+
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
@@ -39,13 +41,13 @@ public class ConstructorMember extends AbstractMember<Constructor<?>> {
     }
 
     @Override
-    public AnnotatedType[] paramTypes() {
-        return source().getAnnotatedParameterTypes();
+    public AnnotatedDeclaration[] paramTypes() {
+        return AnnotatedDeclaration.of(source().getGenericParameterTypes(), source().getParameterAnnotations());
     }
 
     @Override
-    public AnnotatedType returnType() {
-        return source().getAnnotatedReturnType();
+    public AnnotatedDeclaration returnType() {
+        return new AnnotatedDeclaration(source().getDeclaringClass(), source());
     }
 
     @Override

@@ -15,6 +15,7 @@
  */
 package org.echovantage.generic;
 
+import org.echovantage.util.Arrays2;
 import org.echovantage.util.ObjectAssist;
 import org.echovantage.util.Types;
 
@@ -29,15 +30,15 @@ import java.lang.reflect.Type;
  */
 public class ResolvedMember extends ObjectAssist.Impl implements GenericMember {
     private final GenericMember member;
-    private final AnnotatedType type;
-    private final AnnotatedType[] params;
-    private final AnnotatedType returns;
+    private final AnnotatedDeclaration type;
+    private final AnnotatedDeclaration[] params;
+    private final AnnotatedDeclaration returns;
 
     public ResolvedMember(GenericMember member, ParameterizedType type) {
         this.member = member;
-        this.type = Types.annotatedType(type, member.returnType());
-        params = Types.subst(member.paramTypes(), type);
-        returns = Types.subst(member.returnType(), type);
+        this.type = new AnnotatedDeclaration(type, member.returnType().element());
+        params = Arrays2.transform(member.paramTypes(), new AnnotatedDeclaration[0], d -> d.subst(type));
+        returns = member.returnType().subst(type);
     }
 
     @Override
@@ -56,17 +57,17 @@ public class ResolvedMember extends ObjectAssist.Impl implements GenericMember {
     }
 
     @Override
-    public AnnotatedType[] paramTypes() {
+    public AnnotatedDeclaration[] paramTypes() {
         return params;
     }
 
     @Override
-    public AnnotatedType returnType() {
+    public AnnotatedDeclaration returnType() {
         return returns;
     }
 
     @Override
-    public AnnotatedType declaringClass() {
+    public AnnotatedDeclaration declaringClass() {
         return type;
     }
 

@@ -46,8 +46,8 @@ public abstract class AbstractMember<M extends AccessibleObject & Member & Annot
     }
 
     @Override
-    public AnnotatedType declaringClass() {
-        return Types.annotatedType(source().getDeclaringClass());
+    public AnnotatedDeclaration declaringClass() {
+        return new AnnotatedDeclaration(source().getDeclaringClass());
     }
 
     @Override

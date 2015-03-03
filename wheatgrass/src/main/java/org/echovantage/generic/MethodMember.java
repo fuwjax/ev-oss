@@ -34,13 +34,13 @@ public class MethodMember extends AbstractMember<Method> {
     }
 
     @Override
-    public AnnotatedType[] paramTypes() {
-        return source().getAnnotatedParameterTypes();
+    public AnnotatedDeclaration[] paramTypes() {
+        return AnnotatedDeclaration.of(source().getGenericParameterTypes(), source().getParameterAnnotations());
     }
 
     @Override
-    public AnnotatedType returnType() {
-        return source().getAnnotatedReturnType();
+    public AnnotatedDeclaration returnType() {
+        return new AnnotatedDeclaration(source().getGenericReturnType(), source());
     }
 
     @Override
