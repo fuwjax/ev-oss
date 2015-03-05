@@ -203,7 +203,9 @@ public class Types {
 
     public static Type subst(Type t, ParameterizedType mapping){
         Type result;
-        if(t instanceof TypeVariable){
+        if(t == null){
+            return null;
+        }else if(t instanceof TypeVariable){
             TypeVariable v = v(t);
             Class<?> raw = c(mapping.getRawType());
             int index = Arrays.asList(raw.getTypeParameters()).indexOf(v);

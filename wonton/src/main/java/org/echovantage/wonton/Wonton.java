@@ -15,21 +15,16 @@
  */
 package org.echovantage.wonton;
 
-import static org.echovantage.util.Charsets.UTF_8;
-import static org.echovantage.util.MessageDigests.MD5;
-import static org.echovantage.util.collection.Decorators.decorateList;
-import static org.echovantage.util.collection.Decorators.decorateMap;
-import static org.echovantage.util.function.Functions.function;
+import static org.echovantage.util.Objects2.nullIf;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.echovantage.wonton.standard.BooleanWonton;
-import org.echovantage.wonton.standard.NullWonton;
-import org.echovantage.wonton.standard.RelaxedWonton;
-import org.echovantage.wonton.standard.StandardPath;
+import org.echovantage.util.Strings;
+import org.echovantage.util.collection.ListDecorator;
+import org.echovantage.util.collection.MapDecorator;
 
 /**
  * The standard transport interface for Whatever Object NotaTiON. Wontons all
@@ -39,25 +34,61 @@ import org.echovantage.wonton.standard.StandardPath;
  * @author fuwjax
  */
 public interface Wonton {
-	public static final Wonton NULL = new NullWonton();
-	public static final Wonton TRUE = new BooleanWonton(true);
-	public static final Wonton FALSE = new BooleanWonton(false);
+    public static Type<Void> VOID = w -> null;
 
-	public static Path path(final String path) {
-		return StandardPath.path(path);
-	}
+    public static Type<Boolean> BOOLEAN = w -> ((WBoolean)w).asBoolean();
 
-	public interface Path {
-		String key();
+    public static Type<Number> NUMBER = w -> ((WNumber)w).asNumber();
 
-		Path tail();
+    public static Type<String> STRING = w -> ((WString)w).asString();
 
-		Path append(Path suffix);
+    public static Type<List<? extends Wonton>> ARRAY = w -> ((WArray)w).asArray();
 
-		boolean isEmpty();
-	}
+    public static Type<Map<String, ? extends Wonton>> STRUCT = w -> ((WStruct)w).asStruct();
 
-	/**
+    public static Type<Integer> INTEGER = w -> nullIf(NUMBER.get(w), Number::intValue);
+
+    public static Type<Byte> BYTE = w -> nullIf(NUMBER.get(w), Number::byteValue);
+
+    public static Type<Short> SHORT = w -> nullIf(NUMBER.get(w), Number::shortValue);
+
+    public static Type<Long> LONG = w -> nullIf(NUMBER.get(w), Number::longValue);
+
+    public static Type<Float> FLOAT = w -> nullIf(NUMBER.get(w), Number::floatValue);
+
+    public static Type<Double> DOUBLE = w -> nullIf(NUMBER.get(w), Number::doubleValue);
+
+    public static Type<Object> NATURAL = Wonton::naturalValue;
+
+    public static Object naturalValue(Wonton w){
+        if(w instanceof WArray){
+            return new ListDecorator<>(ARRAY.get(w), Wonton::naturalValue);
+        }
+        if(w instanceof WStruct){
+            return new MapDecorator<>(STRUCT.get(w), Wonton::naturalValue);
+        }
+        return w.value();
+    }
+
+    public static final Wonton NULL = () -> VOID;
+	public static final Wonton TRUE = (WBoolean)() -> true;
+	public static final Wonton FALSE = (WBoolean)() -> false;
+
+    public class NoSuchPathException extends RuntimeException {
+        public NoSuchPathException(final Path path) {
+            super(path.toString());
+        }
+
+        public NoSuchPathException(final Throwable cause) {
+            super(cause);
+        }
+
+        public NoSuchPathException(String path) {
+            super(path);
+        }
+    }
+
+    /**
 	 * The Visitor interface for {@link Wonton#accept(Visitor)}.
 	 * @author fuwjax
 	 */
@@ -70,223 +101,116 @@ public interface Wonton {
 		public void visit(final Path path, final Wonton value);
 	}
 
-	public enum Type {
-		VOID(wonton -> null),
-		BOOLEAN(Wonton::asBoolean),
-		NUMBER(Wonton::asNumber),
-		STRING(Wonton::asString),
-		ARRAY(function(Wonton::asArray).andThen(list -> decorateList(list, Wonton::value))),
-		STRUCT(function(Wonton::asStruct).andThen(map -> decorateMap(map, Wonton::value)));
-		private final Function<Wonton, ?> value;
+    public interface Type<T>{
+        T get(Wonton wonton);
+    }
 
-		private Type(final Function<Wonton, ?> value) {
-			this.value = value;
-		}
+    public interface WBoolean extends Wonton {
+        @Override
+        default Type<?> type(){
+            return BOOLEAN;
+        }
 
-		public Object valueOf(final Wonton wonton) {
-			return value.apply(wonton);
-		}
-	}
+        Boolean asBoolean();
+    }
 
-	public interface WVoid extends Wonton {
-		@Override
-		default Type type() {
-			return Type.VOID;
-		}
+    public interface WNumber extends Wonton {
+        @Override
+        default Type<?> type(){
+            return NUMBER;
+        }
 
-		@Override
-		default String asString() {
-			return null;
-		}
+        Number asNumber();
+    }
 
-		@Override
-		default Boolean asBoolean() {
-			return null;
-		}
+    public interface WString extends Wonton {
+        @Override
+        default Type<?> type(){
+            return STRING;
+        }
 
-		@Override
-		default List<? extends Wonton> asArray() {
-			return null;
-		}
+        String asString();
+    }
 
-		@Override
-		default Map<String, ? extends Wonton> asStruct() {
-			return null;
-		}
+    public interface WArray extends Wonton {
+        @Override
+        default Type<?> type(){
+            return ARRAY;
+        }
 
-		@Override
-		default Number asNumber() {
-			return null;
-		}
-	}
+        List<? extends Wonton> asArray();
 
-	public interface WString extends Wonton {
-		@Override
-		default Type type() {
-			return Type.STRING;
-		}
+        @Override
+        default Wonton get(Path path) throws NoSuchPathException {
+            try {
+                return path.isEmpty() ? this : get(Integer.parseInt(path.key())).get(path.tail());
+            }catch(NumberFormatException | IndexOutOfBoundsException e){
+                throw new NoSuchPathException(e);
+            }
+        }
 
-		@Override
-		String asString();
-	}
+        default Wonton get(int index) throws IndexOutOfBoundsException {
+            return asArray().get(index);
+        }
 
-	public interface WBoolean extends Wonton {
-		@Override
-		default Type type() {
-			return Type.BOOLEAN;
-		}
+        @Override
+        default void accept(Path root, final Visitor visitor){
+            Wonton.super.accept(root, visitor);
+            int index = 0;
+            for(Wonton wonton: asArray()){
+                wonton.accept(root.append("["+index+++"]"), visitor);
+            }
+        }
+    }
 
-		@Override
-		Boolean asBoolean();
-	}
+    public interface WStruct extends Wonton {
+        @Override
+        default Type<?> type(){
+            return STRUCT;
+        }
 
-	public interface WNumber extends Wonton {
-		@Override
-		default Type type() {
-			return Type.NUMBER;
-		}
+        Map<String, ? extends Wonton> asStruct();
 
-		@Override
-		Number asNumber();
-	}
+        @Override
+        default Wonton get(final Path path){
+            return path.isEmpty() ? this : nullIf(asStruct().get(path.key()), w -> w.get(path.tail()), () -> {throw new NoSuchPathException(path);});
+        }
 
-	public interface WStruct extends Wonton {
-		@Override
-		default Type type() {
-			return Type.STRUCT;
-		}
+        @Override
+        default void accept(Path root, final Visitor visitor){
+            Wonton.super.accept(root, visitor);
+            for(Map.Entry<String, ? extends Wonton> entry: asStruct().entrySet()){
+                entry.getValue().accept(root.append(entry.getKey()), visitor);
+            }
+        }
+    }
 
-		@Override
-		Map<String, ? extends Wonton> asStruct();
-
-		@Override
-		default Wonton get(final String key) {
-			return asStruct().get(key);
-		}
-
-		@Override
-		void accept(final Visitor visitor);
-	}
-
-	public interface WArray extends Wonton {
-		@Override
-		default Type type() {
-			return Type.ARRAY;
-		}
-
-		@Override
-		List<? extends Wonton> asArray();
-
-		@Override
-		default Wonton get(final String key) {
-			try {
-				return get(Integer.parseInt(key));
-			} catch(final NumberFormatException e) {
-				throw new NoSuchPathException(e);
-			}
-		}
-
-		default Wonton get(final int index) {
-			try {
-				return asArray().get(index);
-			} catch(final IndexOutOfBoundsException e) {
-				throw new NoSuchPathException(e);
-			}
-		}
-
-		@Override
-		void accept(final Visitor visitor);
-	}
-
-	public class InvalidTypeException extends RuntimeException {
-	}
-
-	public class NoSuchPathException extends RuntimeException {
-		public NoSuchPathException(final Path path) {
-			super(path.toString());
-		}
-
-		public NoSuchPathException(final Throwable cause) {
-			super(cause);
-		}
-	}
-
-	default String asString() {
-		throw new InvalidTypeException();
-	}
-
-	default Boolean asBoolean() {
-		throw new InvalidTypeException();
-	}
-
-	default Number asNumber() {
-		throw new InvalidTypeException();
-	}
-
-	default Integer asInteger() {
-		return asNumber() == null ? null : asNumber().intValue();
-	}
-
-	default Byte asByte() {
-		return asNumber() == null ? null : asNumber().byteValue();
-	}
-
-	default Short asShort() {
-		return asNumber() == null ? null : asNumber().shortValue();
-	}
-
-	default Long asLong() {
-		return asNumber() == null ? null : asNumber().longValue();
-	}
-
-	default Float asFloat() {
-		return asNumber() == null ? null : asNumber().floatValue();
-	}
-
-	default Double asDouble() {
-		return asNumber() == null ? null : asNumber().doubleValue();
-	}
-
-	default Map<String, ? extends Wonton> asStruct() {
-		throw new InvalidTypeException();
-	}
-
-	default List<? extends Wonton> asArray() {
-		throw new InvalidTypeException();
-	}
+    default <T> T as(Type<T> type) throws ClassCastException {
+        return type.get(this);
+    }
 
 	default Object value() {
-		return type().valueOf(this);
+		return type().get(this);
 	}
 
-	Type type();
+	Type<?> type();
 
-	default Wonton get(final Path path) {
-		assert path != null;
-		Wonton elm = this;
-		for(Path p = path; !p.isEmpty(); p = p.tail()) {
-			elm = elm.get(p.key());
-			if(elm == null) {
-				throw new NoSuchPathException(path);
-			}
-		}
-		return elm;
+	default Wonton get(final String path) throws NoSuchPathException {
+		return get(Path.path(path));
 	}
 
-	default Wonton get(final String key) {
-		return null;
-	}
+    default Wonton get(Path path) throws NoSuchPathException {
+        if (path.isEmpty()) {
+            return this;
+        }
+        throw new NoSuchPathException(path);
+    }
 
 	default void accept(final Visitor visitor) {
-		// do nothing
+		accept(Path.EMPTY, visitor);
 	}
 
-	default Wonton relax() {
-		return RelaxedWonton.relaxed(this);
-	}
-
-	default long tag() {
-		final ByteBuffer buffer = ByteBuffer.wrap(MD5.digest(toString().getBytes(UTF_8)));
-		return buffer.getLong() ^ buffer.getLong();
-	}
+    default void accept(Path root, Visitor visitor){
+        visitor.visit(root, this);
+    }
 }

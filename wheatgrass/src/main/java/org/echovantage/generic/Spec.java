@@ -18,10 +18,13 @@ package org.echovantage.generic;
 import org.echovantage.util.Members;
 import org.echovantage.util.Streams;
 import org.echovantage.util.Types;
+import org.echovantage.util.collection.ListDecorator;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,11 +45,12 @@ public class Spec {
         throw new IllegalArgumentException("Type is not instantiable: " + type);
     }
 
-    private Set<GenericMember> members = new TreeSet<>(GenericMember.COMPARATOR);
+    private List<GenericMember> members;
 
     private Spec(Type type) {
         this.type = type;
         if (type instanceof Class) {
+            members = new ArrayList<>();
             Class<?> cls = (Class<?>) type;
             Arrays.asList(cls.getDeclaredConstructors()).forEach(c -> members.add(new ConstructorMember(c)));
             Arrays.asList(cls.getDeclaredMethods()).forEach(m -> members.add(new MethodMember(m)));
@@ -60,9 +64,7 @@ public class Spec {
         } else {
             ParameterizedType p = (ParameterizedType) type;
             Spec raw = of(p.getRawType());
-            for (GenericMember m : Streams.over(raw.members())) {
-                members.add(new ResolvedMember(m, p));
-            }
+            members = new ListDecorator<>(raw.members, m -> new ResolvedMember(m, p));
         }
     }
 

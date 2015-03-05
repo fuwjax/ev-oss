@@ -39,7 +39,7 @@ public interface WontonFactory {
     }
 
     public interface MutableWonton extends Wonton {
-        default void set(Wonton.Path path, Wonton value) {
+        default void set(Path path, Wonton value) {
             assert path != null && !path.isEmpty();
             if (path.tail().isEmpty()) {
                 set(path.key(), value);

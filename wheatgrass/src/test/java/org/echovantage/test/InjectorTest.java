@@ -22,11 +22,13 @@ import org.echovantage.sample.*;
 import org.echovantage.util.Annotations;
 import org.junit.Test;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.function.Supplier;
 
 import static org.echovantage.util.assertion.Assertions.assertThat;
 import static org.echovantage.util.assertion.Assertions.is;
+import static org.echovantage.util.assertion.Assertions.isA;
 
 public class InjectorTest {
     @Test
@@ -77,5 +79,20 @@ public class InjectorTest {
     public void testFieldAnnotated() throws ReflectiveOperationException {
         final Injector injector = Injector.newInjector(new SampleAnnotatedModule());
         assertThat(injector.get(SampleNamedDependency.class).resource(), is(new SampleResource(8)));
+    }
+
+    public static class Foo<T> {
+        @Inject
+        T something;
+    }
+
+    public static class Bar {
+
+    }
+
+    @Test
+    public void testVariableInjection() throws ReflectiveOperationException {
+        final Injector injector = Injector.newInjector();
+        assertThat(injector.get(new TypeTemplate<Foo<Bar>>(){}).something, isA(Bar.class));
     }
 }

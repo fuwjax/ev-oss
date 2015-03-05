@@ -15,13 +15,14 @@
  */
 package org.echovantage.expression;
 
+import org.echovantage.wonton.Path;
 import org.echovantage.wonton.Wonton;
 import org.echovantage.wonton.standard.StandardPath;
 
 /**
  * Created by fuwjax on 2/4/15.
  */
-public class PathExpression  implements Expression, Wonton.Path {
+public class PathExpression  implements Expression, Path {
     private final String key;
     private PathExpression tail;
 
@@ -45,12 +46,12 @@ public class PathExpression  implements Expression, Wonton.Path {
     }
 
     @Override
-    public Wonton.Path tail() {
+    public Path tail() {
         return tail == null ? StandardPath.EMPTY : tail;
     }
 
     @Override
-    public Wonton.Path append(Wonton.Path suffix) {
+    public Path append(Path suffix) {
         throw new UnsupportedOperationException();
     }
 

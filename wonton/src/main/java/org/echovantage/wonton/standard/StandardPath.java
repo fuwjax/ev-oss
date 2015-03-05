@@ -15,7 +15,7 @@
  */
 package org.echovantage.wonton.standard;
 
-import org.echovantage.wonton.Wonton.Path;
+import org.echovantage.wonton.Path;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

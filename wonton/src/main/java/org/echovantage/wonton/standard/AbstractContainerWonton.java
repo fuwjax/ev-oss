@@ -15,6 +15,7 @@
  */
 package org.echovantage.wonton.standard;
 
+import org.echovantage.wonton.Path;
 import org.echovantage.wonton.Wonton;
 
 abstract class AbstractContainerWonton extends AbstractWonton {
