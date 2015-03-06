@@ -40,23 +40,14 @@ public class WontonSerial {
     }
 
     public void append(final Wonton wonton) throws IOException {
-        switch (wonton.type()) {
-            case ARRAY:
-                appendArray(wonton.asArray());
-                break;
-            case STRING:
-                appendString(wonton.asString());
-                break;
-            case STRUCT:
-                appendObject(wonton.asStruct());
-                break;
-            case NUMBER:
-            case BOOLEAN:
-            case VOID:
-                writer.write(String.valueOf(wonton.value()));
-                break;
-            default:
-                throw new IllegalArgumentException("No such type: " + wonton.type());
+        if(wonton instanceof Wonton.WArray){
+            appendArray(Wonton.ARRAY.get(wonton));
+        }else if(wonton instanceof Wonton.WStruct){
+            appendObject(Wonton.STRUCT.get(wonton));
+        }else if(wonton instanceof Wonton.WString){
+            appendString(Wonton.STRING.get(wonton));
+        }else{
+            writer.write(String.valueOf(wonton.value()));
         }
     }
 

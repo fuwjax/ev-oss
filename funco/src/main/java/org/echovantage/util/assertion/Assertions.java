@@ -15,6 +15,7 @@
  */
 package org.echovantage.util.assertion;
 
+import org.echovantage.util.RunWrapException;
 import org.echovantage.util.collection.ReflectList;
 
 import java.util.List;
@@ -69,6 +70,10 @@ public class Assertions {
         return is(toExpected(value), value);
     }
 
+    public static Assertion<Object> isAny(){
+        return asserts(() -> "is anything", o -> true);
+    }
+
     public static Assertion<Object> isNotNull(){
         return asserts(() -> "not null", t -> t != null);
     }
@@ -100,7 +105,7 @@ public class Assertions {
     }
 
     public static Assertion<Throwable> isException(Assertion<? super Class<?>> type, Assertion<? super String> message){
-        return isException(type, message, isNull());
+        return isException(type, message, isAny());
     }
 
     public static Assertion<Throwable> isException(Assertion<? super Class<?>> type, Assertion<? super String> message, Assertion<? super Throwable> cause){
@@ -121,11 +126,15 @@ public class Assertions {
     }
 
     public static Assertion<Runnable> failsWith(Assertion<? super Throwable> cause){
-        return new Assertion<Runnable>(){
+        return failsToReturnWith(cause).of(r -> () -> {r.run(); return null;});
+    }
+
+    public static Assertion<Callable<?>> failsToReturnWith(Assertion<? super Throwable> cause){
+        return new Assertion<Callable<?>>(){
             @Override
-            public boolean test(Runnable value) {
-                try{
-                    value.run();
+            public boolean test(Callable<?> value) {
+                try {
+                    value.call();
                     return false;
                 } catch(Throwable t){
                     try {
@@ -143,9 +152,9 @@ public class Assertions {
             }
 
             @Override
-            public void expects(Runnable value) throws AssertionError {
+            public void expects(Callable<?> value) throws AssertionError {
                 try{
-                    value.run();
+                    value.call();
                 } catch(Throwable t){
                     try {
                         cause.expects(t);
@@ -158,9 +167,5 @@ public class Assertions {
                 throw cause.fail(null);
             }
         };
-    }
-
-    public static Assertion<Callable<?>> failsToReturnWith(Assertion<? super Throwable> cause){
-        return failsWith(cause).of(c -> runnable(c::call));
     }
 }

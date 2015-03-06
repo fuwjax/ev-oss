@@ -15,13 +15,18 @@
  */
 package org.echovantage.wonton;
 
+import static java.util.Collections.singletonList;
 import static org.echovantage.util.Objects2.nullIf;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.sun.tools.internal.ws.spi.WSToolsObjectFactory;
+import org.echovantage.util.Objects2;
 import org.echovantage.util.Strings;
 import org.echovantage.util.collection.ListDecorator;
 import org.echovantage.util.collection.MapDecorator;
@@ -58,6 +63,14 @@ public interface Wonton {
 
     public static Type<Double> DOUBLE = w -> nullIf(NUMBER.get(w), Number::doubleValue);
 
+    public static Type<String> RELAXED_STRING = w -> nullIf(first(w).value(), String::valueOf);
+
+    public static Type<Boolean> RELAXED_BOOLEAN = w -> Objects2.inferBoolean(first(w).value());
+
+    public static Type<Boolean> RELAXED_NUMBER = w -> Objects2.inferBoolean(first(w).value());
+
+    public static Type<List<? extends Wonton>> RELAXED_ARRAY = Wonton::relaxedArray;
+
     public static Type<Object> NATURAL = Wonton::naturalValue;
 
     public static Object naturalValue(Wonton w){
@@ -70,7 +83,27 @@ public interface Wonton {
         return w.value();
     }
 
-    public static final Wonton NULL = () -> VOID;
+    public static List<? extends Wonton> relaxedArray(Wonton w){
+        if(w instanceof WArray){
+            return ARRAY.get(w);
+        }
+        return singletonList(w);
+    }
+
+    public static Wonton first(Wonton w){
+        if(w == null){
+            return NULL;
+        }
+        if(w instanceof WArray){
+            return first(ARRAY.get(w).stream().findFirst().orElse(null));
+        }
+        if(w instanceof WStruct){
+            return first(STRUCT.get(w).values().stream().findFirst().orElse(null));
+        }
+        return w;
+    }
+
+    public static final Wonton NULL = new WVoid(){};
 	public static final Wonton TRUE = (WBoolean)() -> true;
 	public static final Wonton FALSE = (WBoolean)() -> false;
 
@@ -81,10 +114,6 @@ public interface Wonton {
 
         public NoSuchPathException(final Throwable cause) {
             super(cause);
-        }
-
-        public NoSuchPathException(String path) {
-            super(path);
         }
     }
 
@@ -103,6 +132,18 @@ public interface Wonton {
 
     public interface Type<T>{
         T get(Wonton wonton);
+    }
+
+    public interface WVoid extends Wonton {
+        @Override
+        default Type<?> type(){
+            return VOID;
+        }
+
+        @Override
+        default <T> T as(Type<T> type) throws ClassCastException{
+            return null;
+        }
     }
 
     public interface WBoolean extends Wonton {
@@ -158,7 +199,7 @@ public interface Wonton {
             Wonton.super.accept(root, visitor);
             int index = 0;
             for(Wonton wonton: asArray()){
-                wonton.accept(root.append("["+index+++"]"), visitor);
+                wonton.accept(root.append(Integer.toString(index++)), visitor);
             }
         }
     }
@@ -195,10 +236,26 @@ public interface Wonton {
 
 	Type<?> type();
 
+    /**
+     * Returns the sub-wonton anchored at path.
+     *
+     * @implNote Implementations should override this method when using custom Path implementations.
+     * @param path the qualified relative path to the sub-wonton
+     * @return the sub-wonton
+     * @throws NoSuchPathException if the path does not exist for this wonton
+     */
 	default Wonton get(final String path) throws NoSuchPathException {
 		return get(Path.path(path));
 	}
 
+    /**
+     * Returns the sub-wonton anchored at path.
+     *
+     * @implNote Container implementations should override this method.
+     * @param path the qualified relative path to the sub-wonton
+     * @return the sub-wonton
+     * @throws NoSuchPathException if the path does not exist for this wonton
+     */
     default Wonton get(Path path) throws NoSuchPathException {
         if (path.isEmpty()) {
             return this;
@@ -206,10 +263,24 @@ public interface Wonton {
         throw new NoSuchPathException(path);
     }
 
+    /**
+     * Accepts the visitor for itself and all nested sub-wontons.
+     *
+     * @implNote Implementations should override this method when using custom Path implementations.
+     * @param visitor the visitor which will visit this wonton and all nested sub-wontons
+     * @throws NoSuchPathException if the path does not exist for this wonton
+     */
 	default void accept(final Visitor visitor) {
 		accept(Path.EMPTY, visitor);
 	}
 
+    /**
+     * Accepts the visitor for itself and all nested sub-wontons.
+     *
+     * @implNote Container implementations should override this method.
+     * @param visitor the visitor which will visit this wonton and all nested sub-wontons
+     * @throws NoSuchPathException if the path does not exist for this wonton
+     */
     default void accept(Path root, Visitor visitor){
         visitor.visit(root, this);
     }

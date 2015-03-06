@@ -17,20 +17,19 @@ package org.echovantage.expression;
 
 import org.echovantage.wonton.Path;
 import org.echovantage.wonton.Wonton;
-import org.echovantage.wonton.standard.StandardPath;
 
 /**
  * Created by fuwjax on 2/4/15.
  */
-public class PathExpression  implements Expression, Path {
+public class PathExpression implements Expression, Path {
     private final String key;
     private PathExpression tail;
 
-    public PathExpression(String segment){
+    public PathExpression(String segment) {
         this.key = segment;
     }
 
-    public PathExpression sub(String segment){
+    public PathExpression sub(String segment) {
         tail = new PathExpression(segment);
         return tail;
     }
@@ -47,11 +46,11 @@ public class PathExpression  implements Expression, Path {
 
     @Override
     public Path tail() {
-        return tail == null ? StandardPath.EMPTY : tail;
+        return tail == null ? Path.EMPTY : tail;
     }
 
     @Override
-    public Path append(Path suffix) {
+    public Path append(String suffix) {
         throw new UnsupportedOperationException();
     }
 

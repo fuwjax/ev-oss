@@ -26,8 +26,13 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.function.IntPredicate;
 import java.util.regex.Pattern;
+
+import static org.echovantage.wonton.WontonFactory.newArray;
+import static org.echovantage.wonton.WontonFactory.newStruct;
 
 public class WontonParser {
     private static final Pattern DOUBLE = Pattern.compile("[.Ee]");
@@ -172,7 +177,7 @@ public class WontonParser {
     private Wonton parseObject() throws IOException, ParseException {
         ParseState start = stream.expect('{');
         try {
-            WontonFactory.MutableWonton wonton = factory.newStruct();
+            WontonFactory.MutableWonton wonton = newStruct(LinkedHashMap::new);
             if (!stream.skip(WS).isa('}')) {
                 do {
                     String key = parseKey();
@@ -191,7 +196,7 @@ public class WontonParser {
     private Wonton parseArray() throws IOException, ParseException {
         ParseState start = stream.expect('[');
         try {
-            WontonFactory.MutableArray wonton = factory.newArray();
+            WontonFactory.MutableArray wonton = newArray(ArrayList::new);
             if (!stream.skip(WS).isa(']')) {
                 do {
                     Wonton value = parseValue();
