@@ -15,27 +15,35 @@
  */
 package org.echovantage.gild;
 
-import static org.echovantage.util.Assert2.assertCompletes;
 import static org.echovantage.util.Assert2.assertEquals;
 import static org.echovantage.util.Files2.delete;
 import static org.echovantage.util.ReadOnlyPath.readOnly;
+import static org.echovantage.util.function.Functions.supplier;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
+import java.util.Arrays;
 import java.util.Map;
+
+import javax.inject.Inject;
 
 import org.echovantage.gild.proxy.ServiceProxy;
 import org.echovantage.gild.stage.Stage;
 import org.echovantage.gild.stage.StageFactory;
 import org.echovantage.gild.stage.StandardStageFactory;
 import org.echovantage.gild.transform.Transformer;
+import org.echovantage.inject.BindConstraint;
+import org.echovantage.inject.Injector;
+import org.echovantage.inject.Optional;
+import org.echovantage.inject.Scope;
+import org.echovantage.util.Arrays2;
 import org.echovantage.util.Files2;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
+import org.echovantage.util.RunWrapException;
+import org.echovantage.util.function.Functions;
+import org.junit.rules.MethodRule;
+import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
 /**
@@ -63,28 +71,7 @@ import org.junit.runners.model.Statement;
  * 	}
  * }
  * </pre>
- * <p>
- * Additionally, the harness supports staged execution. For example:
  *
- * <pre>
- * 	\@Rule
- * 	public Gilded harness = new Gilded().with("db", db).staged(StandardStageFactory.startingAt("stage1"));
- * 
- * 	\@Test
- * 	public void testProcess() throws Exception {
- * 		// loads src/test/gilded/org.example.test.TestClass/testProcess/stage1/input/db/* into the dataSource
- * 		SystemUnderTest sys = new SystemUnderTest(dataSource);
- * 		sys.doSomething();
- * 		harness.nextStage("stage2");
- * 		// saves the dataSource to target/test/gilded/org.example.test.TestClass/testProcess/stage1/output/db/*
- * 		// asserts that the target/.../stage1/output/db/* is byte-equivalent to src/.../stage1/output/db/*
- * 		// loads src/test/gilded/org.example.test.TestClass/testProcess/stage2/input/db/* into the dataSource
- * 		sys.doSomethingElse();
- * 		// saves the dataSource to target/test/gilded/org.example.test.TestClass/testProcess/stage2/output/db/*
- * 		// asserts that the target/.../stage2/output/db/* is byte-equivalent to src/.../stage2/output/db/*
- * 	}
- * </pre>
- * <p>
  * The harness can create the gold copy instead of asserting against it.
  *
  * <pre>
@@ -95,33 +82,23 @@ import org.junit.runners.model.Statement;
  * {@link StandardStageFactory} and has no {@link Transformer}.
  * @author fuwjax
  */
-public class Gild implements TestRule {
-	private Stage stage;
-	private StageFactory stages = new StandardStageFactory(null);
-	private final Map<String, ServiceProxy> proxies = new LinkedHashMap<>();
-	private Transformer transform;
+public class Gild implements MethodRule {
 	private boolean isAssert = true;
 	private boolean prepared;
+	private final Scope injector;
+	@Inject
+	@Optional
+	private Transformer transform;
+	@Inject
+	private StageFactory stages;
 
-	/**
-	 * Adds a service proxy to this harness.
-	 * @param serviceName the name of the service
-	 * @param proxy the service proxy
-	 * @return this harness
-	 */
-	public Gild with(final String serviceName, final ServiceProxy proxy) {
-		proxies.put(serviceName, proxy);
-		return this;
-	}
-
-	public Gild staged(final StageFactory stages) {
-		this.stages = stages;
-		return this;
-	}
-
-	public Gild transformedBy(final Transformer transformer) {
-		transform = transformer;
-		return this;
+	public Gild(final Object... modules) {
+		try {
+			injector = Injector.newInjector(Arrays2.append(modules, supplier(StandardStageFactory::new))).scope();
+			injector.inject(this);
+		} catch(final ReflectiveOperationException e) {
+			throw new RunWrapException(e);
+		}
 	}
 
 	/**
@@ -136,26 +113,28 @@ public class Gild implements TestRule {
 	}
 
 	@Override
-	public Statement apply(final Statement base, final Description description) {
+	public Statement apply(final Statement base, final FrameworkMethod method, final Object target) {
 		return new Statement() {
 			@Override
 			public void evaluate() throws Throwable {
-				execute(base, description);
+				execute(base, method, target);
 			}
 		};
 	}
 
-	protected void execute(final Statement statement, final Description description) throws Throwable {
-		stage = stages.start(description);
-		prepare();
+	protected void execute(final Statement statement, final FrameworkMethod method, final Object target) throws Throwable {
+		injector.inject(target);
+		final Stage stage = stages.stage(method);
+		final Map<BindConstraint, ServiceProxy> proxies = injector.bindings(ServiceProxy.class);
+		prepare(stage, proxies);
 		statement.evaluate();
-		preserve();
+		preserve(stage, proxies);
 	}
 
-	private void prepare() {
+	private void prepare(final Stage stage, final Map<BindConstraint, ServiceProxy> proxies) {
 		assertFalse("Stage has already been prepared", prepared);
-		for(final Map.Entry<String, ServiceProxy> entry : proxies.entrySet()) {
-			final String service = entry.getKey();
+		for(final Map.Entry<BindConstraint, ServiceProxy> entry : proxies.entrySet()) {
+			final String service = entry.getKey().;
 			final ServiceProxy proxy = entry.getValue();
 			final Path in = stage.inputPath(service);
 			final Path output = transform == null ? stage.comparePath(service) : stage.transformPath(service);
@@ -164,16 +143,12 @@ public class Gild implements TestRule {
 		prepared = true;
 	}
 
-	public void assertGolden() {
-		assertCompletes(() -> preserve());
-	}
-
-	private void preserve() throws Exception {
+	private void preserve(final Stage stage, final Map<BindConstraint, ServiceProxy> proxies) throws Exception {
 		if(!prepared) {
 			return;
 		}
 		prepared = false;
-		for(final Map.Entry<String, ServiceProxy> entry : proxies.entrySet()) {
+		for(final Map.Entry<BindConstraint, ServiceProxy> entry : proxies.entrySet()) {
 			final String service = entry.getKey();
 			final Path gold = stage.goldPath(service);
 			final Path compare = stage.comparePath(service);
@@ -196,16 +171,5 @@ public class Gild implements TestRule {
 			Files2.copy(actual, expected);
 			fail("Gold copy has been updated");
 		}
-	}
-
-	/**
-	 * Moves to the next stage in the staged test run.
-	 * @param stageName the next stage name
-	 */
-	public void nextStage(final String stageName) {
-		assertNotNull("Cannot move to a null stage", stageName);
-		assertGolden();
-		stage = stage.nextStage(stageName);
-		assertCompletes(() -> prepare());
 	}
 }

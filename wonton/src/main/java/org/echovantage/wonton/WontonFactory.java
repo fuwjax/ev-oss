@@ -15,13 +15,7 @@
  */
 package org.echovantage.wonton;
 
-import org.echovantage.util.Lists;
-import org.echovantage.util.collection.ListDecorator;
-import org.echovantage.util.collection.MapDecorator;
-import org.echovantage.wonton.Wonton.WArray;
-import org.echovantage.wonton.Wonton.WNumber;
-import org.echovantage.wonton.Wonton.WString;
-import org.echovantage.wonton.Wonton.WStruct;
+import static org.echovantage.wonton.Wonton.NULL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +26,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.echovantage.wonton.Wonton.NULL;
+import org.echovantage.util.Lists;
+import org.echovantage.util.collection.ListDecorator;
+import org.echovantage.util.collection.MapDecorator;
+import org.echovantage.wonton.Wonton.WArray;
+import org.echovantage.wonton.Wonton.WNumber;
+import org.echovantage.wonton.Wonton.WString;
+import org.echovantage.wonton.Wonton.WStruct;
 
 public interface WontonFactory {
     WontonFactory FACTORY = new WontonFactory() {
@@ -141,11 +141,25 @@ public interface WontonFactory {
     }
 
     public static MutableStruct newStruct(Map<String, Wonton> map) {
-        return () -> map;
+    	//TODO: eclipse doesn't realize MutableArray is functional
+//        return () -> map;
+    	return new MutableStruct() {
+			@Override
+			public Map<String, Wonton> asStruct() {
+				return map;
+			}
+		};
     }
 
     public static MutableArray newArray(List<Wonton> list) {
-        return () -> list;
+    	//TODO: eclipse doesn't realize MutableArray is functional
+//        return () -> list;
+    	return new MutableArray() {			
+			@Override
+			public List<Wonton> asArray() {
+				return list;
+			}
+		};
     }
 
     public static MutableStruct newStruct(Supplier<? extends Map<String, Wonton>> supplier) {

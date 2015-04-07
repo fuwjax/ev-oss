@@ -35,5 +35,9 @@
 			<groupId>org.echovantage</groupId>
 			<artifactId>funco</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.echovantage</groupId>
+			<artifactId>wheatgrass</artifactId>
+		</dependency>
 	</dependencies>
 </project>

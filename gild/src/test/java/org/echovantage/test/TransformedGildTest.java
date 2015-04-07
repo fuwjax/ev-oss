@@ -15,7 +15,6 @@
  */
 package org.echovantage.test;
 
-import static java.nio.charset.Charset.forName;
 import static org.echovantage.gild.transform.StreamTransform.line;
 import static org.echovantage.gild.transform.StreamTransform.sort;
 import static org.echovantage.gild.transform.Transformer.recurse;
@@ -31,25 +30,41 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.echovantage.gild.Gild;
 import org.echovantage.gild.proxy.FileSystemProxy;
-import org.junit.Before;
+import org.echovantage.gild.transform.Transformer;
+import org.echovantage.inject.Variable;
+import org.echovantage.util.Charsets;
 import org.junit.Rule;
 import org.junit.Test;
 
 public class TransformedGildTest {
-	private static final Charset UTF8 = forName("UTF-8");
-	private final List<String> testStrings = Arrays.asList("alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india");
-	private final FileSystemProxy files = new FileSystemProxy();
-	@Rule
-	public final Gild gild = new Gild().with("files", files).transformedBy(recurse(with(path -> "output.txt".equals(path.getFileName()), line(UTF8, line -> line.replaceAll("\\d", "0")), sort(UTF8))));
-	private Path working;
+	private class TestModule {
+		@Named("files.path")
+		String path = "target/files";
 
-	@Before
-	public void setup() {
-		working = Paths.get("target/files");
-		files.setWorkingDirectory(working);
+		@Variable(Named.class)
+		Path path(final @Variable(Named.class) String path) {
+			return Paths.get(path);
+		}
+
+		@Named("files.transform")
+		Transformer transform = recurse(with(path -> "output.txt".equals(path.getFileName()), line(UTF8, line -> line.replaceAll("\\d", "0")), sort(UTF8)));
 	}
+
+	@Rule
+	public final Gild gild = new Gild(TestModule.class);
+	@Inject
+	@Named("files")
+	private FileSystemProxy files;
+	@Inject
+	@Named("files.path")
+	private Path working;
+	private static final Charset UTF8 = Charsets.UTF_8;
+	private final List<String> testStrings = Arrays.asList("alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india");
 
 	@Test
 	public void testNonDeterministic() throws IOException {

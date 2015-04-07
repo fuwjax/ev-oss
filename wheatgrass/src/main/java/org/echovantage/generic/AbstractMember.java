@@ -15,54 +15,51 @@
  */
 package org.echovantage.generic;
 
-import org.echovantage.util.ObjectAssist;
-import org.echovantage.util.Types;
-
-import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Member;
-import java.lang.reflect.Type;
+
+import org.echovantage.util.ObjectAssist;
 
 /**
  * Created by fuwjax on 2/19/15.
+ * @param <M> member type
  */
 public abstract class AbstractMember<M extends AccessibleObject & Member & AnnotatedElement> extends ObjectAssist.Impl implements GenericMember {
-    private final M m;
+	private final M m;
 
-    public AbstractMember(M m) {
-        m.setAccessible(true);
-        this.m = m;
-    }
+	public AbstractMember(final M m) {
+		m.setAccessible(true);
+		this.m = m;
+	}
 
-    public M source() {
-        return m;
-    }
+	@Override
+	public M source() {
+		return m;
+	}
 
-    @Override
-    public String name() {
-        return m.getName();
-    }
+	@Override
+	public String name() {
+		return m.getName();
+	}
 
-    @Override
-    public AnnotatedDeclaration declaringClass() {
-        return new AnnotatedDeclaration(source().getDeclaringClass());
-    }
+	@Override
+	public AnnotatedDeclaration declaringClass() {
+		return new AnnotatedDeclaration(source().getDeclaringClass());
+	}
 
-    @Override
-    public MemberAccess access() {
-        return MemberAccess.of(m.getModifiers());
-    }
+	@Override
+	public MemberAccess access() {
+		return MemberAccess.of(m.getModifiers());
+	}
 
-    @Override
-    public TargetType target() {
-        return TargetType.of(m.getModifiers());
-    }
+	@Override
+	public TargetType target() {
+		return TargetType.of(m.getModifiers());
+	}
 
-    @Override
-    public Object[] ids() {
-        return GenericMember.ids(this);
-    }
+	@Override
+	public Object[] ids() {
+		return GenericMember.ids(this);
+	}
 }
-

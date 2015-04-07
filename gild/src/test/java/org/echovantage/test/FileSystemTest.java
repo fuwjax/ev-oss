@@ -15,34 +15,47 @@
  */
 package org.echovantage.test;
 
-import org.echovantage.gild.Gild;
-import org.echovantage.gild.proxy.FileSystemProxy;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import static java.nio.charset.Charset.forName;
+import static java.nio.file.Files.deleteIfExists;
+import static java.nio.file.Files.newBufferedReader;
+import static java.nio.file.Files.write;
+import static java.util.Arrays.asList;
+import static org.echovantage.util.Assert2.assertThrown;
+import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static java.nio.charset.Charset.forName;
-import static java.nio.file.Files.*;
-import static java.util.Arrays.asList;
-import static org.echovantage.util.Assert2.assertThrown;
-import static org.junit.Assert.*;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.echovantage.gild.Gild;
+import org.echovantage.gild.proxy.FileSystemProxy;
+import org.echovantage.inject.Variable;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class FileSystemTest {
-	private final FileSystemProxy files = new FileSystemProxy();
-	@Rule
-	public final Gild gild = new Gild().with("files", files);
-	private Path working;
+	private class TestModule {
+		@Named("files.path")
+		String path = "target/files";
 
-	@Before
-	public void setup() {
-		working = Paths.get("target/files");
-		files.setWorkingDirectory(working);
+		@Variable(Named.class)
+		Path path(final @Variable(Named.class) String path) {
+			return Paths.get(path);
+		}
 	}
+
+	@Rule
+	public final Gild gild = new Gild(TestModule.class);
+	@Inject
+	@Named("files")
+	private FileSystemProxy files;
+	@Inject
+	@Named("files.path")
+	private Path working;
 
 	@Test
 	public void testFiles() throws IOException {
