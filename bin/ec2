@@ -1,0 +1,192 @@
+#!/bin/bash
+set -e
+
+CONF="$HOME/.ec2"
+
+usage() {
+cat << EOT
+usage: ec2 <name> <op> <args>
+       ec2 --conf
+       ec2 --help
+ name: name of the instance(s) to affect
+   op: list         - lists the running instances for name
+       desc         - prints full details
+       host         - prints hostname
+       new          - creates a new instance
+       ami [desc]   - creates a new image
+       kill         - kills all running instances
+       ssh          - connects over ssh
+       run [script] - runs a remote script or stdin
+       put <file>   - copies local file to $HOME
+       get <file>   - copies remote file to local directory
+       --conf       - edit configuration for ec2
+       --help       - this usage
+	                - no op defaults to new then ssh
+EOT
+}
+
+error() {
+	echo >&2 $1
+	usage
+	exit 1
+}
+
+try() {
+	until "$@"
+	do
+		echo -n >&2 '.'
+		sleep 5
+	done
+}
+
+capture() {
+	result=$("$@") || return $?
+	[ -n "$result" ] || return 1
+	echo "$result"
+}
+
+spin() {
+	try capture "$@"
+}
+
+configureEC2 () {
+	vim "$CONF"
+}
+
+createConfig () {
+cat << EOT > "$CONF"
+# AMI Image id (Amazon linux ids on http://aws.amazon.com/amazon-linux-ami)
+#IMAGE=ami-10201178 # lighthouse-ami-20150402
+IMAGE=ami-146e2a7c # us-east-1 HVM-EBS
+
+# Security key
+#KEY_NAME=altruik-build # Jenkins key
+KEY_NAME=default
+
+# Instance type ("Model" from http://aws.amazon.com/ec2/instance-types)
+INSTANCE_TYPE=t2.micro # BPI 1/1
+
+# Secuirty group id
+#SECURITY_GROUP=sg-e3f89e87 # lh-dev-server in Altruik VPC
+#SECURITY_GROUP=sg-20188044 # Lighthouse
+#SECURITY_GROUP=sg-0d2b5468 # EV everything
+#SECURITY_GROUP=sg-ad75eac9 # Jenkins slave
+SECURITY_GROUP=
+
+# Subnet id
+#SUBNET=subnet-1caaae34 # EV vpc
+#SUBNET=subnet-34b4e10e # Altruik vpc
+SUBNET=
+
+# IAM profile ARN (Leave blank for direct user)
+#IAM_PROFILE="arn:aws:iam::334989578730:instance-profile/atkdev/BuildSlave/AltruikDevTools-BuildSlaveProfile-KK7TURIJGEJD" # Jenkins CI
+IAM_PROFILE=
+EOT
+configureEC2
+}
+
+describeInstances() {
+	spin aws ec2 describe-instances --filters Name=tag-value,Values="$NAME" Name=instance-state-name,Values=running,pending Name=key-name,Values=$KEY_NAME
+}
+
+lookupInstanceId() {
+    describeInstances | perl -n -e '/^.*"InstanceId":\s+"([^"]+)"/ && print "$1 "'
+}
+
+lookupHostname() {
+    describeInstances | perl -n -e '/^ {20}"PublicDnsName":\s+"([^"]+)"/ && print "$1\n"' | head -n 1
+}
+
+listInstances() {
+    describeInstances | perl -n -e 'if (/^.*"InstanceId":\s+"([^"]+)"/) {print "$1\n"} elsif (/^ {20}"PublicDnsName":\s+"([^"]+)"/) {print "$1\ ::\ "}'
+}
+
+requestInstance() {
+	local nicdef="[ { \"DeviceIndex\": 0, \"Groups\": [\"$SECURITY_GROUP\"], \"SubnetId\": \"$SUBNET\", \"DeleteOnTermination\": true, \"AssociatePublicIpAddress\": true } ]"
+	if [ -n "$IAM_PROFILE" ]
+	then
+    	aws ec2 run-instances --instance-type $INSTANCE_TYPE --image-id $IMAGE --key-name $KEY_NAME --iam-instance-profile Arn=$IAM_PROFILE --network-interfaces "$nicdef"
+	else
+    	aws ec2 run-instances --instance-type $INSTANCE_TYPE --image-id $IMAGE --key-name $KEY_NAME --network-interfaces "$nicdef"
+	fi
+}
+
+newInstance() {
+	local instanceid=$(requestInstance | perl -n -e '/^.*"InstanceId":\s+"([^"]+)"/ && print "$1 "')
+	try aws ec2 create-tags --resources $instanceid --tags "Key=Name,Value=$NAME"
+    try ssh -o StrictHostKeyChecking=no -t -t ec2-user@$(spin lookupHostname) "exit 0"
+	echo $instanceid
+}
+
+termInstance() {
+	aws ec2 terminate-instances --instance-ids $(lookupInstanceId)
+}
+
+requestImage() {
+	aws ec2 create-image --instance-id $(lookupInstanceId) --name $NAME --description "${1:-$NAME}"
+}
+
+describeImage(){
+	spin aws ec2 describe-images --image-ids $1 --filter Name=state,Values=available 
+}
+
+lookupImage() {
+    describeImage $1 | perl -n -e '/^.*"ImageId":\s+"([^"]+)"/ && print "$1 "'
+}
+
+createImage() {
+	local imageId=$(requestImage "$1" | perl -n -e '/^.*"ImageId":\s+"([^"]+)"/ && print "$1 "')
+	spin lookupImage $imageId
+}
+
+sshInstance() {
+	ssh -o StrictHostKeyChecking=no ec2-user@$(lookupHostname)
+}
+
+getFile() {
+	scp -o StrictHostKeyChecking=no ec2-user@$(lookupHostname):"$@" .
+}
+
+putFile() {
+	scp -o StrictHostKeyChecking=no "$@" ec2-user@$(lookupHostname):
+}
+
+runScript() {
+	ssh -o StrictHostKeyChecking=no -t -t ec2-user@$(lookupHostname) "$@"
+}
+
+if [ "$1" = "--conf" ]
+then
+	[ -f "$CONF" ] && configureEC2 || createConfig
+	exit
+fi
+if [ "$1" = "--help" ]
+then
+	usage
+	exit
+fi
+
+NAME=$1
+shift
+
+OP=${1:?Missing operation argument: ./ec2 --help for usage}
+shift || :
+
+[ -f "$CONF" ] || createConfig
+source "$CONF"
+
+case $OP in
+	list) listInstances ;;
+	host) spin lookupHostname ;;
+	desc) describeInstances ;;
+	new) newInstance ;;
+	ami) createImage "$@" ;;
+	kill) termInstance ;;
+	ssh) sshInstance ;;
+	get) getFile "$@" ;;
+	put) putFile "$@" ;;
+    run) runScript "$@" ;;
+	conf) configureEC2 ;;
+	help) usage ;;
+	*) error "Unknown operation: '$OP'"
+esac

@@ -24,45 +24,66 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  * File utility class for test-centric operations.
- *
  * @author fuwjax
  */
 public class Files2 {
 	/**
 	 * Copies a source to a destination, works recursively on directories.
-	 *
-	 * @param source
-	 *           the source path
-	 * @param dest
-	 *           the destination path
-	 * @throws IOException
-	 *            if the source cannot be copied to the destination
+	 * @param source the source path
+	 * @param dest the destination path
+	 * @throws IOException if the source cannot be copied to the destination
 	 */
 	public static void copy(final Path source, final Path dest) throws IOException {
 		if(Files.exists(source)) {
 			Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
 				@Override
 				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-					Files.copy(file, dest.resolve(source.relativize(file)));
+					Files.copy(file, resolve(dest, relativize(source, file)));
 					return super.visitFile(file, attrs);
 				}
 
 				@Override
 				public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
-					Files.createDirectories(dest.resolve(source.relativize(dir)));
+					Files.createDirectories(resolve(dest, relativize(source, dir)));
 					return super.preVisitDirectory(dir, attrs);
 				}
 			});
 		}
 	}
 
+	public static Path relativize(final Path self, final Path other) {
+		try {
+			return self.relativize(other);
+		} catch(final IllegalArgumentException e) {
+			return self.relativize(convert(self, other));
+		}
+	}
+
+	public static Path resolve(final Path self, final Path other) {
+		try {
+			return self.resolve(other);
+		} catch(final IllegalArgumentException e) {
+			return self.resolve(convert(self, other));
+		}
+	}
+
+	private static Path convert(final Path self, final Path other) {
+		if(other.getNameCount() == 0) {
+			return self.relativize(self);
+		}
+		final String first = other.getName(0).toString();
+		final String[] more = new String[other.getNameCount() - 1];
+		for(int i = 0; i < more.length; i++) {
+			more[i] = other.getName(i + 1).toString();
+		}
+		final Path proxy = self.getFileSystem().getPath(first, more);
+		return other.isAbsolute() ? self.getRoot().resolve(proxy) : proxy;
+	}
+
 	/**
 	 * Deletes a path, including directories.
-	 *
-	 * @param target
-	 *           the path to delete
-	 * @throws IOException
-	 *            if the path cannot be deleted
+	 * @param target the path to delete
+	 * @throws IOException if the path cannot be deleted
 	 */
 	public static void delete(final Path target) throws IOException {
 		if(target != null && Files.exists(target)) {

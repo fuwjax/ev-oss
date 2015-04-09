@@ -1,0 +1,228 @@
+#!/bin/bash
+
+# Copyright 2014 EchoVantage LLC
+# All rights reserved.
+
+function doUsage {
+  cat <<EOF
+mava: Maven-Java application launcher
+    The mava tool launches a Java application, by resolving dependencies through maven.
+  Usage: 
+    mava [options] -cp classpath mainClass [arguments]
+  
+  Arguments:
+    options:    any valid option to java
+    mainClass:  the fully qualified main class to execute
+    arguments:  any valid argument to the main class, including quoted arguments
+    
+    Specifying classpath: The classpath argument is specified much the same as for
+    the java commandline program except that it is also possible to specify
+    Maven artifact coordinates. When coordinates are used the jar and all of its
+    transitive dependencies will be downloaded from the primary remote Maven
+    repository specified in your user's Maven installation.
+    
+    The classpath argument is parsed by first splitting its value on colon (:).
+    If any of the resulting elements contain a pipe (|) character that element
+    is considered to be a Maven artifact coordinate. Parts of the coordinate are
+    separated by pipes. The first part is the group ID, the second is the
+    artifact ID, and the third is the version. Specifying a version is optional.
+    If no version is supplied the latest version will be requested from the
+    configured remote repository and used.
+  
+  Environment variables:
+    JAVA_ARGS: optional java options, extended by mava options
+EOF
+}
+
+function die {
+  [ "$1" ] || $(echo "Unknown Error"; doUsage >&2; exit -1) 
+  case "$1" in
+    NO_ARGS ) doUsage; exit 0;;
+    NO_CLASSPATH ) echo "You must supply a classpath list to -cp or -classpath"; exit 5;;
+    NO_MAIN_CLASS ) echo "You must supply a fully qualified main class after all options"; exit 6;;
+    DEPENDENCY_RESOLUTION_FAILED ) echo "Dependency resolution failed on: $GROUP_ID:$ARTIFACT_ID:$VERSION"; exit 10;;
+    VERSION_RESOLUTION_FAILED ) echo "Could not fetch version."; exit 11;;
+    ARTIFACT_RETRIEVAL_FAILED ) echo "Error while fetching $REMOTE_ARTIFACT_URL"; exit 12;;
+    REMOTE_REQUIRED ) echo "A remote repository is required to resolve the latest version of an artifact, but none was configured"; exit 13;;
+    * ) echo "ERROR: $1"; echo; doUsage >&2; exit -2;;
+  esac
+}
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+function copy {
+  if [[ "$1" == *-SNAPSHOT.* ]]
+  then
+    cp "$1" "$JARS"
+  else
+    ln "$1" "$JARS"
+  fi
+}
+
+function getClasspath {
+        local CP
+        while IFS= read -r line
+        do
+                if [[ "$line" = Class-Path:* ]]
+                then
+                        CP="${line:12}"
+                elif [[ "${line:0:1}" == " " && -n "$CP" ]]
+                then
+                        CP="$CP${line:1}"
+                elif [[ -n "$CP" ]]
+                then
+                        echo "$CP"
+                        unset CP
+                fi
+        done < <(echo "$1" | tr -d '\015')
+}
+
+function checkRepo {
+  if [[ -z "$M2_REPO" || -z "$REMOTE_REPO" ]]
+  then
+    MAVEN_INFO=( $(mvn -X | awk '/local repository/{print $NF};/Using mirror .* for central/{print substr($5,2,length($5)-2)}') )
+    M2_REPO=${M2_REPO:-${MAVEN_INFO[0]}}
+    REMOTE_REPO=${REMOTE_REPO:-${MAVEN_INFO[1]}}
+  fi
+  SAFE_REPO="$M2_REPO"
+}
+
+function resolveDependencies {
+  MANIFEST="$(unzip -pc "$SAFE_REPO/$ARTIFACT.jar" META-INF/MANIFEST.MF | tr -d $'\r')"
+  if [[ -n "$REMOTE_REPO" && "$MANIFEST" == *Class-Path:* && "$VERSION" != *-SNAPSHOT ]]
+  then
+    for JAR in $(getClasspath "$MANIFEST")
+    do
+      fetchAndCopy "$JAR"
+    done
+  else
+    cp "$SAFE_REPO/$ARTIFACT.pom" $JARS/pom.xml
+    CP=$(cd $JARS; mvn -DincludeScope=runtime org.apache.maven.plugins:maven-dependency-plugin:2.4:build-classpath | awk '/Dependencies classpath:/{getline;print}')
+    if [[ -n $CP ]]
+    then
+      IFS=:
+      for JAR in $CP
+      do
+        copy $JAR
+      done
+      unset IFS
+    fi
+  fi
+}
+
+function fetchAndCopy {
+  if [[ "$1" = *-SNAPSHOT.* || ! -e "$SAFE_REPO/$1" ]]
+  then
+    mkdir -p "$SAFE_REPO/${1%/*}"
+    REMOTE_ARTIFACT_URL="$REMOTE_REPO/$1"
+    curl -f -z "$SAFE_REPO/$1" -o "$SAFE_REPO/$1" "$REMOTE_ARTIFACT_URL" &> /dev/null
+    [[ $? = 0 ]] || die ARTIFACT_RETRIEVAL_FAILED
+  fi
+  copy "$SAFE_REPO/$1"
+}
+
+function fetchArtifact {
+  ARTIFACT="${GROUP_ID//.//}/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION"
+  if [[ -n "$REMOTE_REPO" && "$VERSION" != *-SNAPSHOT ]]
+  then
+    fetchAndCopy "$ARTIFACT.jar"
+    fetchAndCopy "$ARTIFACT.pom"
+  else
+      if [[ "$VERSION" = *-SNAPSHOT || ! -e "$SAFE_REPO/$ARTIFACT.jar" || ! -e "$SAFE_REPO/$ARTIFACT.pom" ]]
+      then
+      mvn -Pmava org.apache.maven.plugins:maven-dependency-plugin:2.4:get -Dartifact=$GROUP_ID:$ARTIFACT_ID:$VERSION > /dev/null || die DEPENDENCY_RESOLUTION_FAILED
+      fi
+    copy "$SAFE_REPO/$ARTIFACT.jar"
+  fi
+}
+
+function lookupLatestVersion {
+  if [[ -z "$REMOTE_REPO" ]]
+  then
+    die REMOTE_REQUIRED
+  fi
+
+  REMOTE_REPO_HOST=$(sed 's#\(.*\)/content/.*#\1#' <<< $REMOTE_REPO)
+  REPO_NAME=$(sed 's#^.*/\([^/]*\)$#\1#' <<< $REMOTE_REPO)
+  VERSION=$(curl -o- -s "$REMOTE_REPO_HOST/service/local/artifact/maven/resolve?v=LATEST&r=$REPO_NAME&g=$GROUP_ID&a=$ARTIFACT_ID" | grep '<version>' | sed 's#^.*<version>\(.*\)</version>.*$#\1#')
+}
+
+function resolve_coordinates {
+  local coord=$1
+  local arrCoord
+
+  IFS_SAVE=$IFS
+  IFS=':' read -a arrCoord <<< "$coord"
+  IFS=$IFS_SAVE
+  GROUP_ID=${arrCoord[0]}
+  ARTIFACT_ID=${arrCoord[1]}
+  VERSION=${arrCoord[2]}
+  
+  checkRepo
+  
+  JARS=$(mktemp -d /tmp/jars.XXXXXXXXX)
+  #trap "rm -rf $JARS" INT TERM EXIT
+  
+  if [[ -z "$VERSION" ]]
+  then
+    lookupLatestVersion
+  fi
+
+  fetchArtifact
+  
+  resolveDependencies
+  
+  echo $JARS
+}
+
+
+CLASSPATH=${CLASSPATH:-.}
+
+[ "$*" ] || die NO_ARGS
+while [[ "$1" == -* ]]
+do
+  if [[ $1 == "-cp" || $1 == "-classpath" ]] 
+  then
+    shift
+    CP_ARG="$1"
+  else
+    JAVA_ARGS="$JAVA_ARGS $1"
+  fi
+  shift
+done
+
+MAIN_CLASS=$1
+shift
+
+if [[ -z "$CP_ARG" ]]
+then
+  die NO_CLASSPATH
+fi
+
+if [[ -z "$MAIN_CLASS" ]]
+then
+  die NO_MAIN_CLASS
+fi
+
+IFS_SAVE=$IFS
+IFS=; read -a CP_ELEMENTS <<< $CP_ARG
+IFS=$IFS_SAVE
+
+for element in ${CP_ELEMENTS[@]}
+do
+  if [[ $element == *:* ]]
+  then
+    CLASSPATH=$CLASSPATH:$(resolve_coordinates $element)/*
+  else
+    CLASSPATH=$CLASSPATH:$element
+  fi
+done
+
+export CLASSPATH
+java $JAVA_ARGS $MAIN_CLASS "$@"

@@ -15,9 +15,18 @@
  */
 package org.echovantage.util;
 
-import org.echovantage.util.assertion.Assertion;
-import org.echovantage.util.assertion.Assertions;
-import org.echovantage.util.function.UnsafeRunnable;
+import static java.nio.file.Files.newInputStream;
+import static java.nio.file.Files.walkFileTree;
+import static org.echovantage.util.Files2.relativize;
+import static org.echovantage.util.Files2.resolve;
+import static org.echovantage.util.assertion.Assertions.assertThat;
+import static org.echovantage.util.assertion.Assertions.asserts;
+import static org.echovantage.util.assertion.Assertions.fails;
+import static org.echovantage.util.assertion.Assertions.failsToReturn;
+import static org.echovantage.util.assertion.Assertions.failsToReturnWith;
+import static org.echovantage.util.assertion.Assertions.failsWith;
+import static org.echovantage.util.assertion.Assertions.isException;
+import static org.echovantage.util.assertion.Assertions.isJustA;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -30,63 +39,63 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
-import static java.nio.file.Files.newInputStream;
-import static java.nio.file.Files.walkFileTree;
-import static org.echovantage.util.assertion.Assertions.*;
+import org.echovantage.util.assertion.Assertion;
+import org.echovantage.util.assertion.Assertions;
+import org.echovantage.util.function.UnsafeRunnable;
 
 public class Assert2 {
-    public static void assertCompletes(final UnsafeRunnable whenCalled) {
-        try {
-            whenCalled.run();
-        } catch (final AssertionError e) {
-            throw e;
-        } catch (final Throwable t) {
-            throw new AssertionError("Runnable did not complete", t);
-        }
-    }
+	public static void assertCompletes(final UnsafeRunnable whenCalled) {
+		try {
+			whenCalled.run();
+		} catch(final AssertionError e) {
+			throw e;
+		} catch(final Throwable t) {
+			throw new AssertionError("Runnable did not complete", t);
+		}
+	}
 
-    public static <T> T assertReturns(final Callable<T> whenCalled) {
-        try {
-            return whenCalled.call();
-        } catch (final AssertionError e) {
-            throw e;
-        } catch (final Throwable t) {
-            throw new AssertionError("Callable did not compete", t);
-        }
-    }
+	public static <T> T assertReturns(final Callable<T> whenCalled) {
+		try {
+			return whenCalled.call();
+		} catch(final AssertionError e) {
+			throw e;
+		} catch(final Throwable t) {
+			throw new AssertionError("Callable did not compete", t);
+		}
+	}
 
-    public static void assertFails(final UnsafeRunnable whenCalled) {
-        assertThat(whenCalled, fails());
-    }
+	public static void assertFails(final UnsafeRunnable whenCalled) {
+		assertThat(whenCalled, fails());
+	}
 
-    public static void assertFails(final Callable<?> whenCalled) {
-        assertThat(whenCalled, failsToReturn());
-    }
+	public static void assertFails(final Callable<?> whenCalled) {
+		assertThat(whenCalled, failsToReturn());
+	}
 
-    public static void assertThrown(final Class<? extends Throwable> expected, final UnsafeRunnable whenCalled) {
-        assertThat(whenCalled, failsWith(isJustA(expected)));
-    }
+	public static void assertThrown(final Class<? extends Throwable> expected, final UnsafeRunnable whenCalled) {
+		assertThat(whenCalled, failsWith(isJustA(expected)));
+	}
 
-    public static void assertThrown(final Throwable expected, final UnsafeRunnable whenCalled) {
-        assertThat(whenCalled, failsWith(isException(expected)));
-    }
+	public static void assertThrown(final Throwable expected, final UnsafeRunnable whenCalled) {
+		assertThat(whenCalled, failsWith(isException(expected)));
+	}
 
-    public static void assertThrown(final Class<? extends Throwable> expected, final Callable<?> whenCalled) {
-        assertThat(whenCalled, failsToReturnWith(isJustA(expected)));
-    }
+	public static void assertThrown(final Class<? extends Throwable> expected, final Callable<?> whenCalled) {
+		assertThat(whenCalled, failsToReturnWith(isJustA(expected)));
+	}
 
-    public static void assertThrown(final Throwable expected, final Callable<?> whenCalled) {
-        assertThat(whenCalled, failsToReturnWith(isException(expected)));
-    }
+	public static void assertThrown(final Throwable expected, final Callable<?> whenCalled) {
+		assertThat(whenCalled, failsToReturnWith(isException(expected)));
+	}
 
-    public static void assertEquals(final Throwable expected, final Throwable actual) {
-        assertThat(actual, isException(expected));
-    }
+	public static void assertEquals(final Throwable expected, final Throwable actual) {
+		assertThat(actual, isException(expected));
+	}
 
-	public static Assertion<Path> existsIn(Path srcRoot, Path testRoot){
+	public static Assertion<Path> existsIn(final Path srcRoot, final Path testRoot) {
 		return Assertions.asserts(() -> "exists in " + srcRoot + " and therefore in " + testRoot, p -> {
-			final Path sub = srcRoot.relativize(p);
-			return Files.exists(testRoot.resolve(sub));
+			final Path sub = relativize(srcRoot, p);
+			return Files.exists(resolve(testRoot, sub));
 		});
 	};
 
@@ -98,7 +107,7 @@ public class Assert2 {
 	 * @throws IOException if the paths cannot be walked
 	 */
 	public static void containsAll(final Path expected, final Path actual) throws IOException {
-		Assertion<Path> exists = existsIn(expected, actual);
+		final Assertion<Path> exists = existsIn(expected, actual);
 		if(Files.exists(expected)) {
 			walkFileTree(expected, new SimpleFileVisitor<Path>() {
 				@Override
@@ -123,8 +132,8 @@ public class Assert2 {
 			walkFileTree(expected, new SimpleFileVisitor<Path>() {
 				@Override
 				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-					final Path sub = expected.relativize(file);
-					final Path therePath = actual.resolve(sub);
+					final Path sub = relativize(expected, file);
+					final Path therePath = resolve(actual, sub);
 					final long hereSize = Files.size(file);
 					final long thereSize = Files.size(therePath);
 					assertThat(thereSize, asserts(() -> sub + " is " + hereSize + " bytes", t -> t == hereSize));
@@ -158,7 +167,7 @@ public class Assert2 {
 				if(i >= thereLimit) {
 					thereLimit += read(thereStream, thereBuffer, thereLimit);
 				}
-				final int c = hereBuffer[(int)(i % length)];
+				final int c = hereBuffer[(int) (i % length)];
 				assertThat(thereBuffer[(int) (i % length)], asserts(message(sub, i, line, ch), t -> t == c));
 				if(c == '\n') {
 					ch = 0;
@@ -170,12 +179,12 @@ public class Assert2 {
 		}
 	}
 
-	private static Supplier<String> message(Path sub, long i, int line, int ch){
+	private static Supplier<String> message(final Path sub, final long i, final int line, final int ch) {
 		return () -> sub + " does not match at byte " + i + " line " + line + " column " + ch;
 	}
 
 	private static int read(final InputStream stream, final byte[] buffer, final long limit) throws IOException {
-		final int offset = (int)(limit % buffer.length);
+		final int offset = (int) (limit % buffer.length);
 		final int count = stream.read(buffer, offset, buffer.length - offset);
 		if(count == -1) {
 			throw new EOFException();
