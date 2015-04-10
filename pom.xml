@@ -49,6 +49,7 @@
 		<module>metafactory</module>
 		<module>funco</module>
 		<module>wheatgrass</module>
+		<module>teecp</module>
 	</modules>
 
 	<prerequisites>
