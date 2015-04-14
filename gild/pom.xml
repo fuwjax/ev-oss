@@ -35,5 +35,17 @@
 			<groupId>org.echovantage</groupId>
 			<artifactId>funco</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.jodd</groupId>
+			<artifactId>jodd-http</artifactId>
+			<version>3.6.5</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.undertow</groupId>
+			<artifactId>undertow-core</artifactId>
+			<version>1.1.0.Final</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
