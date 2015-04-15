@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.echovantage.gild.proxy.AbstractServiceProxy;
-import org.echovantage.util.ReadOnlyPath;
+import org.echovantage.util.io.ReadOnlyPath;
 
 public class SocketHttpProxy extends AbstractServiceProxy {
 	private final String host;
@@ -48,19 +48,19 @@ public class SocketHttpProxy extends AbstractServiceProxy {
 	@Override
 	protected void prepareImpl(final ReadOnlyPath input, final Path output) throws Exception {
 		Files.createDirectories(output);
-		List<ReadOnlyPath> paths = new ArrayList<>();
+		final List<ReadOnlyPath> paths = new ArrayList<>();
 		try(DirectoryStream<ReadOnlyPath> stream = input.newDirectoryStream()) {
-			for(ReadOnlyPath test : stream) {
+			for(final ReadOnlyPath test : stream) {
 				paths.add(test);
 			}
 		}
 		Collections.sort(paths);
 		for(final ReadOnlyPath file : paths) {
 			try(final Socket socket = new Socket(host, port);
-					OutputStream out = socket.getOutputStream();
-					InputStream in = socket.getInputStream();
-					InputStream req = file.newInputStream();
-					InputStream hin = new HttpResponseInputStream(in, req)) {
+			      OutputStream out = socket.getOutputStream();
+			      InputStream in = socket.getInputStream();
+			      InputStream req = file.newInputStream();
+			      InputStream hin = new HttpResponseInputStream(in, req)) {
 				file.copyTo(out);
 				Files.copy(hin, output.resolve(file.getFileName()));
 			}
