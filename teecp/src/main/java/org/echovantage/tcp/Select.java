@@ -31,9 +31,10 @@ public class Select implements Runnable, AutoCloseable {
 	}
 
 	private final Selector selector;
-	private final Log log = Log.SYSTEM;
+	private final Log log;
 
-	public Select() throws IOException {
+	public Select(final Log log) throws IOException {
+		this.log = log;
 		selector = Selector.open();
 	}
 

@@ -3,16 +3,11 @@ package org.echovantage.tcp;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.SYNC;
-import static org.echovantage.util.Streams.over;
+import static org.echovantage.util.function.Functions.supplier;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
@@ -25,8 +20,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
+import org.echovantage.util.Log;
 import org.echovantage.util.io.Files2;
 
 public class TeeCP {
@@ -103,33 +100,8 @@ public class TeeCP {
 	}
 
 	private final class Receiver implements Select.Handler {
-		private final class SysOutChannel implements WritableByteChannel {
-			@Override
-			public boolean isOpen() {
-				return true;
-			}
-
-			@Override
-			public void close() throws IOException {
-				// do nothing
-			}
-
-			@Override
-			public int write(final ByteBuffer src) throws IOException {
-				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				final WritableByteChannel out = Channels.newChannel(baos);
-				out.write(src);
-				out.close();
-				final BufferedReader in = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(baos.toByteArray())));
-				for(final String line : over(in.lines())) {
-					System.out.println(name + "-- " + line);
-				}
-				return src.position();
-			}
-		}
-
 		private Writer response;
-		private Writer log;
+		private Writer audit;
 		private final Writer self;
 		private SelectionKey key;
 		private boolean closed;
@@ -148,24 +120,23 @@ public class TeeCP {
 			this.id = id;
 			name = String.format("s2c.%04d", id);
 			self = new Writer(this::channel, true);
-			log = initLog();
+			audit = initAudit();
 		}
 
-		private Writer initLog() throws IOException {
-			return new Writer(FileChannel.open(logPath.resolve(name), APPEND, CREATE, SYNC));
-			// return new Writer(new SysOutChannel());
+		private Writer initAudit() throws IOException {
+			return new Writer(FileChannel.open(auditPath.resolve(name), APPEND, CREATE, SYNC));
 		}
 
 		@Override
 		public void connect(final SelectionKey key) throws IOException {
 			this.key = key;
 			channel = (ReadableByteChannel) key.channel();
-			System.out.println("CONNECT: " + name + " -- " + name());
-			if(log == null) {
+			log.info("CONNECT: %s -- %s ", name, supplier(this::name));
+			if(audit == null) {
 				final Receiver server = new Receiver(self, id);
 				select.connect(remote, () -> server);
 				response = server.self;
-				log = initLog();
+				audit = initAudit();
 			} else if(pendingWrites() && key.isWritable()) {
 				write(key);
 			}
@@ -199,21 +170,17 @@ public class TeeCP {
 
 		@Override
 		public void read(final SelectionKey key) throws IOException {
-			log.flush();
+			audit.flush();
 			final int flushed = response.flush();
-			if(flushed > 0) {
-				System.out.println("FLUSH:  " + name + " -- " + flushed);
-			}
+			log.info(positive(flushed), "FLUSH: %s -- %d", name, flushed);
 			int count = 0;
 			while(read(count)) {
 				self.lock();
-				log.write(buffer.slice());
+				audit.write(buffer.slice());
 				response.write(buffer);
 				count += buffer.position();
 			}
-			if(count > 0) {
-				System.out.println("READ:  " + name + " -- " + count + " x" + response.size());
-			}
+			log.info(positive(count), "READ: %s -- %d x%d", name, count, supplier(response::size));
 		}
 
 		private boolean read(final int count) throws IOException {
@@ -228,19 +195,18 @@ public class TeeCP {
 
 		@Override
 		public boolean pendingWrites() {
-			final int count = self.size();
-			if(count > 0) {
-				System.out.println("BUFFER:  " + name + " -- " + count);
-			}
+			log.info(() -> self.size() > 0, "BUFFER: %s -- %d", name, supplier(self::size));
 			return self.pendingWrites();
 		}
 
 		@Override
 		public void write(final SelectionKey key) throws IOException {
 			final int flushed = self.flush();
-			if(flushed > 0) {
-				System.out.println("WRITE:   " + name + " -- " + flushed);
-			}
+			log.info(positive(flushed), "WRITE: %s -- %d", name, flushed);
+		}
+
+		private BooleanSupplier positive(final int value) {
+			return () -> value > 0;
 		}
 
 		@Override
@@ -252,24 +218,26 @@ public class TeeCP {
 		public void close() throws IOException {
 			if(!closed) {
 				closed = true;
-				System.out.println("CLOSE:   " + name);
+				log.info("CLOSE: %s", name);
 				key.cancel();
-				log.close();
+				audit.close();
 				response.close();
 			}
 		}
 	}
 
 	private final AtomicInteger index = new AtomicInteger();
-	private final Path logPath;
+	private final Path auditPath;
 	private final InetSocketAddress remote;
-	private final Select select = new Select();
+	private final Log log;
+	private final Select select;
 	private final ByteBuffer buffer = ByteBuffer.allocateDirect(16 * 1024);
 
-	public TeeCP(final int serverPort, final String remoteHost, final int remotePort, final Path logPath) throws IOException {
-		super();
+	public TeeCP(final Log log, final int serverPort, final String remoteHost, final int remotePort, final Path auditPath) throws IOException {
+		this.log = log;
+		select = new Select(log);
 		remote = new InetSocketAddress(remoteHost, remotePort);
-		this.logPath = logPath;
+		this.auditPath = auditPath;
 		select.bind(new InetSocketAddress(serverPort), Receiver::new);
 	}
 
@@ -285,7 +253,7 @@ public class TeeCP {
 		final Path tmp = Paths.get(args[3]);
 		Files2.delete(tmp);
 		Files.createDirectories(tmp);
-		final TeeCP tcp = new TeeCP(Integer.parseInt(args[0]), args[1], Integer.parseInt(args[2]), tmp);
+		final TeeCP tcp = new TeeCP(Log.SYSTEM, Integer.parseInt(args[0]), args[1], Integer.parseInt(args[2]), tmp);
 		tcp.run();
 	}
 }
