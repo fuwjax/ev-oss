@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.echovantage.util.ReadOnlyPath;
+import org.echovantage.util.io.ReadOnlyPath;
 
 public class FilteredTransformer implements Transformer {
 	private static class FilteredTransform extends StreamTransformer {

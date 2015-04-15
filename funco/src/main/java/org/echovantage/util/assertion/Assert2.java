@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.echovantage.util;
+package org.echovantage.util.assertion;
 
 import static java.nio.file.Files.newInputStream;
 import static java.nio.file.Files.walkFileTree;
-import static org.echovantage.util.Files2.relativize;
-import static org.echovantage.util.Files2.resolve;
 import static org.echovantage.util.assertion.Assertions.assertThat;
 import static org.echovantage.util.assertion.Assertions.asserts;
 import static org.echovantage.util.assertion.Assertions.fails;
@@ -27,6 +25,8 @@ import static org.echovantage.util.assertion.Assertions.failsToReturnWith;
 import static org.echovantage.util.assertion.Assertions.failsWith;
 import static org.echovantage.util.assertion.Assertions.isException;
 import static org.echovantage.util.assertion.Assertions.isJustA;
+import static org.echovantage.util.io.Files2.relativize;
+import static org.echovantage.util.io.Files2.resolve;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -39,8 +39,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
-import org.echovantage.util.assertion.Assertion;
-import org.echovantage.util.assertion.Assertions;
 import org.echovantage.util.function.UnsafeRunnable;
 
 public class Assert2 {

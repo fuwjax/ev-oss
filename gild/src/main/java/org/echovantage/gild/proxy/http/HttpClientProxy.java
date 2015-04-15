@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.echovantage.gild.proxy.AbstractServiceProxy;
-import org.echovantage.util.ReadOnlyPath;
+import org.echovantage.util.io.ReadOnlyPath;
 
 public class HttpClientProxy extends AbstractServiceProxy {
 	private final String host;

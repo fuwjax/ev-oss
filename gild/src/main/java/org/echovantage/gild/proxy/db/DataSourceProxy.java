@@ -16,9 +16,10 @@
 package org.echovantage.gild.proxy.db;
 
 import org.echovantage.gild.proxy.AbstractServiceProxy;
-import org.echovantage.util.ReadOnlyPath;
+import org.echovantage.util.io.ReadOnlyPath;
 
 import javax.sql.DataSource;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -42,7 +43,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static java.nio.file.Files.newBufferedWriter;
-import static org.echovantage.util.Assert2.assertCompletes;
+import static org.echovantage.util.assertion.Assert2.assertCompletes;
 import static org.junit.Assert.*;
 
 public class DataSourceProxy extends AbstractServiceProxy {

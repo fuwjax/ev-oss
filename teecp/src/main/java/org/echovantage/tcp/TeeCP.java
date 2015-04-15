@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import org.echovantage.util.io.Files2;
+
 public class TeeCP {
 	private final class Writer {
 		private final Supplier<WritableByteChannel> channelRef;
@@ -276,9 +278,14 @@ public class TeeCP {
 	}
 
 	public static void main(final String... args) throws IOException {
-		final Path tmp = Paths.get("/tmp/teecp");
+		if(args.length < 4) {
+			System.out.println("Usage: teecp.jar <local bind port> <remote host> <remote port> <tee path>");
+			return;
+		}
+		final Path tmp = Paths.get(args[3]);
+		Files2.delete(tmp);
 		Files.createDirectories(tmp);
-		final TeeCP tcp = new TeeCP(8085, "echovantage.com", 80, tmp);
+		final TeeCP tcp = new TeeCP(Integer.parseInt(args[0]), args[1], Integer.parseInt(args[2]), tmp);
 		tcp.run();
 	}
 }

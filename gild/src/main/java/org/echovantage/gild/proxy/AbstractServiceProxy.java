@@ -15,14 +15,14 @@
  */
 package org.echovantage.gild.proxy;
 
-import static org.echovantage.util.Assert2.assertCompletes;
-import static org.echovantage.util.Assert2.assertReturns;
+import static org.echovantage.util.assertion.Assert2.assertCompletes;
+import static org.echovantage.util.assertion.Assert2.assertReturns;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 
-import org.echovantage.util.ReadOnlyPath;
+import org.echovantage.util.io.ReadOnlyPath;
 
 public abstract class AbstractServiceProxy implements ServiceProxy {
 	private ReadOnlyPath bufferedInput;

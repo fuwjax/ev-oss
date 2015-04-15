@@ -15,10 +15,10 @@
  */
 package org.echovantage.gild;
 
-import static org.echovantage.util.Assert2.assertCompletes;
-import static org.echovantage.util.Assert2.assertEquals;
-import static org.echovantage.util.Files2.delete;
-import static org.echovantage.util.ReadOnlyPath.readOnly;
+import static org.echovantage.util.assertion.Assert2.assertCompletes;
+import static org.echovantage.util.assertion.Assert2.assertEquals;
+import static org.echovantage.util.io.Files2.delete;
+import static org.echovantage.util.io.ReadOnlyPath.readOnly;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -33,7 +33,7 @@ import org.echovantage.gild.stage.Stage;
 import org.echovantage.gild.stage.StageFactory;
 import org.echovantage.gild.stage.StandardStageFactory;
 import org.echovantage.gild.transform.Transformer;
-import org.echovantage.util.Files2;
+import org.echovantage.util.io.Files2;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;

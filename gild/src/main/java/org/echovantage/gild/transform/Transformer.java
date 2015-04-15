@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Path;
 
-import org.echovantage.util.ReadOnlyPath;
+import org.echovantage.util.io.ReadOnlyPath;
 
 public interface Transformer {
 	public static Transformer recurse(final Transformer transformer) {

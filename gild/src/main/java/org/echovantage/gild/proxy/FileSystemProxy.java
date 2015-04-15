@@ -15,13 +15,13 @@
  */
 package org.echovantage.gild.proxy;
 
-import static org.echovantage.util.Assert2.assertCompletes;
+import static org.echovantage.util.assertion.Assert2.assertCompletes;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.echovantage.util.Files2;
-import org.echovantage.util.ReadOnlyPath;
+import org.echovantage.util.io.Files2;
+import org.echovantage.util.io.ReadOnlyPath;
 
 public class FileSystemProxy extends AbstractServiceProxy {
 	private Path working;
