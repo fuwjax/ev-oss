@@ -195,7 +195,7 @@ public class TeeCP {
 				response.write(buffer);
 				count += buffer.position();
 			}
-			log.info(positive(count), "READ: %s -- %d x%d", name, count, supplier(response::size));
+			log.info(positive(count), "READ: %s -- %d x%s", name, count, supplier(response::size));
 		}
 
 		private boolean read(final int count) throws IOException {
@@ -210,7 +210,7 @@ public class TeeCP {
 
 		@Override
 		public boolean pendingWrites() {
-			log.info(() -> self.size() > 0, "BUFFER: %s -- %d", name, supplier(self::size));
+			log.info(() -> self.size() > 0, "BUFFER: %s -- %s", name, supplier(self::size));
 			return self.pendingWrites();
 		}
 
