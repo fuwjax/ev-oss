@@ -42,7 +42,7 @@ import jodd.http.HttpResponse;
 import jodd.http.net.SocketHttpConnection;
 
 import org.echovantage.gild.proxy.AbstractServiceProxy;
-import org.echovantage.util.ReadOnlyPath;
+import org.echovantage.util.io.ReadOnlyPath;
 
 public class HttpClientProxy extends AbstractServiceProxy {
     private static final Pattern REQUEST_LINE_PATTERN = Pattern.compile("^(?<method>[\\S]+)\\s(?<path>[\\S]+)\\s(?<version>[\\S]+)");

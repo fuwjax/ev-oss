@@ -15,10 +15,10 @@
  */
 package org.echovantage.test;
 
-import org.echovantage.util.Assert2;
+import org.echovantage.util.assertion.Assert2;
 import org.junit.Test;
 
-import static org.echovantage.util.Assert2.assertThrown;
+import static org.echovantage.util.assertion.Assert2.assertThrown;
 import static org.echovantage.util.assertion.Assertions.assertThat;
 import static org.echovantage.util.assertion.Assertions.isException;
 import static org.junit.Assert.*;

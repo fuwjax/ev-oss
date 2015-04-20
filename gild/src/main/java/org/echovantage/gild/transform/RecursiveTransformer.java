@@ -20,7 +20,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.echovantage.util.ReadOnlyPath;
+import org.echovantage.util.io.ReadOnlyPath;
 
 public class RecursiveTransformer implements Transformer {
 	private final Transformer transformer;

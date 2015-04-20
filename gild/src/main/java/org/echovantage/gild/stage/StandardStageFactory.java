@@ -28,7 +28,7 @@ import static org.echovantage.gild.stage.StandardStageFactory.FileType.RAW_OUTPU
 import static org.echovantage.gild.stage.StandardStageFactory.FileType.TEST_DATA;
 import static org.echovantage.gild.stage.StandardStageFactory.StageState.PREPARE;
 import static org.echovantage.gild.stage.StandardStageFactory.StageState.PRESERVE;
-import static org.echovantage.util.Files2.delete;
+import static org.echovantage.util.io.Files2.delete;
 
 public class StandardStageFactory implements StageFactory {
 	public enum StageState {

@@ -29,7 +29,7 @@ import java.nio.file.Paths;
 import static java.nio.charset.Charset.forName;
 import static java.nio.file.Files.*;
 import static java.util.Arrays.asList;
-import static org.echovantage.util.Assert2.assertThrown;
+import static org.echovantage.util.assertion.Assert2.assertThrown;
 import static org.junit.Assert.*;
 
 public class FileSystemTest {
