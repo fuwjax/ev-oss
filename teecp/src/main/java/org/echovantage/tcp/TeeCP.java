@@ -126,14 +126,14 @@ public class TeeCP {
 
 		public Receiver() {
 			id = index.getAndIncrement();
-			name = String.format("c2s.%04d", id);
+			name = String.format("request/%04d", id);
 			self = new Writer(this::channel, false);
 		}
 
 		private Receiver(final Writer response, final int id) throws IOException {
 			this.response = response;
 			this.id = id;
-			name = String.format("s2c.%04d", id);
+			name = String.format("response/%04d", id);
 			self = new Writer(this::channel, true);
 			audit = initAudit();
 		}
@@ -254,6 +254,8 @@ public class TeeCP {
 		remote = new InetSocketAddress(remoteHost, remotePort);
 		this.auditPath = auditPath;
 		select.bind(new InetSocketAddress(serverPort), Receiver::new);
+		Files.createDirectories(auditPath.resolve("request"));
+		Files.createDirectories(auditPath.resolve("response"));
 	}
 
 	public void run() {
@@ -267,7 +269,6 @@ public class TeeCP {
 		}
 		final Path tmp = Paths.get(args[3]);
 		Files2.delete(tmp);
-		Files.createDirectories(tmp);
 		final TeeCP tcp = new TeeCP(Log.SYSTEM, Integer.parseInt(args[0]), args[1], Integer.parseInt(args[2]), tmp);
 		tcp.run();
 	}

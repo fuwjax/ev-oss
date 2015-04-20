@@ -10,6 +10,7 @@ usage: ec2 <name> <op> <args>
        ec2 --help
  name: name of the instance(s) to affect
    op: list         - lists the running instances for name
+       check        - checks for a pending/running instance
        desc         - prints full details
        host         - prints hostname
        new          - creates a new instance
@@ -87,6 +88,10 @@ configureEC2
 
 describeInstances() {
 	spin aws ec2 describe-instances --filters Name=tag-value,Values="$NAME" Name=instance-state-name,Values=running,pending Name=key-name,Values=$KEY_NAME
+}
+
+checkInstances() {
+	[ $(describeInstances | wc -l) != 3 ]
 }
 
 lookupInstanceId() {
@@ -179,6 +184,7 @@ case $OP in
 	list) listInstances ;;
 	host) spin lookupHostname ;;
 	desc) describeInstances ;;
+	check) checkInstances ;;
 	new) newInstance ;;
 	ami) createImage "$@" ;;
 	kill) termInstance ;;
