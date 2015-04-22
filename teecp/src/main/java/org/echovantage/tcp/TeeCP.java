@@ -75,6 +75,16 @@ public class TeeCP {
 		}
 
 		public void close() throws IOException {
+			if(!pending.isEmpty()) {
+				try {
+					flush();
+				} catch(final IOException e) {
+					// continue
+				}
+				if(!pending.isEmpty()) {
+					System.err.println("closing but not flushed");
+				}
+			}
 			final WritableByteChannel channel = channelRef.get();
 			if(channel != null) {
 				channel.close();
