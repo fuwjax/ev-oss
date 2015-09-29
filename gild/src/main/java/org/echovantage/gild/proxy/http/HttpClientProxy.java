@@ -45,7 +45,7 @@ import jodd.http.HttpResponse;
 import jodd.http.net.SocketHttpConnection;
 
 public class HttpClientProxy extends AbstractServiceProxy {
-	private static final Pattern REQUEST_LINE_PATTERN = Pattern.compile("^(?<method>[\\S]+)\\s(?<path>[\\S]+)\\s(?<version>[\\S]+)");
+	private static final Pattern REQUEST_LINE_PATTERN = Pattern.compile("(?<method>[\\S]+)\\s(?<path>[^?\\s]+)(?:?(?<query>[\\S]*))?\\s(?<version>[\\S]+)");
 	private final String host;
 	private final int port;
 	private final boolean canonical;
@@ -78,13 +78,13 @@ public class HttpClientProxy extends AbstractServiceProxy {
 	protected void prepareImpl(final ReadOnlyPath input, final Path output) throws Exception {
 		Files.createDirectories(output);
 		final List<ReadOnlyPath> paths = new ArrayList<>();
-		try(DirectoryStream<ReadOnlyPath> stream = input.newDirectoryStream()) {
-			for(final ReadOnlyPath test : stream) {
-			paths.add(test);
+		try (DirectoryStream<ReadOnlyPath> stream = input.newDirectoryStream()) {
+			for (final ReadOnlyPath test : stream) {
+				paths.add(test);
 			}
 		}
 		Collections.sort(paths);
-		for(final ReadOnlyPath file : paths) {
+		for (final ReadOnlyPath file : paths) {
 			final HttpRequest request = buildRequest(file);
 			final HttpConnection connection = new SocketHttpConnection(new Socket(host, port));
 			request.open(connection);
@@ -94,19 +94,18 @@ public class HttpClientProxy extends AbstractServiceProxy {
 	}
 
 	private void persistResponse(final HttpResponse response, final Path output) throws IOException {
-		try(BufferedWriter w = newBufferedWriter(output, ISO_8859_1)) {
-			w.append(response.httpVersion()).append(' ').append(Integer.toString(response.statusCode())).append(' ').append(response.statusPhrase())
-			      .append('\n');
+		try (BufferedWriter w = newBufferedWriter(output, ISO_8859_1)) {
+			w.append(response.httpVersion()).append(' ').append(Integer.toString(response.statusCode())).append(' ').append(response.statusPhrase()).append('\n');
 			final Map<String, String[]> sortedHeaders = canonical ? new TreeMap<>(response.headers()) : response.headers();
-			for(final Map.Entry<String, String[]> entry : sortedHeaders.entrySet()) {
-			final String headerName = canonical ? entry.getKey().toLowerCase() : entry.getKey();
-			if(headerName.equals("date")) {
-				w.append("date: ${DATE}\n");
-			} else {
-				for(final String value : entry.getValue()) {
-					w.append(headerName).append(": ").append(value).append('\n');
+			for (final Map.Entry<String, String[]> entry : sortedHeaders.entrySet()) {
+				final String headerName = canonical ? entry.getKey().toLowerCase() : entry.getKey();
+				if (headerName.equals("date")) {
+					w.append("date: ${DATE}\n");
+				} else {
+					for (final String value : entry.getValue()) {
+						w.append(headerName).append(": ").append(value).append('\n');
+					}
 				}
-			}
 			}
 			w.append('\n');
 			w.append(response.body());
@@ -114,16 +113,16 @@ public class HttpClientProxy extends AbstractServiceProxy {
 	}
 
 	private HttpRequest buildRequest(final ReadOnlyPath file) throws IOException {
-		try(InputStream is = file.newInputStream(); Reader r = new InputStreamReader(is); BufferedReader br = new BufferedReader(r)) {
+		try (InputStream is = file.newInputStream(); Reader r = new InputStreamReader(is); BufferedReader br = new BufferedReader(r)) {
 			final HttpRequest request = new HttpRequest();
 			request.removeHeader("Connection");
 			String line = br.readLine();
 			parseRequestLine(line, request);
-			while((line = br.readLine()) != null) {
-			if(line.isEmpty()) {
-				break;
-			}
-			parseHeader(line, request);
+			while ((line = br.readLine()) != null) {
+				if (line.isEmpty()) {
+					break;
+				}
+				parseHeader(line, request);
 			}
 			appendBody(br, request);
 			return request;
@@ -134,12 +133,12 @@ public class HttpClientProxy extends AbstractServiceProxy {
 		final StringBuilder body = new StringBuilder();
 		final char[] cbuf = new char[4096];
 		int numChars;
-		while(true) {
+		while (true) {
 			numChars = br.read(cbuf);
-			if(numChars > -1) {
-			body.append(cbuf, 0, numChars);
+			if (numChars > -1) {
+				body.append(cbuf, 0, numChars);
 			} else {
-			break;
+				break;
 			}
 		}
 		request.body(body.toString());
@@ -152,11 +151,12 @@ public class HttpClientProxy extends AbstractServiceProxy {
 
 	private void parseRequestLine(final String line, final HttpRequest request) {
 		final Matcher m = REQUEST_LINE_PATTERN.matcher(line);
-		if(!m.matches()) {
+		if (!m.matches()) {
 			throw new IllegalArgumentException("Request line must be formatted as 'METHOD URI VERSION'. was '" + line + "'");
 		}
 		request.method(m.group("method"));
 		request.path(m.group("path"));
+		request.queryString(m.group("query"));
 		request.httpVersion(m.group("version"));
 	}
 }
