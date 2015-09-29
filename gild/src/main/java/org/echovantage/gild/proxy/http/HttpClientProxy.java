@@ -45,7 +45,7 @@ import jodd.http.HttpResponse;
 import jodd.http.net.SocketHttpConnection;
 
 public class HttpClientProxy extends AbstractServiceProxy {
-	private static final Pattern REQUEST_LINE_PATTERN = Pattern.compile("(?<method>[\\S]+)\\s(?<path>[^?\\s]+)(?:?(?<query>[\\S]*))?\\s(?<version>[\\S]+)");
+	private static final Pattern REQUEST_LINE_PATTERN = Pattern.compile("(?<method>[\\S]+)\\s(?<path>[\\S]+)\\s(?<version>[\\S]+)");
 	private final String host;
 	private final int port;
 	private final boolean canonical;
@@ -156,7 +156,6 @@ public class HttpClientProxy extends AbstractServiceProxy {
 		}
 		request.method(m.group("method"));
 		request.path(m.group("path"));
-		request.queryString(m.group("query"));
 		request.httpVersion(m.group("version"));
 	}
 }

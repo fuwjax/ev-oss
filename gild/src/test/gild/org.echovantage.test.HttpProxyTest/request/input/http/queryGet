@@ -1,0 +1,4 @@
+GET /?foo=bar&baz=2 HTTP/1.1
+Host: echovantage.com
+User-Agent: gild
+Content-Length: 0
