@@ -15,12 +15,18 @@
  */
 package org.echovantage.util;
 
+import static java.util.Base64.getUrlEncoder;
+import static org.echovantage.util.Charsets.UTF_8;
+import static org.echovantage.util.function.Functions.function;
+
 import java.security.MessageDigest;
 import java.util.function.Function;
-
-import static org.echovantage.util.function.Functions.function;
 
 public class MessageDigests {
 	private static final Function<String, MessageDigest> F = function(MessageDigest::getInstance);
 	public static final MessageDigest MD5 = F.apply("MD5");
+
+	public static String md5(final CharSequence input) {
+		return getUrlEncoder().encodeToString(MD5.digest(input.toString().getBytes(UTF_8)));
+	}
 }
