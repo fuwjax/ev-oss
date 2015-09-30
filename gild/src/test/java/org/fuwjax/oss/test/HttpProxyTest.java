@@ -46,6 +46,10 @@ public class HttpProxyTest {
 		server = Undertow.builder().addHttpListener(8080, "localhost").setHandler(new HttpHandler() {
 			@Override
 			public void handleRequest(final HttpServerExchange exchange) throws Exception {
+				if (exchange.isInIoThread()) {
+					exchange.dispatch(this);
+					return;
+				}
 				exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
 				final StringBuilder responseBody = new StringBuilder();
 				if (exchange.getQueryString().isEmpty()) {
