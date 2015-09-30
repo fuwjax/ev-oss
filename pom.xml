@@ -59,7 +59,7 @@
 	<inceptionYear>2015</inceptionYear>
 	<organization>
 		<name>fuwjax.org</name>
-		<url>http://oss.fuwjax.org</url>
+		<url>${project.url}</url>
 	</organization>
 
 	<developers>
@@ -461,6 +461,12 @@
 	<profiles>
 		<profile>
 			<id>release</id>
+			<activation>
+				<property>
+					<name>env.CI</name>
+					<value>true</value>
+				</property>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
