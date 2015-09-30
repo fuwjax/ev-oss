@@ -2,21 +2,23 @@ language: java
 jdk:
 - oraclejdk8
 before_install:
+- export VERSION=1.$TRAVIS_BUILD_NUMBER
 - git config --global user.email "info@fuwjax.org"
 - git config --global user.name "Travis-CI"
+- git remote rm origin
+- git remote add origin https://fuwjax:$CI_TOKEN@github.com/$TRAVIS_REPO_SLUG.git
 - mvn license:format
 - mvn versions:use-latest-releases
-- mvn scm:checkin
+- git commit -m "[Updated license and dependencies]" && git push
 - openssl aes-256-cbc -K $encrypted_0d09456cb5c6_key -iv $encrypted_0d09456cb5c6_iv -in release.gpg.enc -out release.gpg -d
 - gpg --import release.gpg 
 install: true
 before_script:
-- mvn versions:set -DnewVersion=1.$TRAVIS_BUILD_NUMBER
+- mvn versions:set -DnewVersion=$VERSION
 after_success:
 - mvn deploy --settings ./settings.xml
-- git remote rm origin
-- git remote add origin https://fuwjax:$CI_TOKEN@github.com/$TRAVIS_REPO_SLUG.git
-- mvn scm:tag
+- git tag -a oss-$VERSION -m "oss release $VERSION"
+- git push origin oss-$VERSION
 env:
   global:
   - secure: MwtCfh2aezcaW8e2RlAm7Ekov8rKKLZ8ChPQheaNhie1k0E9PjeZMuhLzaEQ2ypi0D/dKN6wHtfk/ax5C2sz2II75e+cAK6hTOmTrBFoZ1FHUtu+6NdTnaHQzhIGJXU+5xCJpG+6SvYSspGzVFZpUijkDYznGly2d61B2KqrUX5zPA44pXdUc+OW0DP+U2bqLtWMOOQoeC8y0xFmLIZnoMeeGYR3odbgR9YRoTbYizGD/5P3d7maW9TMz2Ua+f44HeaFKpop+Lw9que1vzNKh49xdwcQGp/IuX4kHon/Mh5A8jFMSgsBPlt2LSkT/WLLVRBjqGhNKGi+XVSKamtpW3Aq1/D9/mUtnkyfPHiLQ/9CFZDU/Cgoe+4WPMuYPVIvzyuH/vbf4Slr3nMzazwlkOnNFqmuUM7dB8DQI6PXmOcL8EGvX/MJx5yee2X4jCzi/hPSP1D3yHs7qLhNe6rzPVTgikmhmMNLXwuDJLpzJUma9qcJEkcsFQyY4QXaKbD9bi3pV51c++VezYN4Sn11k4TFMvwnF3iDSpQujf7OxonGaz+o237tugh0h54DEDX50JFM6ST+Y2YZSvMTzBln0hJK4K2PxVM20XcqW4GizO0klnu34YczwkcC/jnV1SGjz2KJ/vT3ZkgD4CdVcLxiG2pBz95n4QtymjYtp0VUe0M=
