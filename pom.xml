@@ -302,6 +302,7 @@
 					<version>1.9.4</version>
 					<configuration>
 						<tag>${project.artifactId}-${project.version}</tag>
+						<message>[Updating licenses and dependencies]</message>
 					</configuration>
 				</plugin>
 				<plugin>
