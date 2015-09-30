@@ -4,7 +4,7 @@ jdk:
 before_install:
   - mvn license:format
   - mvn versions:use-latest-releases
-  - git push -m “updating license and dependencies”
+  - mvn checkin -Dmessage=“updating license and dependencies”
 before_script:
   - mvn versions:set -DnewVersion=1.$TRAVIS_BUILD_NUMBER
 after_script:
