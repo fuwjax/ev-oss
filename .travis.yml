@@ -19,8 +19,8 @@ before_install:
 install: true
 before_script:
 - mvn versions:set -DnewVersion=$VERSION
+script: mvn deploy --settings ./settings.xml
 after_success:
-- mvn deploy --settings ./settings.xml
 - git tag -a oss-$VERSION -m "oss release $VERSION"
 - git push origin oss-$VERSION
 env:

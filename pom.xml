@@ -38,7 +38,6 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<gpg.passphrase>${env.CI_PASSPHRASE}</gpg.passphrase>
 	</properties>
 
 	<modules>
