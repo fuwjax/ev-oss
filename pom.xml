@@ -405,6 +405,11 @@
 				<version>${project.version}</version>
 				<scope>test</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.echovantage</groupId>
+				<artifactId>teecp</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- Utilities -->
 			<dependency>
