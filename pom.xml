@@ -80,10 +80,9 @@
 	</developers>
 
 	<scm>
-		<url>git@github.com:fuwjax/ev-oss.git</url>
-		<connection>scm:git:${project.scm.url}</connection>
-		<developerConnection>scm:git:${project.scm.url}</developerConnection>
-		<tag>HEAD</tag>
+		<url>https://github.com/fuwjax/ev-oss</url>
+		<connection>scm:git:${project.scm.url}.git</connection>
+		<developerConnection>scm:git:${project.scm.url}.git</developerConnection>
 	</scm>
 
 	<build>
@@ -285,6 +284,9 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-scm-plugin</artifactId>
 					<version>1.9.4</version>
+					<configuration>
+						<tag>${project.artifactId}-${project.version}</tag>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
