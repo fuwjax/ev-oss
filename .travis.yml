@@ -9,7 +9,7 @@ before_install:
 - git remote -v
 - git remote rm origin
 - git remote add origin https://fuwjax:$CI_TOKEN@github.com/$TRAVIS_REPO_SLUG.git
-- git remove -v
+- git remote -v
 - mvn license:format
 - mvn versions:use-latest-releases
 - mvn scm:checkin
@@ -17,7 +17,7 @@ install: true
 before_script:
 - mvn versions:set -DnewVersion=1.$TRAVIS_BUILD_NUMBER
 after_success:
-- mvn clean deploy --settings ./settings.xml
+- mvn deploy --settings ./settings.xml
 - mvn scm:tag
 env:
   global:
