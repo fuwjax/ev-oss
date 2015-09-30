@@ -1,6 +1,9 @@
 language: java
 jdk:
 - oraclejdk8
+branches:
+  only:
+  - master
 before_install:
 - export VERSION=1.$TRAVIS_BUILD_NUMBER
 - git config --global user.email "info@fuwjax.org"
