@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2015 EchoVantage (info@echovantage.com)
+    Copyright (C) 2015 fuwjax.org (info@fuwjax.org)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -119,4 +119,4 @@ for(SomeFactory factory: factories) {
 MetaFactory and MetaService can be used together to generate a META-INF/services file for the same interface. Note that Kohsuke's interface
 may not work in tandem, depending on how your project is arranged.
 
-Copyright (C) 2015 EchoVantage (info@echovantage.com)
+Copyright (C) 2015 fuwjax.org (info@fuwjax.org)

@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2015 EchoVantage (info@echovantage.com)
+    Copyright (C) 2015 fuwjax.org (info@fuwjax.org)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -55,4 +55,4 @@ Of course you can't use "SomeClass" explicitly in your code, as it doesn't exist
 If you want to build up classes over time and compile them all at once, the RuntimeCompiler abstraction might be worth
 looking at, but most use cases only need the RuntimeClassLoader.
 
-Copyright (C) 2015 EchoVantage (info@echovantage.com)
+Copyright (C) 2015 fuwjax.org (info@fuwjax.org)

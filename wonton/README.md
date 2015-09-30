@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2015 EchoVantage (info@echovantage.com)
+    Copyright (C) 2015 fuwjax.org (info@fuwjax.org)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ and creation of arbitrary key/type/value structures.
 
 ###Warning
 
-While Wonton is used extensively in its current form at EchoVantage, the API is still very rough and 
+While Wonton is used extensively in its current form, the API is still very rough and 
 should not be considered final. Use with care.
 
 ###Usage
@@ -45,4 +45,4 @@ transport specific objects. For a codec-neutral Wonton, WontonFactory.FACTORY ma
 To use a transport object, the transport will return an instance of Wonton, generally backed by a transport
 specific object. 
 
-Copyright (C) 2015 EchoVantage (info@echovantage.com)
+Copyright (C) 2015 fuwjax.org (info@fuwjax.org)

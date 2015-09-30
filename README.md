@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2015 EchoVantage (info@echovantage.com)
+    Copyright (C) 2015 fuwjax.org (info@fuwjax.org)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
     limitations under the License.
 
 -->
-#EchoVantage OSS
+#Fuwjax OSS
 
-At EchoVantage we use plenty of open source software. When we can, we try to give back to the excellent projects we use, but our contributions to those projects don't measure up to the benefit we derive from them.
+I use plenty of open source software. When I can, I try to give back to the excellent projects I use, but my contributions to those projects don't measure up to the benefit I derive from them.
 
-We are a small shop, focused on products that we simply cannot share. However, as in any well-factored project, some tools we've written are generic enough that we can share them without any impact to our core business.
+My career is generally focused on products that I simply cannot share. However some tools I've written over the years are generic enough that I can share them without any impact to any core business.
 
-These are all tools we use, but they may or may not fit your needs, even where they overlap with our own. We share these only as a way of giving back to the community that has given so much to us.
+These are all tools I use, but they may or may not fit your needs, even where they overlap with mine. I share these only as a way of giving back to the community that has given so much to me.
 
 
 ##Projects
@@ -38,7 +38,7 @@ These are all tools we use, but they may or may not fit your needs, even where t
 
 ##Usage
 
-We recommend using the import scope in your maven project.
+When possible, I recommend using the import scope in your maven project.
 
 ```
 	...
@@ -46,24 +46,24 @@ We recommend using the import scope in your maven project.
 		<dependencies>
 			...
 			<dependency>
-				<groupId>org.echovantage</groupId>
+				<groupId>org.fuwjax.oss</groupId>
 				<artifactId>oss</artifactId>
-				<version>0.54</version>
+				<version>0.81</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 ```
 
-Then to include a project in your build, you no longer need to specify versions. For example to have a test
+This will manage the dependencies for all Fuwjax OSS projects. Then to include a project in your build, you no longer need to specify versions. For example to have a test
 dependency on gild:
 
 ```
 	<dependencies>
 		...
 		<dependency>
-			<groupId>org.echovantage</groupId>
+			<groupId>org.fuwjax.oss</groupId>
 			<artifactId>gild</artifactId>
 		</dependency>
 ```
 
-Copyright (C) 2015 EchoVantage (info@echovantage.com)
+Copyright (C) 2015 fuwjax.org (info@fuwjax.org)

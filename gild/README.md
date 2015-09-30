@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2015 EchoVantage (info@echovantage.com)
+    Copyright (C) 2015 fuwjax.org (info@fuwjax.org)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -97,4 +97,4 @@ If you discover a bug or refactor your database, your gold copy will need to cha
 
 This will update the gold copy, but will fail the build.
 
-Copyright (C) 2015 EchoVantage (info@echovantage.com)
+Copyright (C) 2015 fuwjax.org (info@fuwjax.org)
