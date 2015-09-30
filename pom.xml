@@ -38,7 +38,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<staging.profile.id>a44ad49d4baf56</staging.profile.id>
+		<gpg.passphrase>${env.CI_PASSPHRASE}</gpg.passphrase>
 	</properties>
 
 	<modules>
@@ -273,7 +273,6 @@
 					<configuration>
 						<serverId>ossrh</serverId>
 						<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-						<stagingProfileId>${staging.profile.id}</stagingProfileId>
 						<autoReleaseAfterClose>true</autoReleaseAfterClose>
 					</configuration>
 				</plugin>
