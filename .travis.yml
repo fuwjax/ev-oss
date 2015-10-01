@@ -15,7 +15,7 @@ before_install:
 - git commit -a -m "[Updated license and dependencies]"
 - git push
 - openssl aes-256-cbc -K $encrypted_0d09456cb5c6_key -iv $encrypted_0d09456cb5c6_iv -in release.gpg.enc -out release.gpg -d
-- gpg --import release.gpg 
+- gpg --allow-secret-key-import --import release.gpg 
 install: true
 before_script:
 - mvn versions:set -DnewVersion=$VERSION
