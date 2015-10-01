@@ -11,10 +11,9 @@ before_install:
 - git config credential.helper "store --file=.git/credentials"
 - echo "https://${CI_TOKEN}:@github.com" > .git/credentials
 - git checkout master
-- mvn license:format
-- mvn versions:use-latest-releases
-- git commit -a -m "Updated license and dependencies [ci skip]"
-- git push
+#- mvn license:format
+#- mvn versions:use-latest-releases
+#- git commit -a -m "Updated license and dependencies [ci skip]" && git push
 - openssl aes-256-cbc -K $encrypted_0d09456cb5c6_key -iv $encrypted_0d09456cb5c6_iv -in release.gpg.enc -out release.gpg -d
 - gpg --allow-secret-key-import --import release.gpg
 - gpg --list-keys
