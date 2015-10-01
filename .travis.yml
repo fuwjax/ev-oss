@@ -19,7 +19,8 @@ before_install:
 - gpg --allow-secret-key-import --import release.gpg
 - gpg --list-keys
 - gpg --list-secret-keys
-- echo "$CI_PASSPHRASE" | gpg --batch --passphrase-fd 0 -ab settings.xml
+- echo "$CI_PASSPHRASE"
+- echo "$CI_PASSPHRASE" | gpg --batch --default-key 56A3EAB4 --passphrase-fd 0 -ab settings.xml
 install: true
 before_script:
 - mvn versions:set -DnewVersion=$VERSION
