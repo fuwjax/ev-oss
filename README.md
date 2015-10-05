@@ -26,6 +26,8 @@ These are all tools I use, but they may or may not fit your needs, even where th
 
 ##Projects
 
+<img src="https://travis-ci.org/fuwjax/ev-oss.svg?branch=master"/>
+
 * [funco](funco) - Functions, Collections, Input/Output, and Assertions
 
 * [gild](gild) - Gold Copy Test Harness
@@ -48,7 +50,7 @@ When possible, I recommend using the import scope in your maven project.
 			<dependency>
 				<groupId>org.fuwjax.oss</groupId>
 				<artifactId>oss</artifactId>
-				<version>0.81</version>
+				<version>1.28</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
