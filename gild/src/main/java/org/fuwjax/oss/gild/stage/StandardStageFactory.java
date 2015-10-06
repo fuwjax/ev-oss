@@ -15,14 +15,6 @@
  */
 package org.fuwjax.oss.gild.stage;
 
-import org.junit.runner.Description;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.fuwjax.oss.gild.stage.StandardStageFactory.FileType.FINAL_OUTPUT;
 import static org.fuwjax.oss.gild.stage.StandardStageFactory.FileType.RAW_OUTPUT;
 import static org.fuwjax.oss.gild.stage.StandardStageFactory.FileType.TEST_DATA;
@@ -30,7 +22,31 @@ import static org.fuwjax.oss.gild.stage.StandardStageFactory.StageState.PREPARE;
 import static org.fuwjax.oss.gild.stage.StandardStageFactory.StageState.PRESERVE;
 import static org.fuwjax.oss.util.io.Files2.delete;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+
+import org.fuwjax.oss.util.Paths2;
+import org.fuwjax.oss.util.RunWrapException;
+import org.junit.runner.Description;
+
 public class StandardStageFactory implements StageFactory {
+	public static final StageFactory CLASSPATH_STAGING = new StandardStageFactory(null) {
+		@Override
+		protected Path path(final FileType type, final Description desc) {
+			if (type == FileType.TEST_DATA) {
+				try {
+					return Paths2.classpath("gild", desc.getClassName(), desc.getMethodName());
+				} catch (final Exception e) {
+					throw new RunWrapException(e);
+				}
+			}
+			return super.path(type, desc);
+		}
+	};
+
 	public enum StageState {
 		PREPARE, PRESERVE
 	}
@@ -51,7 +67,7 @@ public class StandardStageFactory implements StageFactory {
 
 	@Override
 	public final Stage start(final Description desc) throws IOException {
-		for(final Path working : workingPaths(desc)) {
+		for (final Path working : workingPaths(desc)) {
 			delete(working);
 		}
 		return stage(desc, startStage);
@@ -99,34 +115,34 @@ public class StandardStageFactory implements StageFactory {
 	}
 
 	protected String segment(final FileType type) {
-		switch(type) {
-			case TEST_DATA:
-				return "src/test/gild";
-			case RAW_OUTPUT:
-				return "target/gild/raw";
-			case FINAL_OUTPUT:
-				return "target/test/gild";
-			default:
-				throw new UnsupportedOperationException(type.toString());
+		switch (type) {
+		case TEST_DATA:
+			return "src/test/gild";
+		case RAW_OUTPUT:
+			return "target/gild/raw";
+		case FINAL_OUTPUT:
+			return "target/test/gild";
+		default:
+			throw new UnsupportedOperationException(type.toString());
 		}
 	}
 
 	protected Path path(final FileType type, final Description desc, final String stage, final StageState state, final String service) {
 		Path path = path(type, desc);
-		if(stage != null) {
+		if (stage != null) {
 			path = path.resolve(stage);
 		}
 		return path.resolve(segment(state)).resolve(service);
 	}
 
 	protected String segment(final StageState state) {
-		switch(state) {
-			case PREPARE:
-				return "input";
-			case PRESERVE:
-				return "output";
-			default:
-				throw new UnsupportedOperationException(state.toString());
+		switch (state) {
+		case PREPARE:
+			return "input";
+		case PRESERVE:
+			return "output";
+		default:
+			throw new UnsupportedOperationException(state.toString());
 		}
 	}
 }

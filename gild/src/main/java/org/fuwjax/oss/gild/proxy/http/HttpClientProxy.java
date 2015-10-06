@@ -108,7 +108,10 @@ public class HttpClientProxy extends AbstractServiceProxy {
 				}
 			}
 			w.append('\n');
-			w.append(response.body());
+			final String body = response.body();
+			if (body != null) {
+				w.append(body);
+			}
 		}
 	}
 
