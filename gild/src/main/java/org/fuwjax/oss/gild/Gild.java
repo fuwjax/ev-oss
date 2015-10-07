@@ -199,6 +199,9 @@ public class Gild implements TestRule {
 		prepare();
 		statement.evaluate();
 		preserve();
+		if (!isAssert) {
+			fail("Gold copy has been updated");
+		}
 	}
 
 	private void prepare() {
@@ -221,7 +224,6 @@ public class Gild implements TestRule {
 		} else {
 			delete(expected);
 			Files2.copy(actual, expected);
-			fail("Gold copy has been updated");
 		}
 	}
 
