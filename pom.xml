@@ -388,7 +388,7 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.echovantage</groupId>
+				<groupId>org.fuwjax.oss</groupId>
 				<artifactId>teecp</artifactId>
 				<version>${project.version}</version>
 			</dependency>

@@ -93,6 +93,11 @@ public class HttpProxyTest {
 	}
 
 	@Test
+	public void debug() {
+		http.send();
+	}
+
+	@Test
 	public void request() {
 		http.send();
 	}

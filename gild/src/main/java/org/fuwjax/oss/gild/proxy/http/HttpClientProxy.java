@@ -16,7 +16,6 @@
 package org.fuwjax.oss.gild.proxy.http;
 
 import static java.nio.file.Files.newBufferedWriter;
-import static org.fuwjax.oss.util.Charsets.ISO_8859_1;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,9 +24,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +47,7 @@ import jodd.http.HttpResponse;
 import jodd.http.net.SocketHttpConnection;
 
 public class HttpClientProxy extends AbstractServiceProxy {
+	private static final DateFormat TIME_INSTANCE = new SimpleDateFormat("mm:ss.SSS");
 	private static final Pattern REQUEST_LINE_PATTERN = Pattern.compile("(?<method>[\\S]+)\\s(?<path>[\\S]+)\\s(?<version>[\\S]+)");
 	private final String host;
 	private final int port;
@@ -88,13 +91,15 @@ public class HttpClientProxy extends AbstractServiceProxy {
 			final HttpRequest request = buildRequest(file);
 			final HttpConnection connection = new SocketHttpConnection(new Socket(host, port));
 			request.open(connection);
+			long start = System.currentTimeMillis();
 			final HttpResponse response = request.send();
+			System.out.println(file.getFileName()+"["+request.path()+"]: "+TIME_INSTANCE.format(System.currentTimeMillis() - start));
 			persistResponse(response, output.resolve(file.getFileName()));
 		}
 	}
 
 	private void persistResponse(final HttpResponse response, final Path output) throws IOException {
-		try (BufferedWriter w = newBufferedWriter(output, ISO_8859_1)) {
+		try (BufferedWriter w = newBufferedWriter(output, StandardCharsets.UTF_8)) {
 			w.append(response.httpVersion()).append(' ').append(Integer.toString(response.statusCode())).append(' ').append(response.statusPhrase()).append('\n');
 			final Map<String, String[]> sortedHeaders = canonical ? new TreeMap<>(response.headers()) : response.headers();
 			for (final Map.Entry<String, String[]> entry : sortedHeaders.entrySet()) {
@@ -108,7 +113,7 @@ public class HttpClientProxy extends AbstractServiceProxy {
 				}
 			}
 			w.append('\n');
-			final String body = response.body();
+			final String body = response.bodyText();
 			if (body != null) {
 				w.append(body);
 			}
@@ -116,7 +121,7 @@ public class HttpClientProxy extends AbstractServiceProxy {
 	}
 
 	private HttpRequest buildRequest(final ReadOnlyPath file) throws IOException {
-		try (InputStream is = file.newInputStream(); Reader r = new InputStreamReader(is); BufferedReader br = new BufferedReader(r)) {
+		try (InputStream is = file.newInputStream(); Reader r = new InputStreamReader(is, StandardCharsets.UTF_8); BufferedReader br = new BufferedReader(r)) {
 			final HttpRequest request = new HttpRequest();
 			request.removeHeader("Connection");
 			String line = br.readLine();
