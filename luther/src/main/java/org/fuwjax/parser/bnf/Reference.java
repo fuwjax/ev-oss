@@ -9,6 +9,10 @@ public class Reference implements Expression{
 		this.name = name;
 	}
 	
+	public String name(){
+		return name;
+	}
+	
 	@Override
 	public Object toStep(Builder builder) {
 		return builder.symbol(name);

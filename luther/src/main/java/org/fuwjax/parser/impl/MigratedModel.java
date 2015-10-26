@@ -1,6 +1,6 @@
 package org.fuwjax.parser.impl;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.fuwjax.parser.Model;
 import org.fuwjax.parser.Node;
@@ -18,6 +18,11 @@ public class MigratedModel implements Model {
 	public StringBuilder match(StringBuilder builder) {
 		return model.match(builder);
 	}
+	
+	@Override
+	public Node result() {
+		return this;
+	}
 
 	@Override
 	public Object value() {
@@ -30,7 +35,7 @@ public class MigratedModel implements Model {
 	}
 
 	@Override
-	public List<Node> children() {
+	public Stream<Node> children() {
 		return model.children();
 	}
 }

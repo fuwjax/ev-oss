@@ -4,13 +4,14 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.fuwjax.parser.Model;
+import org.fuwjax.parser.Node;
 import org.fuwjax.parser.builder.Codepoints;
 import org.fuwjax.parser.builder.GrammarBuilder;
 import org.fuwjax.parser.builder.SymbolBuilder;
 import org.fuwjax.parser.builder.SymbolStateBuilder;
 
 public class SimpleGrammarBuilder extends GrammarBuilder {
-	public SimpleGrammarBuilder(final Map<String, Function<Model, ?>> transforms) {
+	public SimpleGrammarBuilder(final Map<String, Function<Model, ? extends Node>> transforms) {
 		super(transforms);
 	}
 

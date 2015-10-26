@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 
 import org.fuwjax.parser.Model;
+import org.fuwjax.parser.Node;
 
 public class SymbolState {
     private Symbol lhs;
@@ -14,10 +15,12 @@ public class SymbolState {
     private IntFunction<SymbolState> literals;
     private Set<Symbol> predict;
     private Symbol rightCycle;
-	private Function<Model, ?> transform;
+	private Function<? super Model, ? extends Node> transform;
+	private int index;
 
-    public void init(Symbol lhs, Map<Symbol, SymbolState> symbolic, IntFunction<SymbolState> literals, Set<Symbol> predict, Symbol rightCycle, Function<Model, ?> transform, String toString) {
+    public void init(Symbol lhs, int index, Map<Symbol, SymbolState> symbolic, IntFunction<SymbolState> literals, Set<Symbol> predict, Symbol rightCycle, Function<? super Model, ? extends Node> transform, String toString) {
         this.lhs = lhs;
+		this.index = index;
         this.symbolic = symbolic;
         this.literals = literals;
         this.predict = predict;
@@ -32,6 +35,10 @@ public class SymbolState {
 
     public Symbol lhs() {
         return lhs;
+    }
+    
+    public String name(){
+    	return lhs.name()+"."+index;
     }
 
     public SymbolState accept(int codepoint) {
@@ -59,7 +66,7 @@ public class SymbolState {
         return toString;
     }
     
-	public Object result(Model model) {
+	public Node result(Model model) {
 		return transform.apply(model);
 	}
 }

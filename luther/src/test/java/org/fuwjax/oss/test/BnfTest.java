@@ -21,7 +21,6 @@ public class BnfTest {
 
 	@Test
 	public void testBnf() throws IOException {
-		System.out.println(BNF);
 		try (InputStream bnfFile = newInputStream(get("target/bnf/sample.bnf"))) {
 			final Grammar sample = BNF.grammar(utf8ToCodepoint(bnfFile));
 			try (InputStream testFile = newInputStream(get("target/bnf/sample.csv"))) {

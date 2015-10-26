@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -13,6 +12,7 @@ import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
 import org.fuwjax.parser.Model;
+import org.fuwjax.parser.Node;
 import org.fuwjax.parser.impl.SymbolState;
 
 public class SymbolStateBuilder {
@@ -22,11 +22,13 @@ public class SymbolStateBuilder {
 	private final Map<Codepoints, SymbolStateBuilder> literals = new HashMap<>();
 	private Set<SymbolBuilder> predict;
 	private SymbolBuilder rightCycle;
-	private Function<Model, ?> complete;
+	private Function<? super Model, ? extends Node> complete;
 	private SymbolState state;
+	private int index;
 
-	SymbolStateBuilder(final SymbolBuilder lhs) {
+	SymbolStateBuilder(final SymbolBuilder lhs, int index) {
 		this.lhs = lhs;
+		this.index = index;
 	}
 
 	public SymbolStateBuilder ensure(final String name, final SymbolBuilder accept) {
@@ -37,7 +39,7 @@ public class SymbolStateBuilder {
 	private SymbolStateBuilder ensure(final SymbolBuilder accept) {
 		SymbolStateBuilder s = symbolic.get(accept);
 		if (s == null) {
-			s = new SymbolStateBuilder(lhs);
+			s = lhs.newState();
 			symbolic.put(accept, s);
 		}
 		return s;
@@ -52,13 +54,13 @@ public class SymbolStateBuilder {
 		SymbolStateBuilder s = literals.get(literalMask);
 		if (s == null) {
 			// TODO: check for intersection
-			s = new SymbolStateBuilder(lhs);
+			s = lhs.newState();
 			literals.put(literalMask, s);
 		}
 		return s;
 	}
 
-	public void complete(final String name, final Function<Model, ?> transform) {
+	public void complete(final String name, final Function<? super Model, ? extends Node> transform) {
 		names.add(name);
 		this.complete = transform;
 	}
@@ -77,12 +79,14 @@ public class SymbolStateBuilder {
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder().append(lhs.name());
-		String d = " -> ";
-		for (final String name : names) {
-			builder.append(d).append(name);
-			d = " | ";
+		final StringBuilder builder = new StringBuilder(name()).append(": ");
+		if (complete != null) {
+			builder.append("! ");
 		}
+		symbolic.entrySet().forEach(e -> builder.append(e.getKey().name()).append(" -> ").append(e.getValue().name()).append("  "));
+		literals.entrySet().forEach(e -> builder.append(e.getKey()).append(" -> ").append(e.getValue().name()).append("  "));
+		builder.append(" :: ");
+		predict.stream().forEach(e -> builder.append(e.name()).append(" "));;
 		return builder.toString();
 	}
 
@@ -96,7 +100,7 @@ public class SymbolStateBuilder {
 		names.addAll(state.names);
 		// TODO that last option is wrong, but what is right?
 		complete = complete == null ? state.complete
-				: state.complete == null ? complete : complete.equals(state.complete) ? complete : complete;
+				: state.complete == null ? complete : complete.equals(state.complete) ? complete : state.complete;
 	}
 
 	public boolean checkNullable() {
@@ -137,11 +141,9 @@ public class SymbolStateBuilder {
 		if (symbolic.isEmpty()) {
 			predict = Collections.emptySet();
 		} else {
-			predict = new HashSet<>();
+			predict = new HashSet<>(symbolic.keySet());
 			for (final SymbolBuilder s : symbolic.keySet()) {
-				if (predict.add(s) && !lhs.equals(s)) {
-					predict.addAll(s.buildPredict());
-				}
+				predict.addAll(s.buildPredict());
 			}
 		}
 		for (final SymbolStateBuilder s : symbolic.values()) {
@@ -189,7 +191,7 @@ public class SymbolStateBuilder {
 	public SymbolState build() {
 		if (state == null) {
 			state = new SymbolState();
-			state.init(lhs.build(),
+			state.init(lhs.build(), index, 
 					symbolic.entrySet().stream()
 							.collect(Collectors.toMap(e -> e.getKey().build(), e -> e.getValue().build())),
 					literalFunction(), predict.stream().map(SymbolBuilder::build).collect(Collectors.toSet()),
@@ -217,16 +219,8 @@ public class SymbolStateBuilder {
 			literals.values().forEach(s -> s.states(states));
 		}
 	}
-
-	public String toString(final String name, final List<SymbolStateBuilder> states) {
-		final StringBuilder builder = new StringBuilder(name).append('.').append(states.indexOf(this)).append(": ");
-		if (complete != null) {
-			builder.append("! ");
-		}
-		symbolic.entrySet().forEach(e -> builder.append(e.getKey().name()).append(" -> ").append(name).append('.')
-				.append(states.indexOf(e.getValue())).append("  "));
-		literals.entrySet().forEach(e -> builder.append(e.getKey()).append(" -> ").append(name).append('.')
-				.append(states.indexOf(e.getValue())).append("  "));
-		return builder.toString();
+	
+	public String name(){
+		return lhs.name()+"."+index;
 	}
 }

@@ -1,7 +1,6 @@
 package org.fuwjax.parser.impl;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -33,8 +32,8 @@ public class Transition implements Model {
 	}
 
 	@Override
-	public List<Node> children() {
-		return Arrays.asList(children);
+	public Stream<Node> children() {
+		return Stream.of(children);
 	}
 
 	private Transition accept(final Transition child) {
@@ -80,7 +79,7 @@ public class Transition implements Model {
 
 	@Override
 	public String toString() {
-		return "[" + state.lhs().name() + ", " + orig + "]";
+		return "[" + state.name() + ", " + orig + "]";
 	}
 
 	@Override
@@ -123,11 +122,17 @@ public class Transition implements Model {
 	public void triggerTransform() {
 		orig.triggerTransform();
 	}
+	
+	@Override
+	public Node result() {
+		final Node result = state.result(this);
+		return result == this ? new StandardModel(this) : result instanceof Transition ? result.result() : result;
+	}
 
 	@Override
 	public Object value() {
-		final Object result = state.result(this);
-		return result == this ? new StandardModel(this) : result;
+		Node result = result();
+		return result == null ? null : result.value();
 	}
 
 	public void transformChildren() {

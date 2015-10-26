@@ -20,7 +20,7 @@ doubleValue= [^"\n\r] doubleValue
 doubleValue= '""'
 doubleValue= ''
 singleValue= [^'\n\r] singleValue
-singleValue= "''"
+singleValue= '\'\''
 singleValue= ''
 
 ws= [ \n\r\t]

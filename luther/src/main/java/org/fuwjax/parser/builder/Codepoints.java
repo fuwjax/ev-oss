@@ -26,7 +26,7 @@ public class Codepoints {
 		final BitSet set = (BitSet) bits.clone();
 		final StringBuilder builder = new StringBuilder(rep);
 		for (final int codepoint : codepoints) {
-			set.set(codepoint, !negate);
+			set.set(codepoint, true);
 			cp(builder, codepoint);
 		}
 		return new Codepoints(set, negate, builder.toString());
@@ -48,14 +48,18 @@ public class Codepoints {
 		}
 		return builder;
 	}
-
+	
+	public boolean get(int ch){
+		return bits.get(ch) ^ negate;
+	}
+	
 	public Codepoints negate() {
 		return new Codepoints(bits, !negate, rep);
 	}
 
 	public Codepoints range(final int start, final int end) {
 		final BitSet set = (BitSet) bits.clone();
-		set.set(start, end + 1, !negate);
+		set.set(start, end + 1, true);
 		return new Codepoints(set, negate, cp(cp(new StringBuilder(rep), start).append('-'), end).toString());
 	}
 
@@ -80,6 +84,6 @@ public class Codepoints {
 	}
 
 	public IntPredicate toPredicate() {
-		return bits::get;
+		return this::get;
 	}
 }

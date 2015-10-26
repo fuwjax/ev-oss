@@ -1,6 +1,6 @@
 package org.fuwjax.parser.builder;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -24,10 +24,11 @@ public class SymbolBuilder {
 	private boolean rightCycle;
 	private Boolean nullable;
 	private boolean checking;
+	private List<SymbolStateBuilder> states = new ArrayList<>();
 
 	public SymbolBuilder(final String name) {
 		this.name = name;
-		start = new SymbolStateBuilder(this);
+		start = newState();
 	}
 
 	public SymbolStateBuilder start() {
@@ -59,13 +60,10 @@ public class SymbolBuilder {
 
 	@Override
 	public String toString() {
-		final List<SymbolStateBuilder> states = states().collect(Collectors.toList());
-		return states.stream().map(s -> s.toString(this.name, states)).collect(Collectors.joining("\n"));
+		return states().map(SymbolStateBuilder::toString).collect(Collectors.joining("\n"));
 	}
 
 	public Stream<SymbolStateBuilder> states() {
-		final Set<SymbolStateBuilder> states = new LinkedHashSet<>();
-		start.states(states);
 		return states.stream();
 	}
 
@@ -105,5 +103,11 @@ public class SymbolBuilder {
 
 	public Set<SymbolBuilder> buildPredict() {
 		return start.buildPredict();
+	}
+
+	public SymbolStateBuilder newState() {
+		SymbolStateBuilder state = new SymbolStateBuilder(this, states.size());
+		states.add(state);
+		return state;
 	}
 }

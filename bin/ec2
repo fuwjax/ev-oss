@@ -73,30 +73,21 @@ configureEC2 () {
 createConfig () {
 cat << EOT > "$CONF"
 # AMI Image id (Amazon linux ids on http://aws.amazon.com/amazon-linux-ami)
-#IMAGE=ami-10201178 # lighthouse-ami-20150402
 IMAGE=ami-146e2a7c # us-east-1 HVM-EBS
 
 # Security key
-#KEY_NAME=altruik-build # Jenkins key
 KEY_NAME=default
 
 # Instance type ("Model" from http://aws.amazon.com/ec2/instance-types)
 INSTANCE_TYPE=t2.micro # BPI 1/1
 
 # Secuirty group id
-#SECURITY_GROUP=sg-e3f89e87 # lh-dev-server in Altruik VPC
-#SECURITY_GROUP=sg-20188044 # Lighthouse
-#SECURITY_GROUP=sg-0d2b5468 # EV everything
-#SECURITY_GROUP=sg-ad75eac9 # Jenkins slave
 SECURITY_GROUP=
 
-# Subnet id
-#SUBNET=subnet-1caaae34 # EV vpc
-#SUBNET=subnet-34b4e10e # Altruik vpc
+# VPC Subnet id
 SUBNET=
 
 # IAM profile ARN (Leave blank for direct user)
-#IAM_PROFILE="arn:aws:iam::334989578730:instance-profile/atkdev/BuildSlave/AltruikDevTools-BuildSlaveProfile-KK7TURIJGEJD" # Jenkins CI
 IAM_PROFILE=
 EOT
 configureEC2

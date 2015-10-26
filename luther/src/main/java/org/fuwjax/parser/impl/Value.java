@@ -1,8 +1,7 @@
 package org.fuwjax.parser.impl;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.fuwjax.parser.Model;
 import org.fuwjax.parser.Node;
@@ -49,9 +48,14 @@ public class Value implements Model {
 	public Object value() {
 		return value;
 	}
+	
+	@Override
+	public Node result() {
+		return this;
+	}
 
 	@Override
-	public List<Node> children() {
-		return Collections.emptyList();
+	public Stream<Node> children() {
+		return Stream.empty();
 	}
 }

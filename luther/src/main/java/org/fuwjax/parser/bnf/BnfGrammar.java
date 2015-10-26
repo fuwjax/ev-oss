@@ -13,10 +13,13 @@ import java.util.stream.Stream;
 import org.fuwjax.oss.util.io.IntReader;
 import org.fuwjax.parser.Grammar;
 import org.fuwjax.parser.Model;
+import org.fuwjax.parser.Node;
 import org.fuwjax.parser.builder.Codepoints;
 import org.fuwjax.parser.builder.GrammarBuilder;
 import org.fuwjax.parser.builder.SymbolBuilder;
 import org.fuwjax.parser.builder.SymbolStateBuilder;
+import org.fuwjax.parser.impl.MigratedModel;
+import org.fuwjax.parser.impl.Value;
 
 public class BnfGrammar {
 	static class Builder extends GrammarBuilder {
@@ -42,16 +45,16 @@ public class BnfGrammar {
 			rule(false, "single", identity(), any('\'', '\\').negate(), symbol("single"));
 			rule(false, "single", identity(), symbol("escape"), symbol("single"));
 			rule(false, "single", identity());
-			rule(false, "escape", m -> (int) '\n', of('\\'), of('n'));
-			rule(false, "escape", m -> (int) '\t', of('\\'), of('t'));
-			rule(false, "escape", m -> (int) '\r', of('\\'), of('r'));
-			rule(false, "escape", m -> m.children().get(1), of('\\'), any('\\', '"', '\''));
+			rule(false, "escape", m -> Node.codepoint('\n'), of('\\'), of('n'));
+			rule(false, "escape", m -> Node.codepoint('\t'), of('\\'), of('t'));
+			rule(false, "escape", m -> Node.codepoint('\r'), of('\\'), of('r'));
+			rule(false, "escape", m -> node(m,1), of('\\'), any('n', 'r', 't').negate());
 			rule(false, "class", this::charClass, of('['), symbol("chars"), of(']'));
 			rule(false, "class", this::negateClass, of('['), of('^'), symbol("chars"), of(']'));
 			rule(false, "chars", this::addChar, symbol("char"), symbol("chars"));
 			rule(false, "chars", this::addRange, symbol("range"), symbol("chars"));
 			rule(false, "chars", this::newClass);
-			rule(false, "char", m -> m.children().get(0), any('\\', ']', '-').negate());
+			rule(false, "char", m -> node(m,0), any('\\', ']', '-').negate());
 			rule(false, "char", this::pass, symbol("escape"));
 			rule(false, "range", this::range, symbol("char"), of('-'), symbol("char"));
 			return this;
@@ -71,9 +74,16 @@ public class BnfGrammar {
 		private Literal literal(final Model model) {
 			return new Literal(model.get("single").match());
 		}
+		
+		private Node node(Model model, int index){
+			return model.children().skip(index).findFirst().map(Node::result).orElse(null);
+		}
 
 		private List addAll(final Model model) {
-			final List expressions = (List) model.getValue("expression");
+			List expressions = (List) model.getValue("expression");
+			if(expressions == null){
+				expressions = new ArrayList();
+			}
 			expressions.addAll(((Literal) model.getValue("literal")).toExpressions());
 			return expressions;
 		}
@@ -123,13 +133,18 @@ public class BnfGrammar {
 		}
 
 		private Object pass(final Model model) {
-			return children(model).findAny().get();
+			return children(model).findAny().get().result();
 		}
 
 		private List add(final Model model) {
 			final List<Model> children = children(model).collect(Collectors.toList());
-			final Object value = children.get(0);
-			final List list = (List) children.get(1);
+			List list;
+			if(children.size() == 1){
+				list = new ArrayList();
+			}else{
+				list = (List) children.get(1).value();
+			}
+			final Object value = children.get(0).value();
 			list.add(value);
 			return list;
 		}
@@ -139,9 +154,9 @@ public class BnfGrammar {
 		}
 
 		private Rule rule(final Model model) {
-			return new Rule((String) model.getValue("symbol"), (List<Expression>) model.getValue("expression"));
+			return new Rule(((Reference) model.getValue("symbol")).name(), (List<Expression>) model.getValue("expression"));
 		}
-
+		
 		SymbolBuilder rule(final boolean useIgnore, final String lhs, final Function<Model, ?> transform,
 				final Object... steps) {
 			final SymbolBuilder s = symbol(lhs);
@@ -160,10 +175,10 @@ public class BnfGrammar {
 				++index;
 			}
 			if ("#start".equals(lhs) || "#ignore".equals(lhs)) {
-				s.start().complete(name(0, names), transform);
+				s.start().complete(name(0, names), Model.wrap(transform));
 				state = state.ensure(name(index, names), symbol("#ignore"));
 			}
-			state.complete(name(index, names), transform);
+			state.complete(name(index, names), Model.wrap(transform));
 			return s;
 		}
 
