@@ -1,0 +1,41 @@
+#start rules
+#ignore ws
+
+rules:= directive rules             
+rules:= rule rules                  
+rules:= token rules                 
+rules:= ''                          #newRules
+directive:= '#' 'start' symbol      #startDirective
+directive:= '#' 'ignore' symbol     #ignoreDirective
+rule:= symbol ':=' expression
+rule:= symbol ':=' expression '#' name
+token:= symbol '=' expression
+token:= symbol '=' expression '#' name
+expression:= symbol expression
+expression:= literal expression
+expression:= class expression
+expression:= ''                     #newExpression
+symbol:= name
+
+name= [_A-Za-z] nametail
+nametail= [_A-Za-z0-9] nametail
+nametail= ''
+literal= ['] single [']
+single= [^'\\] single
+single= escape single
+single= ''
+escape= '\\n'                       #nl
+escape= '\\r'                       #cr
+escape= '\\t'                       #tab
+escape= '\\' [\\'\-\]]
+class= '[' chars ']'                #charClass
+class= '[^' chars ']'               #negateClass
+chars= ch chars
+chars= range chars
+chars= ''                           #newClass
+ch= [^\\\]\-]
+ch= escape
+range= lo '-' hi
+hi= ch
+lo= ch
+ws= [ \n\t\r]

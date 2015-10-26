@@ -1,0 +1,28 @@
+#start lines
+#ignore ws
+
+lines:= line EOL lines
+lines:= EOL lines
+lines:= line
+lines:= ''
+line:= elements
+elements:= element ["] elements
+elements:= element
+element:= identifier
+element:= quotedValue
+
+identifier= identChar identifier
+identifier= identChar
+identChar= [^ \n\r\t,"']
+quotedValue= ["] doubleValue ["]
+quotedValue= ['] singleValue [']
+doubleValue= [^"\n\r] doubleValue
+doubleValue= '""'
+doubleValue= ''
+singleValue= [^'\n\r] singleValue
+singleValue= "''"
+singleValue= ''
+
+ws= [ \n\r\t]
+EOL= [\r\n]
+EOL= '\r\n'

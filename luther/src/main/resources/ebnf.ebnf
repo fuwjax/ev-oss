@@ -1,0 +1,82 @@
+#start = rules
+#ignore = [ \n\t\r] | comment
+
+rules = start ignore? rule+
+start = '#' 'start' '=' symbol
+ignore = '#' 'ignore' '=' expression
+rule = symbol '=' expression
+expression = sequence ('|' sequence)*
+sequence = group*
+group = primary [?*+]?
+primary = symbol | literal | class | regex | '(' expression ')'
+
+symbol = /#?[_A-Za-z][_A-Za-z0-9]*/
+literal = /'<litch>*'/
+litch = [^'\\] | /\\./
+class = /\[\^?<classprimary>*\]/
+classprimary = range | classch
+range = /<classch>-<classch>/
+classch = [^\]\\] | /\\./
+regex = /\/<regexp>\//
+regexp = /<regseq>(\|<regseq>)*/
+regseq = /<reggrp>+/
+reggrp = /<regprimary>[?*+]?/
+regprimary = regsym | regch | class | /\(<regexp>\)/
+regsym = /\<<symbol>\>/
+regch = [^*+?()/\\[\]<>] | /\\./
+
+comment = block | line
+block = /\/\*([^*]|\*[^/])*\*\//
+line = /\/\/[^\n]*\n/
+
+#start.0 =. {#ignore > $1, #rules > $2}
+#start.1 =. {#rules > $2}
+#start.2 =. {#ignore > .}
+#ignore.0 = {[ \n\t\r] > $1, comment > $1}
+#ignore.1 =. {[ \n\t\r] > $1, comment > $1}
+rules.0 =. {rule > $1}
+rules.1 =. {#ignore > $2}
+rules.2 = {rule > $1}
+rule.0 = {symbol > $1}
+rule.1 = {#ignore > $2, '=' > $3}
+rule.2 = {'=' > $3}
+rule.3 = {#ignore > $4, expression > .}
+rule.4 = {expression > .}
+
+
+
+#start = y
+#start.0 = {#ignore > 1, y > 2}
+#start.1 = {y > 2}
+#start.2 =. {#ignore > .}
+
+x = /y+/
+x.0 = {y > 1}
+x.1 =. {y > 1}
+
+x = y+
+x.0 = {y > 1}
+x.1 =. {#ignore > 0, y > 1}
+
+x = y? or x = /y?/
+x.0 =. {y > .}
+
+x = /y*/
+x.0 =. {y > 0}
+
+x = y*
+x.0 =. {y > 1}
+x.1 =. {#ignore > 2, y > 1}
+x.2 = {y > 1}
+
+x = y | z
+x.0 = {y > ., z > .}
+
+x = /yz/
+x.0 = {y > 1}
+x.1 = {z > .}
+
+x = y z
+x.0 = {y > 1}
+x.1 = {#ignore > 2, z > .}
+x.2 = {z > .}

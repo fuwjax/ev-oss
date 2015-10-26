@@ -48,6 +48,7 @@
 		<module>funco</module>
 		<module>wheatgrass</module>
 		<module>teecp</module>
+		<module>luther</module>
 	</modules>
 
 	<prerequisites>
@@ -390,6 +391,11 @@
 			<dependency>
 				<groupId>org.fuwjax.oss</groupId>
 				<artifactId>teecp</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.fuwjax.oss</groupId>
+				<artifactId>luther</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
