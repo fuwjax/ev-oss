@@ -6,19 +6,19 @@ import org.fuwjax.parser.Model;
 import org.fuwjax.parser.Node;
 
 public class MigratedModel implements Model {
-	private Model model;
-	private Symbol symbol;
+	private final Model model;
+	private final Symbol symbol;
 
-	public MigratedModel(Symbol symbol, Model model) {
+	public MigratedModel(final Symbol symbol, final Model model) {
 		this.symbol = symbol;
 		this.model = model;
 	}
 
 	@Override
-	public StringBuilder match(StringBuilder builder) {
+	public StringBuilder match(final StringBuilder builder) {
 		return model.match(builder);
 	}
-	
+
 	@Override
 	public Node result() {
 		return this;
@@ -27,6 +27,11 @@ public class MigratedModel implements Model {
 	@Override
 	public Object value() {
 		return model.value();
+	}
+
+	@Override
+	public int length() {
+		return model.length();
 	}
 
 	@Override

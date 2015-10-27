@@ -1,14 +1,12 @@
 package org.fuwjax.parser.bnf;
 
 import static java.util.function.Function.identity;
-import static org.fuwjax.parser.Model.named;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.fuwjax.oss.util.io.IntReader;
 import org.fuwjax.parser.Grammar;
@@ -18,24 +16,23 @@ import org.fuwjax.parser.builder.Codepoints;
 import org.fuwjax.parser.builder.GrammarBuilder;
 import org.fuwjax.parser.builder.SymbolBuilder;
 import org.fuwjax.parser.builder.SymbolStateBuilder;
-import org.fuwjax.parser.impl.MigratedModel;
-import org.fuwjax.parser.impl.Value;
 
 public class BnfGrammar {
 	static class Builder extends GrammarBuilder {
 		private Builder standardBnfRules() {
-			rule(false, "#ignore", Model::match, any(' ', '\n', '\t', '\r'));
+			rule(false, "#ignore", identity(), any(' ', '\n', '\t', '\r'));
 			rule(true, "#start", this::grammar, symbol("rules"));
-			rule(true, "rules", this::add, symbol("directive"), symbol("rules"));
-			rule(true, "rules", this::add, symbol("rule"), symbol("rules"));
-			rule(true, "rules", this::newList);
-			rule(true, "directive", this::rule, of('#'), symbol("symbol"), symbol("expression"));
-			rule(true, "rule", this::rule, symbol("symbol"), of('='), symbol("expression"));
+			rule(true, "rules", this::rules, symbol("directive"), symbol("rules"));
+			rule(true, "rules", this::rules, symbol("rule"), symbol("rules"));
+			rule(true, "rules", this::rules, symbol("pattern"), symbol("rules"));
+			rule(true, "rules", this::rules);
+			rule(true, "directive", this::directive, of('#'), symbol("symbol"), symbol("expression"));
+			rule(true, "pattern", this::pattern, symbol("symbol"), of('='), symbol("expression"));
 			rule(true, "rule", this::rule, symbol("symbol"), of(':'), of('='), symbol("expression"));
-			rule(true, "expression", this::add, symbol("symbol"), symbol("expression"));
-			rule(true, "expression", this::addAll, symbol("literal"), symbol("expression"));
-			rule(true, "expression", this::add, symbol("class"), symbol("expression"));
-			rule(true, "expression", this::newList);
+			rule(true, "expression", this::expression, symbol("symbol"), symbol("expression"));
+			rule(true, "expression", this::expression, symbol("literal"), symbol("expression"));
+			rule(true, "expression", this::expression, symbol("class"), symbol("expression"));
+			rule(true, "expression", this::expression);
 
 			rule(false, "symbol", this::reference, of('_').range('A', 'Z').range('a', 'z'), symbol("symboltail"));
 			rule(false, "symboltail", identity(), of('_').range('A', 'Z').range('a', 'z').range('0', '9'),
@@ -45,18 +42,15 @@ public class BnfGrammar {
 			rule(false, "single", identity(), any('\'', '\\').negate(), symbol("single"));
 			rule(false, "single", identity(), symbol("escape"), symbol("single"));
 			rule(false, "single", identity());
-			rule(false, "escape", m -> Node.codepoint('\n'), of('\\'), of('n'));
-			rule(false, "escape", m -> Node.codepoint('\t'), of('\\'), of('t'));
-			rule(false, "escape", m -> Node.codepoint('\r'), of('\\'), of('r'));
-			rule(false, "escape", m -> node(m,1), of('\\'), any('n', 'r', 't').negate());
+			rule(false, "escape", this::escape, of('\\'), any().negate());
 			rule(false, "class", this::charClass, of('['), symbol("chars"), of(']'));
-			rule(false, "class", this::negateClass, of('['), of('^'), symbol("chars"), of(']'));
-			rule(false, "chars", this::addChar, symbol("char"), symbol("chars"));
-			rule(false, "chars", this::addRange, symbol("range"), symbol("chars"));
-			rule(false, "chars", this::newClass);
-			rule(false, "char", m -> node(m,0), any('\\', ']', '-').negate());
-			rule(false, "char", this::pass, symbol("escape"));
-			rule(false, "range", this::range, symbol("char"), of('-'), symbol("char"));
+			rule(false, "class", this::charClass, of('['), of('^'), symbol("chars"), of(']'));
+			rule(false, "chars", this::chars, symbol("char"), symbol("chars"));
+			rule(false, "chars", this::chars, symbol("range"), symbol("chars"));
+			rule(false, "chars", this::chars);
+			rule(false, "char", identity(), any('\\', ']', '-').negate());
+			rule(false, "char", identity(), symbol("escape"));
+			rule(false, "range", identity(), symbol("char"), of('-'), symbol("char"));
 			return this;
 		}
 
@@ -67,99 +61,104 @@ public class BnfGrammar {
 			return builder.build("#start");
 		}
 
+		private List<Rule> rules(final Model model) {
+			final Rule rule = (Rule) model.getValue("directive", "rule");
+			List<Rule> rules = (List<Rule>) model.getValue("rules");
+			if (rules == null) {
+				rules = new ArrayList<>();
+			}
+			if (rule != null) {
+				rules.add(rule);
+			}
+			return rules;
+		}
+
+		private Rule directive(final Model model) {
+			return new Rule("#" + ((Reference) model.getValue("symbol")).name(),
+					(List<Expression>) model.getValue("expression"), true);
+		}
+
+		private Rule pattern(final Model model) {
+			return new Rule(((Reference) model.getValue("symbol")).name(),
+					(List<Expression>) model.getValue("expression"), false);
+		}
+
+		private Rule rule(final Model model) {
+			return new Rule(((Reference) model.getValue("symbol")).name(),
+					(List<Expression>) model.getValue("expression"), true);
+		}
+
+		private List<Expression> expression(final Model model) {
+			List<Expression> expressions = (List<Expression>) model.getValue("rules");
+			if (expressions == null) {
+				expressions = new ArrayList<>();
+			}
+			final Expression expression = (Expression) model.getValue("symbol", "class");
+			if (expression != null) {
+				expressions.add(expression);
+			} else {
+				final Literal literal = (Literal) model.getValue("literal");
+				if (literal != null) {
+					expressions.addAll(literal.toExpressions());
+				}
+			}
+			return expressions;
+		}
+
 		private Reference reference(final Model model) {
 			return new Reference(model.match());
 		}
 
 		private Literal literal(final Model model) {
-			return new Literal(model.get("single").match());
-		}
-		
-		private Node node(Model model, int index){
-			return model.children().skip(index).findFirst().map(Node::result).orElse(null);
+			final Model single = model.get("single");
+			return single == null ? new Literal("") : new Literal(single.match());
 		}
 
-		private List addAll(final Model model) {
-			List expressions = (List) model.getValue("expression");
-			if(expressions == null){
-				expressions = new ArrayList();
+		private Node escape(final Model model) {
+			final Node ch = model.node(1);
+			switch ((int) ch.value()) {
+			case 'n':
+				return Node.codepoint('\n');
+			case 'r':
+				return Node.codepoint('\r');
+			case 't':
+				return Node.codepoint('\t');
+			default:
+				return ch;
 			}
-			expressions.addAll(((Literal) model.getValue("literal")).toExpressions());
-			return expressions;
-		}
-
-		private Range range(final Model model) {
-			final List<Model> chars = model.getAll("char").collect(Collectors.toList());
-			return new Range((Integer) chars.get(0).value(), (Integer) chars.get(1).value());
-		}
-
-		private Stream<Model> children(final Model model) {
-			return model.modelChildren().filter(named("#ignore").negate());
-		}
-
-		private Object negateClass(final Model model) {
-			return new CharClass(((Codepoints) model.getValue("chars")).negate());
 		}
 
 		private Object charClass(final Model model) {
-			return new CharClass((Codepoints) model.getValue("chars"));
-		}
-
-		private Object newClass(final Model model) {
-			return new Codepoints();
-		}
-
-		private Object addChar(final Model model) {
-			final Codepoints codepoints = (Codepoints) model.getValue("chars");
-			codepoints.add((Integer) model.getValue("char"));
-			return codepoints;
-		}
-
-		private class Range {
-			private final int lo;
-			private final int hi;
-
-			public Range(final int lo, final int hi) {
-				this.lo = lo;
-				this.hi = hi;
+			Codepoints chars = (Codepoints) model.getValue("chars");
+			if (chars == null) {
+				chars = new Codepoints();
 			}
-		}
-
-		private Object addRange(final Model model) {
-			final Codepoints codepoints = (Codepoints) model.getValue("chars");
-			final Range range = (Range) model.getValue("range");
-			codepoints.range(range.lo, range.hi);
-			return codepoints;
-		}
-
-		private Object pass(final Model model) {
-			return children(model).findAny().get().result();
-		}
-
-		private List add(final Model model) {
-			final List<Model> children = children(model).collect(Collectors.toList());
-			List list;
-			if(children.size() == 1){
-				list = new ArrayList();
-			}else{
-				list = (List) children.get(1).value();
+			if (Objects.equals(model.node(1).value(), '^')) {
+				chars.negate();
 			}
-			final Object value = children.get(0).value();
-			list.add(value);
-			return list;
+			return new CharClass(chars);
 		}
 
-		private List newList(final Model model) {
-			return new ArrayList();
+		private Object chars(final Model model) {
+			Codepoints chars = (Codepoints) model.getValue("chars");
+			if (chars == null) {
+				chars = new Codepoints();
+			}
+			final Model roc = model.get("range", "char");
+			if (roc != null) {
+				final String match = roc.match();
+				if ("range".equals(roc.symbol().name())) {
+					chars.range(match.codePointAt(0), match.codePointAt(2));
+				} else {
+					chars.add(match.codePointAt(0));
+				}
+			}
+			return chars;
 		}
 
-		private Rule rule(final Model model) {
-			return new Rule(((Reference) model.getValue("symbol")).name(), (List<Expression>) model.getValue("expression"));
-		}
-		
 		SymbolBuilder rule(final boolean useIgnore, final String lhs, final Function<Model, ?> transform,
 				final Object... steps) {
-			final SymbolBuilder s = symbol(lhs);
+			final SymbolBuilder s = symbol(lhs, Model.wrap(transform));
 			SymbolStateBuilder state = s.start();
 			final String[] names = names(steps);
 			int index = 0;
@@ -175,10 +174,10 @@ public class BnfGrammar {
 				++index;
 			}
 			if ("#start".equals(lhs) || "#ignore".equals(lhs)) {
-				s.start().complete(name(0, names), Model.wrap(transform));
+				s.start().complete(name(0, names));
 				state = state.ensure(name(index, names), symbol("#ignore"));
 			}
-			state.complete(name(index, names), Model.wrap(transform));
+			state.complete(name(index, names));
 			return s;
 		}
 

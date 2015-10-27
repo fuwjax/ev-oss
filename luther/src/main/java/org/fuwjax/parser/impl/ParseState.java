@@ -63,7 +63,11 @@ public class ParseState {
 		}
 		if (items.containsKey(next)) {
 			// grammar is ambiguous
-			items.get(next).addAlternative(next);
+			final Transition current = items.get(next);
+			System.out.println("Comparing " + new StandardModel(current) + " to " + new StandardModel(next));
+			if (current.isBetterAlternative(next)) {
+				items.put(current, next);
+			}
 			return false;
 		}
 		save(next);

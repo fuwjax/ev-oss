@@ -14,9 +14,8 @@ public class GrammarImpl implements Grammar {
 	}
 
 	public GrammarImpl(final SymbolBuilder start) {
-		final SymbolBuilder accept = new SymbolBuilder("ACCEPT");
-		accept.start().ensure("." + start.name(), start).complete(start.name() + ".",
-				model -> model.get(start.name()));
+		final SymbolBuilder accept = new SymbolBuilder("ACCEPT", model -> model.get(start.name()));
+		accept.start().ensure("." + start.name(), start).complete(start.name() + ".");
 		accept.checkNullable();
 		accept.collapse();
 		accept.buildPredict();

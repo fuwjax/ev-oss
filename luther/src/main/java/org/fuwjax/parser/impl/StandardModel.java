@@ -15,8 +15,8 @@ import org.fuwjax.parser.Node;
 public class StandardModel implements Model {
 	private final Symbol symbol;
 	private final List<Node> children;
-	
-	public StandardModel(Model model){
+
+	public StandardModel(final Model model) {
 		this.symbol = model.symbol();
 		this.children = model.children().map(Node::result).collect(Collectors.toList());
 	}
@@ -32,15 +32,20 @@ public class StandardModel implements Model {
 	}
 
 	@Override
+	public int length() {
+		return children.stream().mapToInt(Node::length).sum();
+	}
+
+	@Override
 	public Symbol symbol() {
 		return symbol;
 	}
-	
+
 	@Override
 	public Node result() {
 		return this;
 	}
-	
+
 	@Override
 	public Object value() {
 		return this;
@@ -63,6 +68,6 @@ public class StandardModel implements Model {
 
 	@Override
 	public String toString() {
-		return symbol.name() + children();
+		return symbol.name() + children;
 	}
 }

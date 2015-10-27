@@ -43,4 +43,7 @@ public class Iterables {
 		return stream::iterator;
 	}
 
+	public static <T> Iterable<T> over(final Iterator<T> iter) {
+		return () -> iter;
+	}
 }

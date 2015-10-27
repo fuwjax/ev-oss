@@ -13,7 +13,6 @@ public class Transition implements Model {
 	private final Origin orig;
 	private final Node[] children;
 	private final Transition insertion;
-	private Transition alternative;
 
 	public Transition(final Symbol s, final Origin orig) {
 		this(s.start(), orig, new Node[0], null);
@@ -79,7 +78,7 @@ public class Transition implements Model {
 
 	@Override
 	public String toString() {
-		return "[" + state.name() + ", " + orig + "]";
+		return "[" + state.name() + ", " + orig + "] " + match();
 	}
 
 	@Override
@@ -97,12 +96,39 @@ public class Transition implements Model {
 		return Objects.hash(state, orig);
 	}
 
-	public void addAlternative(final Transition next) {
-		if (alternative == null) {
-			alternative = next;
-		} else {
-			alternative.addAlternative(next);
+	public Boolean isBetterAlternative(final Transition next) {
+		int c = children.length - next.children.length;
+		if (c < 0) {
+			return true;
 		}
+		if (c > 0) {
+			return false;
+		}
+		c = state.compareTo(next.state);
+		if (c < 0) {
+			return false;
+		}
+		if (c > 0) {
+			return true;
+		}
+		for (int i = 0; i < children.length; i++) {
+			c = children[i].length() - next.children[i].length();
+			if (c < 0) {
+				return true;
+			}
+			if (c > 0) {
+				return false;
+			}
+		}
+		for (int i = 0; i < children.length; i++) {
+			if (children[i] instanceof Transition && next.children[i] instanceof Transition) {
+				final Boolean result = ((Transition) children[i]).isBetterAlternative((Transition) next.children[i]);
+				if (result != null) {
+					return result;
+				}
+			}
+		}
+		return null;
 	}
 
 	public void complete(final Consumer<Transition> parsePosition) {
@@ -122,17 +148,22 @@ public class Transition implements Model {
 	public void triggerTransform() {
 		orig.triggerTransform();
 	}
-	
+
 	@Override
 	public Node result() {
-		final Node result = state.result(this);
+		final Node result = symbol().transform(this);
 		return result == this ? new StandardModel(this) : result instanceof Transition ? result.result() : result;
 	}
 
 	@Override
 	public Object value() {
-		Node result = result();
+		final Node result = result();
 		return result == null ? null : result.value();
+	}
+
+	@Override
+	public int length() {
+		return children().mapToInt(Node::length).sum();
 	}
 
 	public void transformChildren() {

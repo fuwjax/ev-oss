@@ -35,6 +35,12 @@ public class Value implements Model {
 		return builder.append(value);
 	}
 
+	@Override
+	public int length() {
+		return String.valueOf(value).length();
+	}
+
+	@Override
 	public Symbol symbol() {
 		return symbol;
 	}
@@ -48,7 +54,7 @@ public class Value implements Model {
 	public Object value() {
 		return value;
 	}
-	
+
 	@Override
 	public Node result() {
 		return this;

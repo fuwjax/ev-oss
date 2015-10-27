@@ -1,14 +1,20 @@
 package org.fuwjax.parser.impl;
 
 import java.util.Objects;
+import java.util.function.Function;
+
+import org.fuwjax.parser.Model;
+import org.fuwjax.parser.Node;
 
 public class Symbol {
 	private final String name;
 	private SymbolState start;
 	private String toString;
+	private final Function<Model, ? extends Node> transform;
 
-	public Symbol(final String name) {
+	public Symbol(final String name, final Function<Model, ? extends Node> transform) {
 		this.name = name;
+		this.transform = transform;
 	}
 
 	public void init(final SymbolState start, final String toString) {
@@ -28,6 +34,10 @@ public class Symbol {
 		} catch (final Exception e) {
 			return false;
 		}
+	}
+
+	public Node transform(final Model model) {
+		return transform.apply(model);
 	}
 
 	@Override

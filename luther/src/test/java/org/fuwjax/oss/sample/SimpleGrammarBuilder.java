@@ -29,7 +29,7 @@ public class SimpleGrammarBuilder extends GrammarBuilder {
 				state = state.ensure(rhs.substring(0, i) + "." + rhs.substring(i), new Codepoints().add(c));
 			}
 		}
-		state.complete(rhs + ".", transform(lhs));
+		state.complete(rhs + ".");
 		return this;
 	}
 }

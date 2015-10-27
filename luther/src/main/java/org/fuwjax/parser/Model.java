@@ -1,5 +1,7 @@
 package org.fuwjax.parser;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -20,39 +22,44 @@ public interface Model extends Node {
 		return builder;
 	}
 
-	static Predicate<Model> named(final String name) {
-		return model -> model.symbol().name().equals(name);
+	static Predicate<Model> named(final String... names) {
+		final List<String> list = Arrays.asList(names);
+		return model -> list.contains(model.symbol().name());
 	}
 
 	default Stream<Model> modelChildren() {
 		return children().filter(Model.class::isInstance).map(Model.class::cast);
 	}
 
-	default Model get(final String name) {
-		return getAll(name).findFirst().orElse(null);
-	}
-	
-	default Stream<Model> getAll(final String name) {
-		return modelChildren().filter(named(name));
+	default Model get(final String... names) {
+		return getAll(names).findFirst().orElse(null);
 	}
 
-	default Object getValue(final String name) {
-		return getAllValues(name).findFirst().orElse(null);
+	default Stream<Model> getAll(final String... names) {
+		return modelChildren().filter(named(names));
 	}
 
-	default Stream<Object> getAllValues(final String name) {
-		return getAll(name).map(Model::value);
+	default Object getValue(final String... names) {
+		return getAllValues(names).findFirst().orElse(null);
 	}
-	
-	static Function<Model, Node> wrap(Function<Model, ?> transform){
+
+	default Stream<Object> getAllValues(final String... names) {
+		return getAll(names).map(Model::value);
+	}
+
+	default Node node(final int index) {
+		return children().skip(index).findFirst().map(Node::result).orElse(null);
+	}
+
+	static Function<Model, Node> wrap(final Function<Model, ?> transform) {
 		return model -> {
-			Object value = transform.apply(model);
-			if(value == model){
+			final Object value = transform.apply(model);
+			if (value == model) {
 				return new StandardModel(model);
 			}
 			if (!(value instanceof Model)) {
-				if(value instanceof Node){
-					return (Node)value;
+				if (value instanceof Node) {
+					return (Node) value;
 				}
 				return new Value(model.symbol(), value);
 			}

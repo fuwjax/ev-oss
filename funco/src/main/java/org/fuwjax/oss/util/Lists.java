@@ -18,7 +18,9 @@ package org.fuwjax.oss.util;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 public class Lists {
 	public static <T> List<T> toList(final Iterable<T> iter) {
@@ -41,6 +43,23 @@ public class Lists {
 			public int size() {
 				return Array.getLength(array);
 			}
+		};
+	}
+
+	public static <T> Iterable<T> reverse(final List<T> list) {
+		return () -> new Iterator<T>() {
+			private final ListIterator<T> iter = list.listIterator();
+
+			@Override
+			public boolean hasNext() {
+				return iter.hasPrevious();
+			}
+
+			@Override
+			public T next() {
+				return iter.previous();
+			}
+
 		};
 	}
 }

@@ -29,11 +29,15 @@ public class GrammarBuilder {
 		return transforms.getOrDefault(name, identity());
 	}
 
-	public SymbolBuilder symbol(final String name) {
-		return symbols.computeIfAbsent(name, SymbolBuilder::new);
+	public SymbolBuilder symbol(final String name, final Function<Model, ? extends Node> transform) {
+		return symbols.computeIfAbsent(name, key -> new SymbolBuilder(key, transform));
 	}
-	
-	protected Stream<SymbolBuilder> symbols(){
+
+	public SymbolBuilder symbol(final String name) {
+		return symbols.computeIfAbsent(name, key -> new SymbolBuilder(key, transform(key)));
+	}
+
+	protected Stream<SymbolBuilder> symbols() {
 		return symbols.values().stream();
 	}
 

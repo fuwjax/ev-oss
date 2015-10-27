@@ -13,12 +13,17 @@ public class Char implements Node {
 	public StringBuilder match(final StringBuilder builder) {
 		return builder.appendCodePoint(ch);
 	}
-	
+
 	@Override
 	public Integer value() {
 		return ch;
 	}
-	
+
+	@Override
+	public int length() {
+		return 1;
+	}
+
 	@Override
 	public Node result() {
 		return this;

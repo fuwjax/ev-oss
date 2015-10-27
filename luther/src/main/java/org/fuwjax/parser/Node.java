@@ -9,6 +9,8 @@ public interface Node {
 		return match(new StringBuilder()).toString();
 	}
 
+	int length();
+
 	Object value();
 
 	Node result();

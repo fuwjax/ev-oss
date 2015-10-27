@@ -4,15 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.fuwjax.parser.Model;
+import org.fuwjax.parser.Node;
 import org.fuwjax.parser.impl.Symbol;
 
 public class SymbolBuilder {
 	public Symbol build() {
 		if (symbol == null) {
-			symbol = new Symbol(name);
+			symbol = new Symbol(name, transform);
 			symbol.init(start.build(), start.walk());
 		}
 		return symbol;
@@ -24,10 +27,12 @@ public class SymbolBuilder {
 	private boolean rightCycle;
 	private Boolean nullable;
 	private boolean checking;
-	private List<SymbolStateBuilder> states = new ArrayList<>();
+	private final List<SymbolStateBuilder> states = new ArrayList<>();
+	private final Function<Model, ? extends Node> transform;
 
-	public SymbolBuilder(final String name) {
+	public SymbolBuilder(final String name, final Function<Model, ? extends Node> transform) {
 		this.name = name;
+		this.transform = transform;
 		start = newState();
 	}
 
@@ -80,7 +85,9 @@ public class SymbolBuilder {
 	}
 
 	public void collapse() {
-		start.collapse();
+		for (int i = states.size() - 1; i >= 0; i--) {
+			states.get(i).collapse();
+		}
 	}
 
 	public boolean checkRightCycle() {
@@ -106,7 +113,7 @@ public class SymbolBuilder {
 	}
 
 	public SymbolStateBuilder newState() {
-		SymbolStateBuilder state = new SymbolStateBuilder(this, states.size());
+		final SymbolStateBuilder state = new SymbolStateBuilder(this, states.size());
 		states.add(state);
 		return state;
 	}
