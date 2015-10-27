@@ -48,8 +48,7 @@ public class Lists {
 
 	public static <T> Iterable<T> reverse(final List<T> list) {
 		return () -> new Iterator<T>() {
-			private final ListIterator<T> iter = list.listIterator();
-
+			private final ListIterator<T> iter = list.listIterator(list.size());
 			@Override
 			public boolean hasNext() {
 				return iter.hasPrevious();
@@ -60,6 +59,10 @@ public class Lists {
 				return iter.previous();
 			}
 
+			@Override
+			public void remove() {
+				iter.remove();
+			}
 		};
 	}
 }

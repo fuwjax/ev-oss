@@ -17,6 +17,8 @@ package org.fuwjax.oss.util;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class Iterables {
@@ -45,5 +47,28 @@ public class Iterables {
 
 	public static <T> Iterable<T> over(final Iterator<T> iter) {
 		return () -> iter;
+	}
+	
+	public interface IndexConsumer<T>{
+		void accept(T value, int index);
+		
+		static <T> IndexConsumer<T> consumer(BiConsumer<T, Integer> consumer){
+			return (IndexConsumer<T>)consumer::accept;
+		}
+	}
+	
+	public static <T> void forEach(Iterable<T> iterable, IndexConsumer<T> consumer) {
+		int index = 0;
+		for(Iterator<T> iter = iterable.iterator(); iter.hasNext();){
+			consumer.accept(iter.next(), index++);
+		}
+	}
+
+	public static <T> void breakingForEach(Iterable<T> iterable, Predicate<T> consumer) {
+		for(Iterator<T> iter = iterable.iterator(); iter.hasNext();){
+			if(!consumer.test(iter.next())){
+				break;
+			}
+		}
 	}
 }

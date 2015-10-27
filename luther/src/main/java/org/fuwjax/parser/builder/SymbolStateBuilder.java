@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.fuwjax.parser.impl.SymbolState;
 
@@ -59,18 +60,6 @@ public class SymbolStateBuilder {
 	public void complete(final String name) {
 		names.add(name);
 		this.complete = true;
-	}
-
-	public String walk() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append(this);
-		for (final SymbolStateBuilder s : literals.values()) {
-			builder.append("\n").append(s.walk());
-		}
-		for (final SymbolStateBuilder s : symbolic.values()) {
-			builder.append("\n").append(s.walk());
-		}
-		return builder.toString();
 	}
 
 	@Override
@@ -140,30 +129,11 @@ public class SymbolStateBuilder {
 		return predict;
 	}
 
-	public boolean checkRightCycle() {
-		for (final SymbolStateBuilder s : literals.values()) {
-			if (s.checkRightCycle()) {
-				return true;
-			}
-		}
-		for (final Map.Entry<SymbolBuilder, SymbolStateBuilder> entry : symbolic.entrySet()) {
-			if (entry.getValue().checkRightCycle()) {
-				return true;
-			}
-			if (entry.getValue().complete && entry.getKey().checkRightCycle()) {
-				return true;
-			}
-		}
-		return false;
+	public Stream<SymbolBuilder> rightSymbols() {
+		return symbolic.entrySet().stream().filter(e -> e.getValue().complete).map(Map.Entry::getKey);
 	}
 
 	public void checkRightRoot() {
-		for (final SymbolStateBuilder s : literals.values()) {
-			s.checkRightRoot();
-		}
-		for (final Map.Entry<SymbolBuilder, SymbolStateBuilder> entry : symbolic.entrySet()) {
-			entry.getValue().checkRightRoot();
-		}
 		if (symbolic.size() == 1 && literals.isEmpty()) {
 			for (final Map.Entry<SymbolBuilder, SymbolStateBuilder> entry : symbolic.entrySet()) {
 				if (entry.getKey().isRightCycle() && entry.getValue().complete) {
@@ -198,14 +168,29 @@ public class SymbolStateBuilder {
 		};
 	}
 
-	public void states(final Set<SymbolStateBuilder> states) {
-		if (states.add(this)) {
-			symbolic.values().forEach(s -> s.states(states));
-			literals.values().forEach(s -> s.states(states));
+ 	public String name() {
+		return lhs.name() + "." + index;
+	}
+
+	public int index() {
+		return index;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj){
+			return true;
+		}
+		try{
+			SymbolStateBuilder o = (SymbolStateBuilder)obj;
+			return o.complete == complete && symbolic.equals(o.symbolic) && literals.equals(o.literals);
+		}catch(Exception e){
+			return false;
 		}
 	}
 
-	public String name() {
-		return lhs.name() + "." + index;
+	public void replace(SymbolStateBuilder match, SymbolStateBuilder replace) {
+		literals.entrySet().stream().filter(e -> e.getValue().index == match.index).forEach(e -> e.setValue(replace));
+		symbolic.entrySet().stream().filter(e -> e.getValue().index == match.index).forEach(e -> e.setValue(replace));
 	}
 }

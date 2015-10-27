@@ -1,6 +1,7 @@
 package org.fuwjax.parser.impl;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntFunction;
 
@@ -33,6 +34,21 @@ public class SymbolState implements Comparable<SymbolState> {
 			return index - o.index;
 		}
 		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		try{
+			SymbolState o = (SymbolState)obj;
+			return lhs.equals(o.lhs) && index == o.index; 
+		}catch(Exception e){
+			return false;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(lhs, index);
 	}
 
 	public Set<Symbol> pending() {

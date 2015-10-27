@@ -18,16 +18,21 @@ public class ParseState {
 	private int index;
 
 	public Object parse(final Symbol accept, final IntReader input) {
-		index = 0;
-		final OfInt iter = input.stream().iterator();
-		// can't just call save, as we need the predict set from accept
-		add(new Transition(accept, origin(accept)));
-		while (iter.hasNext()) {
-			predict();
-			clear();
-			acceptNext(iter.nextInt());
+		try{
+			index = 0;
+			final OfInt iter = input.stream().iterator();
+			// can't just call save, as we need the predict set from accept
+			save(accept);
+			while (iter.hasNext()) {
+				predict();
+				clear();
+				acceptNext(iter.nextInt());
+			}
+			return result(accept);
+		}catch(Exception e){
+			oldItems.values().forEach(System.out::println);
+			throw e;
 		}
-		return result(accept);
 	}
 
 	private void acceptNext(final int ch) {
@@ -35,7 +40,6 @@ public class ParseState {
 		final List<Transition> consumers = oldItems.values().stream().map(item -> item.accept(ch)).filter(this::add)
 				.collect(Collectors.toList());
 		if (consumers.size() == 0) {
-			oldItems.values().forEach(System.out::println);
 			throw new IllegalArgumentException(
 					"Invalid input '" + new String(Character.toChars(ch)) + "' at position " + index);
 		}
@@ -58,14 +62,16 @@ public class ParseState {
 	}
 
 	private boolean add(final Transition next) {
+		System.out.println("adding @"+index+": "+next);
 		if (next == null) {
 			return false;
 		}
 		if (items.containsKey(next)) {
 			// grammar is ambiguous
 			final Transition current = items.get(next);
-			System.out.println("Comparing " + new StandardModel(current) + " to " + new StandardModel(next));
-			if (current.isBetterAlternative(next)) {
+			Boolean better = current.isBetterAlternative(next);
+			System.out.println("Comparing ("+better+") " + new StandardModel(current) + " to " + new StandardModel(next));
+			if (better) {
 				items.put(current, next);
 			}
 			return false;
@@ -77,7 +83,7 @@ public class ParseState {
 	}
 
 	private void save(final Symbol symbol) {
-		save(new Transition(symbol, origin(symbol)));
+		add(new Transition(symbol, origin(symbol)));
 	}
 
 	private void save(final Transition item) {

@@ -77,7 +77,7 @@ public class Codepoints {
 			return false;
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return "[" + (negate ? "^" : "") + rep + "]";

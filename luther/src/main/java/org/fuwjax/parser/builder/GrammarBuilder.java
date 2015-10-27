@@ -2,7 +2,6 @@ package org.fuwjax.parser.builder;
 
 import static java.util.function.Function.identity;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -18,19 +17,19 @@ public class GrammarBuilder {
 	private final Map<String, Function<Model, ? extends Node>> transforms;
 
 	public GrammarBuilder() {
-		this(Collections.emptyMap());
+		this(new HashMap<>());
 	}
 
 	public GrammarBuilder(final Map<String, Function<Model, ? extends Node>> transforms) {
 		this.transforms = transforms;
 	}
+	
+	public void transform(String name, Function<Model, ?> transform){
+		transforms.put(name, Model.wrap(transform));
+	}
 
 	public Function<Model, ? extends Node> transform(final String name) {
 		return transforms.getOrDefault(name, identity());
-	}
-
-	public SymbolBuilder symbol(final String name, final Function<Model, ? extends Node> transform) {
-		return symbols.computeIfAbsent(name, key -> new SymbolBuilder(key, transform));
 	}
 
 	public SymbolBuilder symbol(final String name) {
@@ -45,7 +44,6 @@ public class GrammarBuilder {
 		symbols().forEach(SymbolBuilder::checkNullable);
 		symbols().forEach(SymbolBuilder::collapse);
 		symbols().forEach(SymbolBuilder::buildPredict);
-		symbols().forEach(SymbolBuilder::checkRightCycle);
 		symbols().forEach(SymbolBuilder::checkRightRoot);
 		symbols().forEach(System.out::println);
 		return new GrammarImpl(symbol(start));

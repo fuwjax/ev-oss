@@ -82,7 +82,7 @@ public class GrammarTest {
 		assertEquals(n("S", n("C", t('a'), t('b'))), parse("ab"));
 		assertEquals(n("S", n("C", t('a'), n("C", t('a'), t('b')), t('b'))), parse("aabb"));
 		assertEquals(n("S", t('a'), n("S", n("C", t('a'), n("C", t('a'), t('b')), t('b')))), parse("aaabb"));
-		assertNull(parse(""));
+		assertEquals(n("S"), parse(""));
 		assertThrown(IllegalArgumentException.class, () -> parse("abb"));
 	}
 

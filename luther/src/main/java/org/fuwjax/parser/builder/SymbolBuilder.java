@@ -1,6 +1,10 @@
 package org.fuwjax.parser.builder;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -8,6 +12,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.fuwjax.oss.util.Iterables;
+import org.fuwjax.oss.util.Lists;
 import org.fuwjax.parser.Model;
 import org.fuwjax.parser.Node;
 import org.fuwjax.parser.impl.Symbol;
@@ -16,7 +22,7 @@ public class SymbolBuilder {
 	public Symbol build() {
 		if (symbol == null) {
 			symbol = new Symbol(name, transform);
-			symbol.init(start.build(), start.walk());
+			symbol.init(start.build(), toString());
 		}
 		return symbol;
 	}
@@ -24,11 +30,12 @@ public class SymbolBuilder {
 	private Symbol symbol;
 	private final String name;
 	private final SymbolStateBuilder start;
-	private boolean rightCycle;
 	private Boolean nullable;
 	private boolean checking;
 	private final List<SymbolStateBuilder> states = new ArrayList<>();
 	private final Function<Model, ? extends Node> transform;
+	private Set<SymbolBuilder> rightSymbols;
+	private boolean rightCycle;
 
 	public SymbolBuilder(final String name, final Function<Model, ? extends Node> transform) {
 		this.name = name;
@@ -85,23 +92,48 @@ public class SymbolBuilder {
 	}
 
 	public void collapse() {
-		for (int i = states.size() - 1; i >= 0; i--) {
-			states.get(i).collapse();
-		}
+		Lists.reverse(new ArrayList<>(states)).forEach(SymbolStateBuilder::collapse);
+		new ArrayList<>(states).forEach(state -> {
+			Iterables.breakingForEach(states, other -> {
+				if(state == other){
+					return false;
+				}
+				if(Objects.equals(state, other)){
+					states.stream().filter(Objects::nonNull).forEach(s -> s.replace(state, other));
+					states.set(state.index(), null);
+					return false;
+				}
+				return true;
+			});
+		});
+		states.removeAll(Collections.singleton(null));
 	}
 
-	public boolean checkRightCycle() {
-		if (checking) {
-			return true;
+	public Set<SymbolBuilder> rightSymbols() {
+		if(rightSymbols == null){
+			rightSymbols = new HashSet<>();
+			states.forEach(state -> state.rightSymbols().forEach(rightSymbols::add));
 		}
-		checking = true;
-		rightCycle = start.checkRightCycle();
-		checking = false;
-		return false;
+		return rightSymbols;
 	}
 
 	public void checkRightRoot() {
-		start.checkRightRoot();
+		rightCycle = rightCycle();
+		states.forEach(SymbolStateBuilder::checkRightRoot);
+	}
+
+	private boolean rightCycle() {
+		Deque<SymbolBuilder> queue = new ArrayDeque<>();
+		queue.add(this);
+		Set<SymbolBuilder> symbols = new HashSet<>();
+		while(!queue.isEmpty()){
+			SymbolBuilder symbol = queue.poll();
+			if(symbol.rightSymbols().contains(this)){
+				return true;
+			}
+			symbol.rightSymbols().stream().filter(symbols::add).forEach(s -> queue.add(s));;
+		}
+		return false;
 	}
 
 	public String name() {
