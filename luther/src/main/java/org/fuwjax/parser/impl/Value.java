@@ -64,4 +64,9 @@ public class Value implements Model {
 	public Stream<Node> children() {
 		return Stream.empty();
 	}
+	
+	@Override
+	public String nestedString() {
+		return String.valueOf(value);
+	}
 }

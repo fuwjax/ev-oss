@@ -80,7 +80,7 @@ public class Transition implements Model {
 
 	@Override
 	public String toString() {
-		return "[" + state.name() + ", " + orig + "] " + new StandardModel(this);
+		return "[" + state.name() + ", " + orig + "] " + nestedString();
 	}
 
 	@Override
@@ -172,5 +172,9 @@ public class Transition implements Model {
 		for (int index = 0; index < children.length - 1; index++) {
 			children[index] = children[index].result();
 		}
+	}
+
+	public String name() {
+		return state.name()+"@"+orig.index();
 	}
 }

@@ -18,4 +18,8 @@ public interface Node {
 	static Node codepoint(final int ch) {
 		return new Char(ch);
 	}
+	
+	default String nestedString(){
+		return String.valueOf(value());
+	}
 }

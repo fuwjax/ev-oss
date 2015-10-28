@@ -51,20 +51,14 @@ public class HttpClientProxy extends AbstractServiceProxy {
 	private static final Pattern REQUEST_LINE_PATTERN = Pattern.compile("(?<method>[\\S]+)\\s(?<path>[\\S]+)\\s(?<version>[\\S]+)");
 	private final String host;
 	private final int port;
-	private final boolean canonical;
 
 	public HttpClientProxy(final int port) {
 		this("localhost", port);
 	}
 
 	public HttpClientProxy(final String host, final int port) {
-		this(host, port, true);
-	}
-
-	public HttpClientProxy(final String host, final int port, final boolean canonical) {
 		this.host = host;
 		this.port = port;
-		this.canonical = canonical;
 	}
 
 	public void send() {
@@ -101,9 +95,10 @@ public class HttpClientProxy extends AbstractServiceProxy {
 	private void persistResponse(final HttpResponse response, final Path output) throws IOException {
 		try (BufferedWriter w = newBufferedWriter(output, StandardCharsets.UTF_8)) {
 			w.append(response.httpVersion()).append(' ').append(Integer.toString(response.statusCode())).append(' ').append(response.statusPhrase()).append('\n');
-			final Map<String, String[]> sortedHeaders = canonical ? new TreeMap<>(response.headers()) : response.headers();
-			for (final Map.Entry<String, String[]> entry : sortedHeaders.entrySet()) {
-				final String headerName = canonical ? entry.getKey().toLowerCase() : entry.getKey();
+			final Map<String, List<String>> sortedHeaders = new TreeMap<>();
+			response.headers().forEach(e -> sortedHeaders.computeIfAbsent(e.getKey().toLowerCase(), k -> new ArrayList<>()).add(e.getValue()));
+			for (final Map.Entry<String, List<String>> entry : sortedHeaders.entrySet()) {
+				final String headerName = entry.getKey();
 				if (headerName.equals("date")) {
 					w.append("date: ${DATE}\n");
 				} else {

@@ -67,6 +67,9 @@ public class BnfGrammar {
 		
 		private Grammar grammar(final Model model) {
 			final List<Rule> rules = (List<Rule>) model.getValue("rules");
+			if(rules == null){
+				return null;
+			}
 			final Builder builder = new Builder();
 			rules.forEach(rule -> rule.applyTo(builder));
 			return builder.build("#start");

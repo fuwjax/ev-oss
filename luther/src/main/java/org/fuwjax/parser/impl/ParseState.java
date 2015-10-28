@@ -22,7 +22,7 @@ public class ParseState {
 			index = 0;
 			final OfInt iter = input.stream().iterator();
 			// can't just call save, as we need the predict set from accept
-			save(accept);
+			add(new Transition(accept, origin(accept)));
 			while (iter.hasNext()) {
 				predict();
 				clear();
@@ -62,7 +62,7 @@ public class ParseState {
 	}
 
 	private boolean add(final Transition next) {
-		System.out.println("adding @"+index+": "+next);
+		System.out.println("adding @"+index+" "+next+" to "+(next == null ? "" :next.pending().map(Symbol::name).collect(Collectors.joining(", "))));
 		if (next == null) {
 			return false;
 		}
@@ -70,7 +70,7 @@ public class ParseState {
 			// grammar is ambiguous
 			final Transition current = items.get(next);
 			Boolean better = current.isBetterAlternative(next);
-			System.out.println("Comparing ("+better+") " + new StandardModel(current) + " to " + new StandardModel(next));
+			System.out.println("Comparing ("+better+") " + current.nestedString() + " to " + next.nestedString());
 			if (better) {
 				items.put(current, next);
 			}
@@ -83,7 +83,7 @@ public class ParseState {
 	}
 
 	private void save(final Symbol symbol) {
-		add(new Transition(symbol, origin(symbol)));
+		save(new Transition(symbol, origin(symbol)));
 	}
 
 	private void save(final Transition item) {

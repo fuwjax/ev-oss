@@ -38,6 +38,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<nexus.url>http://mvn.searchdex.com:8081/nexus</nexus.url>
 	</properties>
 
 	<modules>
@@ -424,8 +425,9 @@
 			<!-- HTTP -->
 			<dependency>
 				<groupId>org.jodd</groupId>
-				<artifactId>jodd-http</artifactId>
-				<version>3.6.6</version>
+				<artifactId>jodd-bundle</artifactId>
+				<version>3.6.6.1</version>
+				<!-- SNAPSHOT VERSION!!!! -->
 			</dependency>
 			<dependency>
 				<groupId>io.undertow</groupId>
@@ -445,6 +447,14 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>sdx nexus</id>
+			<name>SearchDex Nexus</name>
+			<url>${nexus.url}/content/repositories/public/</url>
+		</repository>
+	</repositories>
 
 	<profiles>
 		<profile>

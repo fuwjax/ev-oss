@@ -62,9 +62,9 @@ public class GrammarTest {
 		g.rule("I", "iS");
 		g.rule("E", "eS");
 		grammar = g.build("S");
+		assertEquals(n("S", n("I", t('i'), n("S", t('s')), n("E", t('e'), n("S", t('s'))))), parse("ises"));
 		assertEquals(n("S", t('s')), parse("s"));
 		assertEquals(n("S", n("I", t('i'), n("S", t('s')))), parse("is"));
-		assertEquals(n("S", n("I", t('i'), n("S", t('s')), n("E", t('e'), n("S", t('s'))))), parse("ises"));
 		assertEquals(n("S", n("I", t('i'), n("S", n("I", t('i'), n("S", t('s')))))), parse("iis"));
 		assertEquals(n("S", n("I", t('i'), n("S", n("I", t('i'), n("S", t('s')), n("E", t('e'), n("S", t('s'))))))),
 				parse("iises"));
@@ -77,13 +77,29 @@ public class GrammarTest {
 		g.rule("S", "C");
 		g.rule("C", "aCb");
 		grammar = g.build("S");
-		assertEquals(n("S", t('a'), n("S", t('a'), n("S", t('a'), n("S", t('a'))))), parse("aaaa"));
 		assertEquals(n("S", t('a')), parse("a"));
 		assertEquals(n("S", n("C", t('a'), t('b'))), parse("ab"));
+		assertEquals(n("S", t('a'), n("S", t('a'), n("S", t('a'), n("S", t('a'))))), parse("aaaa"));
 		assertEquals(n("S", n("C", t('a'), n("C", t('a'), t('b')), t('b'))), parse("aabb"));
 		assertEquals(n("S", t('a'), n("S", n("C", t('a'), n("C", t('a'), t('b')), t('b')))), parse("aaabb"));
-		assertEquals(n("S"), parse(""));
+		assertNull(parse(""));
 		assertThrown(IllegalArgumentException.class, () -> parse("abb"));
+	}
+
+	@Test
+	public void testDeepRightRecurse() throws Exception {
+		g.rule("S", "sA");
+		g.rule("A", "aB");
+		g.rule("A", "C");
+		g.rule("B", "bS");
+		g.rule("B", "");
+		g.rule("C", "c");
+		g.rule("C", "");
+		grammar = g.build("S");
+		assertEquals(n("S", t('s')), parse("s"));
+		assertEquals(n("S", t('s'), n("A", t('a'))), parse("sa"));
+		assertEquals(n("S", t('s'), n("A", t('a'), n("B", t('b'), n("S", t('s'))))), parse("sabs"));
+		assertThrown(IllegalArgumentException.class, () -> parse("sab"));
 	}
 
 	@Test

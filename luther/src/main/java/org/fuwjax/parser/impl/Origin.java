@@ -3,6 +3,7 @@ package org.fuwjax.parser.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class Origin {
 	private final int index;
@@ -30,11 +31,19 @@ public class Origin {
 
 	@Override
 	public String toString() {
-		return Integer.toString(index);
+		if(mark == null){
+			return index+": "+awaiting.stream().map(Transition::name).collect(Collectors.joining(", "));
+		}else{
+			return index+":* "+mark.name();
+		}
 	}
 
 	@Override
 	public int hashCode() {
+		return index;
+	}
+	
+	public int index(){
 		return index;
 	}
 

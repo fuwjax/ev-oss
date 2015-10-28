@@ -48,4 +48,9 @@ public class Char implements Node {
 	public String toString() {
 		return match();
 	}
+	
+	@Override
+	public String nestedString() {
+		return new String(Character.toChars(ch));
+	}
 }

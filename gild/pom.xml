@@ -37,7 +37,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jodd</groupId>
-			<artifactId>jodd-http</artifactId>
+			<artifactId>jodd-bundle</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>

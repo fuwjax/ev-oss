@@ -121,17 +121,19 @@ public class SymbolBuilder {
 		rightCycle = rightCycle();
 		states.forEach(SymbolStateBuilder::checkRightRoot);
 	}
-
+	
 	private boolean rightCycle() {
-		Deque<SymbolBuilder> queue = new ArrayDeque<>();
-		queue.add(this);
-		Set<SymbolBuilder> symbols = new HashSet<>();
-		while(!queue.isEmpty()){
-			SymbolBuilder symbol = queue.poll();
-			if(symbol.rightSymbols().contains(this)){
+		Set<SymbolBuilder> seen = new HashSet<>();
+		Set<SymbolBuilder> set = rightSymbols();
+		while(set.size() == 1){
+			if(set.contains(this)){
 				return true;
 			}
-			symbol.rightSymbols().stream().filter(symbols::add).forEach(s -> queue.add(s));;
+			SymbolBuilder tail = set.iterator().next();
+			if(!seen.add(tail)){
+				return false;
+			}
+			set = tail.rightSymbols();
 		}
 		return false;
 	}

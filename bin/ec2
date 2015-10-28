@@ -48,22 +48,10 @@ error() {
 	exit 1
 }
 
-try() {
-	until "$@"
-	do
-		echo -n >&2 '.'
-		sleep 5
-	done
-}
-
 capture() {
 	result=$("$@") || return $?
 	[ -n "$result" ] || return 1
 	echo "$result"
-}
-
-spin() {
-	try capture "$@"
 }
 
 configureEC2 () {
@@ -94,7 +82,8 @@ configureEC2
 }
 
 describeInstances() {
-	spin aws ec2 describe-instances --filters Name=tag-value,Values="$NAME" Name=instance-state-name,Values=running,pending Name=key-name,Values=$KEY_NAME
+	aws ec2 wait instance-exists --filters Name=tag-value,Values="$NAME" Name=key-name,Values=$KEY_NAME
+	aws ec2 describe-instances --filters Name=tag-value,Values="$NAME" Name=instance-state-name,Values=running,pending Name=key-name,Values=$KEY_NAME
 }
 
 checkInstances() {
@@ -125,8 +114,9 @@ requestInstance() {
 
 newInstance() {
 	local instanceid=$(requestInstance | perl -n -e '/^.*"InstanceId":\s+"([^"]+)"/ && print "$1 "')
-	try aws ec2 create-tags --resources $instanceid --tags "Key=Name,Value=$NAME"
-    try ssh -o StrictHostKeyChecking=no -t -t ec2-user@$(spin lookupHostname) "exit 0"
+	aws ec2 wait instance-status-ok --instance-ids $instanceid
+	aws ec2 create-tags --resources $instanceid --tags "Key=Name,Value=$NAME"
+    ssh -o StrictHostKeyChecking=no -t -t ec2-user@$(lookupHostname) "exit 0"
 	echo $instanceid
 }
 
@@ -139,7 +129,8 @@ requestImage() {
 }
 
 describeImage(){
-	spin aws ec2 describe-images --image-ids $1 --filter Name=state,Values=available 
+	aws ec2 image-available --image-ids $1
+	aws ec2 describe-images --image-ids $1 --filter Name=state,Values=available 
 }
 
 lookupImage() {
@@ -148,7 +139,8 @@ lookupImage() {
 
 createImage() {
 	local imageId=$(requestImage "$1" | perl -n -e '/^.*"ImageId":\s+"([^"]+)"/ && print "$1 "')
-	spin lookupImage $imageId
+	aws ec2 image-available --image-ids $1
+	lookupImage $imageId
 }
 
 sshInstance() {
@@ -189,7 +181,7 @@ source "$CONF"
 
 case $OP in
 	list) listInstances ;;
-	host) spin lookupHostname ;;
+	host) lookupHostname ;;
 	desc) describeInstances ;;
 	check) checkInstances ;;
 	new) newInstance ;;
