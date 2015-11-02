@@ -18,19 +18,20 @@ public class ParseState {
 	private int index;
 
 	public Object parse(final Symbol accept, final IntReader input) {
-		try{
+		try {
 			index = 0;
 			final OfInt iter = input.stream().iterator();
 			// can't just call save, as we need the predict set from accept
 			add(new Transition(accept, origin(accept)));
 			while (iter.hasNext()) {
 				predict();
+				System.out.println("****** Position: " + index);
+				items.values().forEach(System.out::println);
 				clear();
 				acceptNext(iter.nextInt());
 			}
 			return result(accept);
-		}catch(Exception e){
-			oldItems.values().forEach(System.out::println);
+		} catch (final Exception e) {
 			throw e;
 		}
 	}
@@ -62,15 +63,16 @@ public class ParseState {
 	}
 
 	private boolean add(final Transition next) {
-		System.out.println("adding @"+index+" "+next+" to "+(next == null ? "" :next.pending().map(Symbol::name).collect(Collectors.joining(", "))));
+		System.out.println("adding @" + index + " " + next + (next == null ? ""
+				: next.pending().map(Symbol::name).collect(Collectors.joining(", ", " awaiting ", ""))));
 		if (next == null) {
 			return false;
 		}
 		if (items.containsKey(next)) {
 			// grammar is ambiguous
 			final Transition current = items.get(next);
-			Boolean better = current.isBetterAlternative(next);
-			System.out.println("Comparing ("+better+") " + current.nestedString() + " to " + next.nestedString());
+			final Boolean better = current.isBetterAlternative(next);
+			System.out.println("Comparing (" + better + ") " + current.nestedString() + " to " + next.nestedString());
 			if (better) {
 				items.put(current, next);
 			}
@@ -83,6 +85,8 @@ public class ParseState {
 	}
 
 	private void save(final Symbol symbol) {
+		System.out.println("predicting @" + index + " " + symbol.name() + symbol.start().pending().stream()
+				.map(Symbol::name).collect(Collectors.joining(", ", " awaiting ", "")));
 		save(new Transition(symbol, origin(symbol)));
 	}
 

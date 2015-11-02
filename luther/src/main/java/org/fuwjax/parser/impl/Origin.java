@@ -31,19 +31,18 @@ public class Origin {
 
 	@Override
 	public String toString() {
-		if(mark == null){
-			return index+": "+awaiting.stream().map(Transition::name).collect(Collectors.joining(", "));
-		}else{
-			return index+":* "+mark.name();
+		if (mark == null) {
+			return index + ": " + awaiting.stream().map(Transition::name).collect(Collectors.joining(", "));
 		}
+		return index + ":* " + mark.name();
 	}
 
 	@Override
 	public int hashCode() {
 		return index;
 	}
-	
-	public int index(){
+
+	public int index() {
 		return index;
 	}
 
@@ -70,9 +69,9 @@ public class Origin {
 	}
 
 	public void triggerTransform() {
-		if(mark != null){
+		if (mark != null) {
 			mark.transformChildren();
-		}else if(awaiting.size() == 1){
+		} else if (awaiting.size() == 1) {
 			awaiting.get(0).transformChildren();
 		}
 	}

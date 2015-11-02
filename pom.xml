@@ -1,20 +1,10 @@
-<!--
-
-    Copyright (C) 2015 fuwjax.org (info@fuwjax.org)
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
--->
+<!-- Copyright (C) 2015 fuwjax.org (info@fuwjax.org) Licensed under the Apache 
+	License, Version 2.0 (the "License"); you may not use this file except in 
+	compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
+	Unless required by applicable law or agreed to in writing, software distributed 
+	under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES 
+	OR CONDITIONS OF ANY KIND, either express or implied. See the License for 
+	the specific language governing permissions and limitations under the License. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -38,7 +28,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<nexus.url>http://mvn.searchdex.com:8081/nexus</nexus.url>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
 	<modules>
@@ -50,6 +40,7 @@
 		<module>wheatgrass</module>
 		<module>teecp</module>
 		<module>luther</module>
+		<module>lumber</module>
 	</modules>
 
 	<prerequisites>
@@ -351,6 +342,29 @@
 						</execution>
 					</executions>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>2.19</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>integration-test</goal>
+								<goal>verify</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<useManifestOnlyJar>false</useManifestOnlyJar>
+						<useSystemClassLoader>true</useSystemClassLoader>
+						<includes>
+							<include>**/integration/**/*.java</include>
+						</includes>
+						<systemPropertyVariables>
+							<mavenTest>true</mavenTest>
+						</systemPropertyVariables>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -399,6 +413,11 @@
 				<artifactId>luther</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.fuwjax.oss</groupId>
+				<artifactId>lumber</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- Utilities -->
 			<dependency>
@@ -413,6 +432,11 @@
 				<artifactId>javax.inject</artifactId>
 				<version>1</version>
 			</dependency>
+			<dependency>
+				<groupId>org.javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>3.20.0-GA</version>
+			</dependency>
 
 			<!-- Testing -->
 			<dependency>
@@ -425,9 +449,8 @@
 			<!-- HTTP -->
 			<dependency>
 				<groupId>org.jodd</groupId>
-				<artifactId>jodd-bundle</artifactId>
-				<version>3.6.6.1</version>
-				<!-- SNAPSHOT VERSION!!!! -->
+				<artifactId>jodd-http</artifactId>
+				<version>3.6.6</version>
 			</dependency>
 			<dependency>
 				<groupId>io.undertow</groupId>
@@ -447,14 +470,6 @@
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
-
-	<repositories>
-		<repository>
-			<id>sdx nexus</id>
-			<name>SearchDex Nexus</name>
-			<url>${nexus.url}/content/repositories/public/</url>
-		</repository>
-	</repositories>
 
 	<profiles>
 		<profile>
