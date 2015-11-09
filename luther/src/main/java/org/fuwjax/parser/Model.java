@@ -19,7 +19,7 @@ public interface Model extends Node {
 
 	@Override
 	default StringBuilder match(final StringBuilder builder) {
-		children().forEach(node -> node.match(builder));
+		children().forEach(node -> node.result().match(builder));
 		return builder;
 	}
 
@@ -71,9 +71,9 @@ public interface Model extends Node {
 			return new MigratedModel(model.symbol(), result);
 		};
 	}
-	
+
 	@Override
 	default String nestedString() {
-		return symbol().name()+children().map(Node::nestedString).collect(Collectors.joining(", ", "[", "]"));
+		return symbol().name() + children().map(Node::nestedString).collect(Collectors.joining(", ", "[", "]"));
 	}
 }

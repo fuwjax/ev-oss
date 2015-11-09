@@ -36,13 +36,11 @@ public class Transition implements Model {
 	}
 
 	private Transition accept(final Transition child) {
-		System.out.println(this+" accepting "+child);
 		final SymbolState to = state.accept(child.symbol());
 		return to == null ? null : append(to, child, insertion);
 	}
 
 	public Transition accept(final int a) {
-		System.out.println(this+" accepting '"+new String(Character.toChars(a))+"'");
 		final SymbolState to = state.accept(a);
 		return to == null ? null : append(to, new Char(a), insertion);
 	}
@@ -100,26 +98,17 @@ public class Transition implements Model {
 
 	public Boolean isBetterAlternative(final Transition next) {
 		int c = children.length - next.children.length;
-		if (c < 0) {
-			return false;
-		}
-		if (c > 0) {
-			return true;
+		if (c != 0) {
+			return c > 0;
 		}
 		c = state.compareTo(next.state);
-		if (c < 0) {
-			return false;
-		}
-		if (c > 0) {
-			return true;
+		if (c != 0) {
+			return c > 0;
 		}
 		for (int i = 0; i < children.length; i++) {
 			c = children[i].length() - next.children[i].length();
-			if (c < 0) {
-				return false;
-			}
-			if (c > 0) {
-				return true;
+			if (c != 0) {
+				return c > 0;
 			}
 		}
 		for (int i = 0; i < children.length; i++) {
@@ -128,6 +117,8 @@ public class Transition implements Model {
 				if (result != null) {
 					return result;
 				}
+			} else if (children[i] instanceof Char ^ next.children[i] instanceof Char) {
+				return next.children[i] instanceof Char;
 			}
 		}
 		return null;
@@ -175,6 +166,6 @@ public class Transition implements Model {
 	}
 
 	public String name() {
-		return state.name()+"@"+orig.index();
+		return state.name() + "@" + orig.index();
 	}
 }

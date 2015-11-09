@@ -1,9 +1,7 @@
 package org.fuwjax.parser.builder;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +34,7 @@ public class SymbolBuilder {
 	private final Function<Model, ? extends Node> transform;
 	private Set<SymbolBuilder> rightSymbols;
 	private boolean rightCycle;
+	private SymbolBuilder ignore;
 
 	public SymbolBuilder(final String name, final Function<Model, ? extends Node> transform) {
 		this.name = name;
@@ -93,12 +92,17 @@ public class SymbolBuilder {
 
 	public void collapse() {
 		Lists.reverse(new ArrayList<>(states)).forEach(SymbolStateBuilder::collapse);
+		if (ignore != null) {
+			for (int i = 0; i < states.size(); i++) {
+				states.get(i).ignore(ignore);
+			}
+		}
 		new ArrayList<>(states).forEach(state -> {
 			Iterables.breakingForEach(states, other -> {
-				if(state == other){
+				if (state == other) {
 					return false;
 				}
-				if(Objects.equals(state, other)){
+				if (Objects.equals(state, other)) {
 					states.stream().filter(Objects::nonNull).forEach(s -> s.replace(state, other));
 					states.set(state.index(), null);
 					return false;
@@ -110,7 +114,7 @@ public class SymbolBuilder {
 	}
 
 	public Set<SymbolBuilder> rightSymbols() {
-		if(rightSymbols == null){
+		if (rightSymbols == null) {
 			rightSymbols = new HashSet<>();
 			states.forEach(state -> state.rightSymbols().forEach(rightSymbols::add));
 		}
@@ -121,16 +125,16 @@ public class SymbolBuilder {
 		rightCycle = rightCycle();
 		states.forEach(SymbolStateBuilder::checkRightRoot);
 	}
-	
+
 	private boolean rightCycle() {
-		Set<SymbolBuilder> seen = new HashSet<>();
+		final Set<SymbolBuilder> seen = new HashSet<>();
 		Set<SymbolBuilder> set = rightSymbols();
-		while(set.size() == 1){
-			if(set.contains(this)){
+		while (set.size() == 1) {
+			if (set.contains(this)) {
 				return true;
 			}
-			SymbolBuilder tail = set.iterator().next();
-			if(!seen.add(tail)){
+			final SymbolBuilder tail = set.iterator().next();
+			if (!seen.add(tail)) {
 				return false;
 			}
 			set = tail.rightSymbols();
@@ -150,5 +154,9 @@ public class SymbolBuilder {
 		final SymbolStateBuilder state = new SymbolStateBuilder(this, states.size());
 		states.add(state);
 		return state;
+	}
+
+	public void setIgnore(final SymbolBuilder ignore) {
+		this.ignore = ignore;
 	}
 }

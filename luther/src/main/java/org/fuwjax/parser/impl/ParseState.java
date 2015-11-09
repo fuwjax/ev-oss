@@ -25,13 +25,12 @@ public class ParseState {
 			add(new Transition(accept, origin(accept)));
 			while (iter.hasNext()) {
 				predict();
-				System.out.println("****** Position: " + index);
-				items.values().forEach(System.out::println);
 				clear();
 				acceptNext(iter.nextInt());
 			}
 			return result(accept);
 		} catch (final Exception e) {
+			oldItems.values().forEach(System.out::println);
 			throw e;
 		}
 	}
@@ -63,8 +62,6 @@ public class ParseState {
 	}
 
 	private boolean add(final Transition next) {
-		System.out.println("adding @" + index + " " + next + (next == null ? ""
-				: next.pending().map(Symbol::name).collect(Collectors.joining(", ", " awaiting ", ""))));
 		if (next == null) {
 			return false;
 		}
@@ -85,8 +82,6 @@ public class ParseState {
 	}
 
 	private void save(final Symbol symbol) {
-		System.out.println("predicting @" + index + " " + symbol.name() + symbol.start().pending().stream()
-				.map(Symbol::name).collect(Collectors.joining(", ", " awaiting ", "")));
 		save(new Transition(symbol, origin(symbol)));
 	}
 
