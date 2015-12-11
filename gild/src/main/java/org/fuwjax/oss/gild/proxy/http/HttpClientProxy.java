@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +54,15 @@ import jodd.http.net.SocketHttpSecureConnection;
 
 public class HttpClientProxy extends AbstractServiceProxy {
 	private static final DateFormat TIME_INSTANCE = new SimpleDateFormat("mm:ss.SSS");
+<<<<<<< HEAD
 	private static final Pattern REQUEST_LINE_PATTERN = Pattern.compile("(?<method>[\\S]+)\\s(?<path>[\\S]+)\\s(?<version>[\\S]+)");
 	private SocketHttpConnectionProvider sockets;
+=======
+	private static final Pattern REQUEST_LINE_PATTERN = Pattern
+			.compile("(?<method>[\\S]+)\\s(?<path>[\\S]+)\\s(?<version>[\\S]+)");
+	private final String host;
+	private final int port;
+>>>>>>> origin/luther
 
 	public HttpClientProxy(final int port) {
 		this("localhost", port);
@@ -108,19 +116,29 @@ public class HttpClientProxy extends AbstractServiceProxy {
 		Collections.sort(paths);
 		for (final ReadOnlyPath file : paths) {
 			final HttpRequest request = buildRequest(file);
+<<<<<<< HEAD
 			request.open(sockets);
 			long start = System.currentTimeMillis();
+=======
+			final HttpConnection connection = new SocketHttpConnection(new Socket(host, port));
+			request.open(connection);
+			final long start = System.currentTimeMillis();
+>>>>>>> origin/luther
 			final HttpResponse response = request.send();
-			System.out.println(file.getFileName()+"["+request.path()+"]: "+TIME_INSTANCE.format(System.currentTimeMillis() - start));
+			System.out.println(file.getFileName() + "[" + request.path() + "]: "
+					+ TIME_INSTANCE.format(System.currentTimeMillis() - start));
 			persistResponse(response, output.resolve(file.getFileName()));
 		}
 	}
 
 	private void persistResponse(final HttpResponse response, final Path output) throws IOException {
 		try (BufferedWriter w = newBufferedWriter(output, StandardCharsets.UTF_8)) {
-			w.append(response.httpVersion()).append(' ').append(Integer.toString(response.statusCode())).append(' ').append(response.statusPhrase()).append('\n');
+			w.append(response.httpVersion()).append(' ').append(Integer.toString(response.statusCode())).append(' ')
+					.append(response.statusPhrase()).append('\n');
 			final Map<String, List<String>> sortedHeaders = new TreeMap<>();
-			response.headers().forEach(e -> sortedHeaders.computeIfAbsent(e.getKey().toLowerCase(), k -> new ArrayList<>()).add(e.getValue()));
+			response.headers().entrySet()
+					.forEach(e -> sortedHeaders.computeIfAbsent(e.getKey().toLowerCase(), k -> new ArrayList<>())
+							.addAll(Arrays.asList(e.getValue())));
 			for (final Map.Entry<String, List<String>> entry : sortedHeaders.entrySet()) {
 				final String headerName = entry.getKey();
 				if (headerName.equals("date")) {
@@ -140,7 +158,9 @@ public class HttpClientProxy extends AbstractServiceProxy {
 	}
 
 	private HttpRequest buildRequest(final ReadOnlyPath file) throws IOException {
-		try (InputStream is = file.newInputStream(); Reader r = new InputStreamReader(is, StandardCharsets.UTF_8); BufferedReader br = new BufferedReader(r)) {
+		try (InputStream is = file.newInputStream();
+				Reader r = new InputStreamReader(is, StandardCharsets.UTF_8);
+				BufferedReader br = new BufferedReader(r)) {
 			final HttpRequest request = new HttpRequest();
 			request.removeHeader("Connection");
 			String line = br.readLine();
@@ -179,7 +199,8 @@ public class HttpClientProxy extends AbstractServiceProxy {
 	private void parseRequestLine(final String line, final HttpRequest request) {
 		final Matcher m = REQUEST_LINE_PATTERN.matcher(line);
 		if (!m.matches()) {
-			throw new IllegalArgumentException("Request line must be formatted as 'METHOD URI VERSION'. was '" + line + "'");
+			throw new IllegalArgumentException(
+					"Request line must be formatted as 'METHOD URI VERSION'. was '" + line + "'");
 		}
 		request.method(m.group("method"));
 		request.path(m.group("path"));

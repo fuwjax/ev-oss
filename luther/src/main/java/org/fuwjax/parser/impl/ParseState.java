@@ -18,7 +18,7 @@ public class ParseState {
 	private int index;
 
 	public Object parse(final Symbol accept, final IntReader input) {
-		try{
+		try {
 			index = 0;
 			final OfInt iter = input.stream().iterator();
 			// can't just call save, as we need the predict set from accept
@@ -29,7 +29,7 @@ public class ParseState {
 				acceptNext(iter.nextInt());
 			}
 			return result(accept);
-		}catch(Exception e){
+		} catch (final Exception e) {
 			oldItems.values().forEach(System.out::println);
 			throw e;
 		}
@@ -62,15 +62,14 @@ public class ParseState {
 	}
 
 	private boolean add(final Transition next) {
-		System.out.println("adding @"+index+" "+next+" to "+(next == null ? "" :next.pending().map(Symbol::name).collect(Collectors.joining(", "))));
 		if (next == null) {
 			return false;
 		}
 		if (items.containsKey(next)) {
 			// grammar is ambiguous
 			final Transition current = items.get(next);
-			Boolean better = current.isBetterAlternative(next);
-			System.out.println("Comparing ("+better+") " + current.nestedString() + " to " + next.nestedString());
+			final Boolean better = current.isBetterAlternative(next);
+			System.out.println("Comparing (" + better + ") " + current.nestedString() + " to " + next.nestedString());
 			if (better) {
 				items.put(current, next);
 			}

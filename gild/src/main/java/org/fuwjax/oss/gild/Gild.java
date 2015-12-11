@@ -45,9 +45,12 @@ import org.junit.runners.model.Statement;
 /**
  * The Gilded Test Harness jUnit Rule. The Gilded harness does a gold copy
  * restore and compare through various services generally external to the system
- * under test. <p> Standard Usage:
+ * under test.
+ * <p>
+ * Standard Usage:
  *
- * <pre> package org.example.test;
+ * <pre>
+ *  package org.example.test;
  *
  * public class TestClass { private DatabaseProxy db = new
  * DatabaseProxy(dataSource); \@Rule public Gilded harness = new
@@ -59,10 +62,13 @@ import org.junit.runners.model.Statement;
  * sys.doSomething(); // saves the dataSource to
  * target/test/gilded/org.example.test.TestClass/testSomething/output/db/* //
  * asserts that the target/.../output/db/* is byte-equivalent to
- * src/.../output/db/* } } </pre> <p> Additionally, the harness supports staged
- * execution. For example:
+ * src/.../output/db/* } }
+ * </pre>
+ * <p>
+ * Additionally, the harness supports staged execution. For example:
  *
- * <pre> \@Rule public Gilded harness = new Gilded().with("db",
+ * <pre>
+ *  \@Rule public Gilded harness = new Gilded().with("db",
  * db).staged(StandardStageFactory.startingAt("stage1"));
  *
  * \@Test public void testProcess() throws Exception { // loads
@@ -76,14 +82,17 @@ import org.junit.runners.model.Statement;
  * the dataSource sys.doSomethingElse(); // saves the dataSource to
  * target/test/gilded/org.example.test.TestClass/testProcess/stage2/output/db/*
  * // asserts that the target/.../stage2/output/db/* is byte-equivalent to
- * src/.../stage2/output/db/* } </pre> <p> The harness can create the gold copy
- * instead of asserting against it.
+ * src/.../stage2/output/db/* }
+ * </pre>
+ * <p>
+ * The harness can create the gold copy instead of asserting against it.
  *
- * <pre> \@Rule Gilded harness = new Gilded().with("db", db).updateGoldCopy();
+ * <pre>
+ *  \@Rule Gilded harness = new Gilded().with("db", db).updateGoldCopy();
  * </pre>
  *
- * By default, the harness uses the standard path locations detailed in {@link
- * StandardStageFactory} and has no {@link Transformer}. @author fuwjax
+ * By default, the harness uses the standard path locations detailed in
+ * {@link StandardStageFactory} and has no {@link Transformer}. @author fuwjax
  */
 public class Gild implements TestRule {
 	enum State {
@@ -158,6 +167,12 @@ public class Gild implements TestRule {
 	/**
 	 * Adds a service proxy to this harness. @param serviceName the name of the
 	 * service @param proxy the service proxy @return this harness
+	 * 
+	 * @param serviceName
+	 *            service name
+	 * @param proxy
+	 *            service proxy
+	 * @return this
 	 */
 	public Gild with(final String serviceName, final ServiceProxy proxy) {
 		proxies.put(serviceName, proxy);
@@ -178,6 +193,8 @@ public class Gild implements TestRule {
 	 * Turns this test execution into a gold copy create instead of a gold copy
 	 * assert. This method may have vairous safeguards to prevent it from being
 	 * accidentally left in code during a release. @return this harness
+	 *
+	 * @return this
 	 */
 	public Gild updateGoldCopy() {
 		isAssert = false;
@@ -230,6 +247,9 @@ public class Gild implements TestRule {
 	/**
 	 * Moves to the next stage in the staged test run. @param stageName the next
 	 * stage name
+	 *
+	 * @param stageName
+	 *            the next stage
 	 */
 	public void nextStage(final String stageName) {
 		assertNotNull("Cannot move to a null stage", stageName);

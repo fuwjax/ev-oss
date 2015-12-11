@@ -28,7 +28,7 @@ public class BnfGrammar {
 			transform("escape", this::escape);
 			transform("class", this::charClass);
 			transform("chars", this::chars);
-			
+
 			rule(false, "#ignore", symbol("WS"));
 			rule(true, "#start", symbol("rules"));
 			rule(true, "rules", symbol("directive"), symbol("rules"));
@@ -37,15 +37,14 @@ public class BnfGrammar {
 			rule(true, "rules");
 			rule(true, "directive", of('#'), symbol("symbol"), symbol("expression"));
 			rule(true, "pattern", symbol("symbol"), of('='), symbol("expression"));
-			rule(true, "rule",symbol("symbol"), of(':'), of('='), symbol("expression"));
+			rule(true, "rule", symbol("symbol"), of(':'), of('='), symbol("expression"));
 			rule(true, "expression", symbol("symbol"), symbol("expression"));
 			rule(true, "expression", symbol("literal"), symbol("expression"));
 			rule(true, "expression", symbol("class"), symbol("expression"));
 			rule(true, "expression");
 
 			rule(false, "symbol", of('_').range('A', 'Z').range('a', 'z'), symbol("symboltail"));
-			rule(false, "symboltail", of('_').range('A', 'Z').range('a', 'z').range('0', '9'),
-					symbol("symboltail"));
+			rule(false, "symboltail", of('_').range('A', 'Z').range('a', 'z').range('0', '9'), symbol("symboltail"));
 			rule(false, "symboltail");
 			rule(false, "literal", of('\''), symbol("single"), of('\''));
 			rule(false, "single", any('\'', '\\').negate(), symbol("single"));
@@ -64,10 +63,10 @@ public class BnfGrammar {
 			rule(false, "WS", any(' ', '\n', '\t', '\r'), symbol("WS"));
 			return this;
 		}
-		
+
 		private Grammar grammar(final Model model) {
 			final List<Rule> rules = (List<Rule>) model.getValue("rules");
-			if(rules == null){
+			if (rules == null) {
 				return null;
 			}
 			final Builder builder = new Builder();
@@ -76,7 +75,7 @@ public class BnfGrammar {
 		}
 
 		private List<Rule> rules(final Model model) {
-			final Rule rule = (Rule) model.getValue("directive", "rule");
+			final Rule rule = (Rule) model.getValue("directive", "rule", "pattern");
 			List<Rule> rules = (List<Rule>) model.getValue("rules");
 			if (rules == null) {
 				rules = new ArrayList<>();
@@ -109,11 +108,11 @@ public class BnfGrammar {
 			}
 			final Expression expression = (Expression) model.getValue("symbol", "class");
 			if (expression != null) {
-				expressions.add(expression);
+				expressions.add(0, expression);
 			} else {
 				final Literal literal = (Literal) model.getValue("literal");
 				if (literal != null) {
-					expressions.addAll(literal.toExpressions());
+					expressions.addAll(0, literal.toExpressions());
 				}
 			}
 			return expressions;
@@ -159,48 +158,30 @@ public class BnfGrammar {
 				chars = new Codepoints();
 			}
 			final Model roc = model.get("range", "char");
-			if (roc != null) {
-				final String match = roc.match();
-				if ("range".equals(roc.symbol().name())) {
-					chars.range(match.codePointAt(0), match.codePointAt(2));
-				} else {
-					chars.add(match.codePointAt(0));
-				}
+			if (roc == null) {
+				return chars;
 			}
-			return chars;
+			final String match = roc.match();
+			if ("range".equals(roc.symbol().name())) {
+				return chars.range(match.codePointAt(0), match.codePointAt(2));
+			}
+			return chars.add(match.codePointAt(0));
 		}
 
-		SymbolBuilder rule(final boolean useIgnore, final String lhs, 
-				final Object... steps) {
+		SymbolBuilder rule(final boolean useIgnore, final String lhs, final Object... steps) {
 			final SymbolBuilder s = symbol(lhs);
+			if (useIgnore) {
+				s.setIgnore(symbol("#ignore"));
+			}
 			SymbolStateBuilder state = s.start();
 			final String[] names = names(steps);
 			int index = 0;
-			boolean previousSymbol = false;
 			for (final Object step : steps) {
 				if (step instanceof SymbolBuilder) {
-					if (useIgnore && index > 0) {
-						state = state.ensure(name(index, names), symbol(previousSymbol ? "#ignore0" : "#ignore"));
-					}
-					state = state.ensure(name(index, names), (SymbolBuilder) step);
-					previousSymbol = true;
+					state = state.ensure(name(index++, names), (SymbolBuilder) step);
 				} else if (step instanceof Codepoints) {
-					if (useIgnore && index > 0) {
-						state = state.ensure(name(index, names), symbol("#ignore"));
-					}
-					state = state.ensure(name(index, names), (Codepoints) step);
-					previousSymbol = false;
+					state = state.ensure(name(index++, names), (Codepoints) step);
 				}
-				++index;
-			}
-			if ("#start".equals(lhs)) {
-				s.start().complete(name(0, names));
-				state = state.ensure(name(index, names), symbol("#ignore"));
-			}
-			if("#ignore".equals(lhs)){
-				s.start().complete(name(0, names));
-				SymbolBuilder ignored = symbol("#ignore0");
-				ignored.start().ensure(name(0, names), (SymbolBuilder)steps[0]).complete(name(1, names));;
 			}
 			state.complete(name(index, names));
 			return s;

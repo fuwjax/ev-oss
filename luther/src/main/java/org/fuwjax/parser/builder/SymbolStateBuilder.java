@@ -3,7 +3,9 @@ package org.fuwjax.parser.builder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.IntPredicate;
@@ -62,6 +64,10 @@ public class SymbolStateBuilder {
 		this.complete = true;
 	}
 
+	private boolean canMatch() {
+		return !this.complete || !symbolic.isEmpty() || !literals.isEmpty();
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder(name()).append(": ");
@@ -73,8 +79,9 @@ public class SymbolStateBuilder {
 		literals.entrySet()
 				.forEach(e -> builder.append(e.getKey()).append(" -> ").append(e.getValue().name()).append("  "));
 		builder.append(" :: ");
-		predict.stream().forEach(e -> builder.append(e.name()).append(" "));
-		;
+		if (predict != null) {
+			predict.stream().forEach(e -> builder.append(e.name()).append(" "));
+		}
 		return builder.toString();
 	}
 
@@ -168,29 +175,53 @@ public class SymbolStateBuilder {
 		};
 	}
 
- 	public String name() {
+	public String name() {
 		return lhs.name() + "." + index;
 	}
 
 	public int index() {
 		return index;
 	}
-	
+
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj){
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
 		}
-		try{
-			SymbolStateBuilder o = (SymbolStateBuilder)obj;
+		try {
+			final SymbolStateBuilder o = (SymbolStateBuilder) obj;
 			return o.complete == complete && symbolic.equals(o.symbolic) && literals.equals(o.literals);
-		}catch(Exception e){
+		} catch (final Exception e) {
 			return false;
 		}
 	}
 
-	public void replace(SymbolStateBuilder match, SymbolStateBuilder replace) {
+	public void replace(final SymbolStateBuilder match, final SymbolStateBuilder replace) {
 		literals.entrySet().stream().filter(e -> e.getValue().index == match.index).forEach(e -> e.setValue(replace));
 		symbolic.entrySet().stream().filter(e -> e.getValue().index == match.index).forEach(e -> e.setValue(replace));
+	}
+
+	public void ignore(final SymbolBuilder ignore) {
+		symbolic.entrySet().stream().filter(e -> !e.getKey().equals(ignore)).map(Entry::getValue)
+				.filter(SymbolStateBuilder::canMatch).forEach(sym -> sym.addIgnore(ignore, true));
+		literals.values().forEach(lit -> lit.addIgnore(ignore, false));
+	}
+
+	private void addIgnore(final SymbolBuilder ignore, final boolean insert) {
+		final SymbolStateBuilder ignoreState = ensure(name(), ignore);
+		for (final Entry<Codepoints, SymbolStateBuilder> entry : literals.entrySet()) {
+			ignoreState.ensure(entry.getKey()).merge(entry.getValue());
+		}
+		for (final Iterator<Map.Entry<SymbolBuilder, SymbolStateBuilder>> iter = symbolic.entrySet().iterator(); iter
+				.hasNext();) {
+			final Entry<SymbolBuilder, SymbolStateBuilder> entry = iter.next();
+			if (!ignore.equals(entry.getKey())) {
+				ignoreState.ensure(entry.getKey()).merge(entry.getValue());
+				if (insert) {
+					iter.remove();
+				}
+			}
+		}
+		ignoreState.names.addAll(names);
 	}
 }
