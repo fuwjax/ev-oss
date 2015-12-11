@@ -450,11 +450,7 @@
 			<dependency>
 				<groupId>org.jodd</groupId>
 				<artifactId>jodd-http</artifactId>
-<<<<<<< HEAD
 				<version>3.6.7</version>
-=======
-				<version>3.6.6</version>
->>>>>>> origin/luther
 			</dependency>
 			<dependency>
 				<groupId>io.undertow</groupId>
