@@ -129,7 +129,7 @@ requestImage() {
 }
 
 describeImage(){
-	aws ec2 image-available --image-ids $1
+	aws ec2 wait image-available --image-ids $1
 	aws ec2 describe-images --image-ids $1 --filter Name=state,Values=available 
 }
 
@@ -139,7 +139,7 @@ lookupImage() {
 
 createImage() {
 	local imageId=$(requestImage "$1" | perl -n -e '/^.*"ImageId":\s+"([^"]+)"/ && print "$1 "')
-	aws ec2 image-available --image-ids $1
+	aws ec2 wait image-available --image-ids $1
 	lookupImage $imageId
 }
 

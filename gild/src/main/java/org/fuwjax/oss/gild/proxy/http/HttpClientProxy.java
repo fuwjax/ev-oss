@@ -38,27 +38,52 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.net.ssl.SSLSocket;
+
 import org.fuwjax.oss.gild.proxy.AbstractServiceProxy;
 import org.fuwjax.oss.util.io.ReadOnlyPath;
 
 import jodd.http.HttpConnection;
+import jodd.http.HttpException;
 import jodd.http.HttpRequest;
 import jodd.http.HttpResponse;
 import jodd.http.net.SocketHttpConnection;
+import jodd.http.net.SocketHttpConnectionProvider;
+import jodd.http.net.SocketHttpSecureConnection;
 
 public class HttpClientProxy extends AbstractServiceProxy {
 	private static final DateFormat TIME_INSTANCE = new SimpleDateFormat("mm:ss.SSS");
 	private static final Pattern REQUEST_LINE_PATTERN = Pattern.compile("(?<method>[\\S]+)\\s(?<path>[\\S]+)\\s(?<version>[\\S]+)");
-	private final String host;
-	private final int port;
+	private SocketHttpConnectionProvider sockets;
 
 	public HttpClientProxy(final int port) {
 		this("localhost", port);
 	}
 
 	public HttpClientProxy(final String host, final int port) {
-		this.host = host;
-		this.port = port;
+		sockets = new SocketHttpConnectionProvider(){
+			@Override
+			public HttpConnection createHttpConnection(HttpRequest httpRequest) throws IOException {
+				SocketHttpConnection httpConnection;
+				final boolean https = "https".equalsIgnoreCase(httpRequest.protocol());
+				if (https) {
+					SSLSocket sslSocket = createSSLSocket(host, port);
+					httpConnection = new SocketHttpSecureConnection(sslSocket);
+				} else {
+					Socket socket = createSocket(host, port);
+					httpConnection = new SocketHttpConnection(socket);
+				}
+				httpConnection.setTimeout(httpRequest.timeout());
+				try {
+					httpConnection.init();
+					return httpConnection;
+				}
+				catch (Throwable thex) {
+					httpConnection.close();
+					throw new HttpException(thex);
+				}
+			}
+		};
 	}
 
 	public void send() {
@@ -83,8 +108,7 @@ public class HttpClientProxy extends AbstractServiceProxy {
 		Collections.sort(paths);
 		for (final ReadOnlyPath file : paths) {
 			final HttpRequest request = buildRequest(file);
-			final HttpConnection connection = new SocketHttpConnection(new Socket(host, port));
-			request.open(connection);
+			request.open(sockets);
 			long start = System.currentTimeMillis();
 			final HttpResponse response = request.send();
 			System.out.println(file.getFileName()+"["+request.path()+"]: "+TIME_INSTANCE.format(System.currentTimeMillis() - start));
@@ -159,6 +183,11 @@ public class HttpClientProxy extends AbstractServiceProxy {
 		}
 		request.method(m.group("method"));
 		request.path(m.group("path"));
-		request.httpVersion(m.group("version"));
+		if(m.group("version").startsWith("HTTPS")){
+			request.httpVersion(m.group("version").replaceFirst("(?i)HTTPS","HTTP"));
+			request.protocol("HTTPS");
+		}else{
+			request.httpVersion(m.group("version"));
+		}
 	}
 }

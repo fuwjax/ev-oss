@@ -425,9 +425,8 @@
 			<!-- HTTP -->
 			<dependency>
 				<groupId>org.jodd</groupId>
-				<artifactId>jodd-bundle</artifactId>
-				<version>3.6.6.1</version>
-				<!-- SNAPSHOT VERSION!!!! -->
+				<artifactId>jodd-http</artifactId>
+				<version>3.6.7</version>
 			</dependency>
 			<dependency>
 				<groupId>io.undertow</groupId>

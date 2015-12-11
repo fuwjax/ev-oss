@@ -11,6 +11,7 @@ import org.fuwjax.oss.gild.Gild;
 import org.fuwjax.oss.gild.proxy.FileSystemProxy;
 import org.fuwjax.parser.Grammar;
 import org.fuwjax.parser.bnf.BnfGrammar;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class BnfTest {
 	@Rule
 	public final Gild gild = new Gild().with("file", new FileSystemProxy(get("target/bnf")));
 
-	@Test
+	@Test @Ignore
 	public void testBnf() throws IOException {
 		try (InputStream bnfFile = newInputStream(get("target/bnf/sample.bnf"))) {
 			final Grammar sample = BNF.grammar(utf8ToCodepoint(bnfFile));
