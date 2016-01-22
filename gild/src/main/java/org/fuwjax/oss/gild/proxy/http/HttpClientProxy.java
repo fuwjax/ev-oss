@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -101,8 +102,10 @@ public class HttpClientProxy extends AbstractServiceProxy {
 	private void persistResponse(final HttpResponse response, final Path output) throws IOException {
 		try (BufferedWriter w = newBufferedWriter(output, StandardCharsets.UTF_8)) {
 			w.append(response.httpVersion()).append(' ').append(Integer.toString(response.statusCode())).append(' ').append(response.statusPhrase()).append('\n');
-			final Map<String, String[]> sortedHeaders = canonical ? new TreeMap<>(response.headers()) : response.headers();
-			for (final Map.Entry<String, String[]> entry : sortedHeaders.entrySet()) {
+			final Map<String, List<String>> sortedHeaders = new TreeMap<>();
+			response.headers().forEach(e -> sortedHeaders.computeIfAbsent(e.getKey().toLowerCase(), k -> new ArrayList<>())
+							.add(e.getValue()));
+			for (final Map.Entry<String, List<String>> entry : sortedHeaders.entrySet()) {
 				final String headerName = canonical ? entry.getKey().toLowerCase() : entry.getKey();
 				if (headerName.equals("date")) {
 					w.append("date: ${DATE}\n");
