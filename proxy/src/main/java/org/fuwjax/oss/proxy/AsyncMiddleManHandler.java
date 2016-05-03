@@ -77,7 +77,6 @@ import org.fuwjax.oss.util.Log;
  * <p>Both the request processing and the I/O are asynchronous.</p>
  *
  * @see ProxyHandler
- * @see AsyncProxyHandler
  */
 public class AsyncMiddleManHandler extends AbstractProxyHandler
 {

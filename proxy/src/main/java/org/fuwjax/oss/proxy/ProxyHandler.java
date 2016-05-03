@@ -57,7 +57,6 @@ import org.fuwjax.oss.util.Log;
  * <p>Servlet 3.0 asynchronous proxy servlet.</p>
  * <p>The request processing is asynchronous, but the I/O is blocking.</p>
  *
- * @see AsyncProxyHandler
  * @see AsyncMiddleManHandler
  */
 public class ProxyHandler extends AbstractProxyHandler
