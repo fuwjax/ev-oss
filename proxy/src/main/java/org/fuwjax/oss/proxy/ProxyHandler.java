@@ -57,9 +57,8 @@ import org.fuwjax.oss.util.Log;
  * <p>Servlet 3.0 asynchronous proxy servlet.</p>
  * <p>The request processing is asynchronous, but the I/O is blocking.</p>
  *
- * @see AsyncProxyServlet
- * @see AsyncMiddleManServlet
- * @see ConnectHandler
+ * @see AsyncProxyHandler
+ * @see AsyncMiddleManHandler
  */
 public class ProxyHandler extends AbstractProxyHandler
 {
@@ -133,9 +132,9 @@ public class ProxyHandler extends AbstractProxyHandler
     }
 
     /**
-     * <p>Convenience extension of {@link ProxyServlet} that offers transparent proxy functionalities.</p>
+     * <p>Convenience extension of {@link ProxyHandler} that offers transparent proxy functionalities.</p>
      *
-     * @see org.eclipse.jetty.proxy.AbstractProxyServlet.TransparentDelegate
+     * @see AbstractProxyHandler.TransparentDelegate
      */
     public static class Transparent extends ProxyHandler
     {

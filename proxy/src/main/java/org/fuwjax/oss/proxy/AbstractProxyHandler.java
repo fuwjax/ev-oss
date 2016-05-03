@@ -70,7 +70,7 @@ import org.fuwjax.oss.util.Log;
  * <p>To facilitate JMX monitoring, the {@link HttpClient} instance is set
  * as ServletContext attribute, prefixed with this servlet's name and
  * exposed by the mechanism provided by
- * {@link ServletContext#setAttribute(String, Object)}.</p>
+ * {@link javax.servlet.ServletContext#setAttribute(String, Object)}.</p>
  * <p>The following init parameters may be used to configure the servlet:</p>
  * <ul>
  * <li>preserveHost - the host header specified by the client is forwarded to the server</li>

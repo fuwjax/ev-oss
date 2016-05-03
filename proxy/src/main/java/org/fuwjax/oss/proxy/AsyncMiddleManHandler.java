@@ -76,9 +76,8 @@ import org.fuwjax.oss.util.Log;
  * to intercept and modify request/response content.</p>
  * <p>Both the request processing and the I/O are asynchronous.</p>
  *
- * @see ProxyServlet
- * @see AsyncProxyServlet
- * @see ConnectHandler
+ * @see ProxyHandler
+ * @see AsyncProxyHandler
  */
 public class AsyncMiddleManHandler extends AbstractProxyHandler
 {
@@ -224,9 +223,9 @@ public class AsyncMiddleManHandler extends AbstractProxyHandler
     }
 
     /**
-     * <p>Convenience extension of {@link AsyncMiddleManServlet} that offers transparent proxy functionalities.</p>
+     * <p>Convenience extension of {@link AsyncMiddleManHandler} that offers transparent proxy functionalities.</p>
      *
-     * @see org.eclipse.jetty.proxy.AbstractProxyServlet.TransparentDelegate
+     * @see AbstractProxyHandler.TransparentDelegate
      */
     public static class Transparent extends ProxyHandler
     {
