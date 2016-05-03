@@ -393,6 +393,11 @@
 				<artifactId>teecp</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.fuwjax.oss</groupId>
+				<artifactId>proxy</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- Utilities -->
 			<dependency>

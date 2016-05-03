@@ -127,11 +127,11 @@ public abstract class AbstractProxyHandler extends HttpHandler
 
         ProxyConfig config = getServletConfig();
 
-        _preserveHost = Boolean.parseBoolean(config.getInitParameter("preserveHost"));
+        _preserveHost = config.preserveHost();
 
-        _hostHeader = config.getInitParameter("hostHeader");
+        _hostHeader = config.hostHeader();
 
-        _viaHost = config.getInitParameter("viaHost");
+        _viaHost = config.viaHost();
         if (_viaHost == null)
             _viaHost = viaHost();
 
@@ -139,13 +139,9 @@ public abstract class AbstractProxyHandler extends HttpHandler
         {
             _client = createHttpClient();
 
-            String whiteList = config.getInitParameter("whiteList");
-            if (whiteList != null)
-                getWhiteListHosts().addAll(parseList(whiteList));
+                getWhiteListHosts().addAll(config.whiteList());
 
-            String blackList = config.getInitParameter("blackList");
-            if (blackList != null)
-                getBlackListHosts().addAll(parseList(blackList));
+                getBlackListHosts().addAll(config.blackList());
         }
         catch (Exception e)
         {
@@ -282,28 +278,15 @@ public abstract class AbstractProxyHandler extends HttpHandler
 
         client.setExecutor(executor);
 
-        String value = config.getInitParameter("maxConnections");
-        if (value == null)
-            value = "256";
-        client.setMaxConnectionsPerDestination(Integer.parseInt(value));
+        client.setMaxConnectionsPerDestination(config.maxConnections(256));
 
-        value = config.getInitParameter("idleTimeout");
-        if (value == null)
-            value = "30000";
-        client.setIdleTimeout(Long.parseLong(value));
+        client.setIdleTimeout(config.idleTimeout(30000L));
 
-        value = config.getInitParameter("timeout");
-        if (value == null)
-            value = "60000";
-        _timeout = Long.parseLong(value);
+        _timeout = config.timeout(60000L);
 
-        value = config.getInitParameter("requestBufferSize");
-        if (value != null)
-            client.setRequestBufferSize(Integer.parseInt(value));
+        client.setRequestBufferSize(config.requestBufferSize(client.getRequestBufferSize()));
 
-        value = config.getInitParameter("responseBufferSize");
-        if (value != null)
-            client.setResponseBufferSize(Integer.parseInt(value));
+        client.setResponseBufferSize(config.responseBufferSize(client.getResponseBufferSize()));
 
         try
         {
@@ -334,20 +317,6 @@ public abstract class AbstractProxyHandler extends HttpHandler
     protected HttpClient getHttpClient()
     {
         return _client;
-    }
-
-    private Set<String> parseList(String list)
-    {
-        Set<String> result = new HashSet<>();
-        String[] hosts = list.split(",");
-        for (String host : hosts)
-        {
-            host = host.trim();
-            if (host.length() == 0)
-                continue;
-            result.add(host);
-        }
-        return result;
     }
 
     /**
@@ -659,14 +628,11 @@ public abstract class AbstractProxyHandler extends HttpHandler
 
         protected void init(ProxyConfig config) throws ServletException
         {
-            _proxyTo = config.getInitParameter("proxyTo");
+            _proxyTo = config.proxyTo();
             if (_proxyTo == null)
                 throw new UnavailableException("Init parameter 'proxyTo' is required.");
 
-            String prefix = config.getInitParameter("prefix");
-            if (prefix == null){
-            	_prefix = "";
-            }
+            String prefix = config.prefix("");
             {
                 if (!prefix.startsWith("/"))
                     throw new UnavailableException("Init parameter 'prefix' must start with a '/'.");
