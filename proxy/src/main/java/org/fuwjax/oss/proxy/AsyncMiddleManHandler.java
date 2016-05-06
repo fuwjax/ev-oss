@@ -138,7 +138,7 @@ public class AsyncMiddleManHandler extends AbstractHandler {
 		void modifyResponseHeaders(Headers headers);
 	}
 
-	protected DialogStrategy strategy(String method, String target, Headers headers){
+	protected DialogStrategy strategy(Dialog dialog){
 		return null;
 	}
 	
@@ -146,8 +146,8 @@ public class AsyncMiddleManHandler extends AbstractHandler {
 	public void handle(String requestTarget, org.eclipse.jetty.server.Request baseRequest, HttpServletRequest clientRequest, HttpServletResponse proxyResponse)
 			throws ServletException, IOException {
 		Dialog dialog = new Dialog(_log, clientRequest, proxyResponse);
-		DialogStrategy strategy = strategy(dialog.method(), dialog.target(), dialog.clientRequestHeaders());
-		if(!dialog.createServerRequest(strategy.target(), _client, _hostHeader, _viaHost, _timeout)){
+		DialogStrategy strategy = strategy(dialog);
+		if(strategy == null || !dialog.createServerRequest(strategy.target(), _client, _hostHeader, _viaHost, _timeout)){
 			return;
 		}
 		strategy.modifyRequestHeaders(dialog.proxyRequestHeaders());
