@@ -70,7 +70,6 @@ import org.fuwjax.oss.util.Log;
  * modify request/response content.</p> <p>Both the request processing and the
  * I/O are asynchronous.</p>
  *
- * @see ProxyHandler
  */
 public class AsyncMiddleManHandler extends AbstractHandler {
 	private static final String PROXY_REQUEST_COMMITTED = AsyncMiddleManHandler.class.getName() + ".proxyRequestCommitted";

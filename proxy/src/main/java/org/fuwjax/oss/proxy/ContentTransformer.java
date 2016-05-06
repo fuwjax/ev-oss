@@ -29,11 +29,6 @@ import java.util.function.BiConsumer;
  * <p>Typical use cases of transformations are URL rewriting of HTML anchors
  * (where the value of the <code>href</code> attribute of &lt;a&gt; elements
  * is modified by the proxy), field renaming of JSON documents, etc.</p>
- * <p>Applications should override {@link
- * #newClientRequestContentTransformer(HttpServletRequest, Request)} and/or
- * {@link #newServerResponseContentTransformer(HttpServletRequest,
- * HttpServletResponse, Response)} to provide the transformer
- * implementation.</p>
  */
 public interface ContentTransformer {
 	/**
@@ -142,6 +137,9 @@ public interface ContentTransformer {
 	 * zero) @param finished whether the input content is finished or more
 	 * will come @param output where to put the transformed output
 	 * content @throws IOException in case of transformation failures
+	 * @param finished true if this is the last call to transform for this request, false otherwise
+	 * @param output the transformed results
+	 * @throws IOException if there is an error transforming
 	 */
 	public void transform(ByteBuffer input, boolean finished, List<ByteBuffer> output) throws IOException;
 }
