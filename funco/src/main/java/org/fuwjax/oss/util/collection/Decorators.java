@@ -64,4 +64,8 @@ public class Decorators {
 	public static List<?> asList(final Object array) {
 		return ReflectList.asList(array);
 	}
+	
+	public static <K, T> Map<K, T> mappedMap(final Set<K> keys, Function<? super K, ? extends T> values){
+		return new MappedMap<>(keys, values);
+	}
 }
