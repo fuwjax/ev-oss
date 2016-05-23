@@ -425,7 +425,7 @@
 			<dependency>
 				<groupId>org.jodd</groupId>
 				<artifactId>jodd-http</artifactId>
-				<version>3.7</version>
+				<version>3.7.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.undertow</groupId>
@@ -435,12 +435,12 @@
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-server</artifactId>
-				<version>9.3.9.M1</version>
+				<version>9.3.9.v20160517</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-client</artifactId>
-				<version>9.3.9.M1</version>
+				<version>9.3.9.v20160517</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
