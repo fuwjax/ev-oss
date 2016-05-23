@@ -26,7 +26,7 @@ These are all tools I use, but they may or may not fit your needs, even where th
 
 ##Projects
 
-<img src="https://travis-ci.org/fuwjax/ev-oss.svg?branch=master"/>
+<a href="https://travis-ci.org/fuwjax/ev-oss"><img src="https://travis-ci.org/fuwjax/ev-oss.svg?branch=master"/></a>
 
 * [funco](funco) - Functions, Collections, Input/Output, and Assertions
 
