@@ -15,23 +15,26 @@
  */
 package org.fuwjax.oss.test;
 
-import org.fuwjax.oss.generic.TypeInspector;
-import org.fuwjax.oss.util.Types;
-import org.junit.Test;
-
-import java.io.Serializable;
-import java.lang.reflect.Type;
-import java.util.List;
-
 import static org.fuwjax.oss.util.assertion.Assertions.assertThat;
 import static org.fuwjax.oss.util.assertion.Assertions.is;
+
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
+import org.fuwjax.oss.util.RunWrapException;
+import org.fuwjax.oss.util.Types;
+import org.junit.Test;
 
 /**
  * Created by fuwjax on 2/22/15.
  */
 public class AssignableTest {
-    TypeInspector types = new TypeInspector() {
-        boolean pBoolean;
+    class TypeInspector {
+		boolean pBoolean;
         byte pByte;
         short pShort;
         char pChar;
@@ -60,11 +63,29 @@ public class AssignableTest {
         List<String> listString;
         List<CharSequence> listCharSequence;
         List<? super String> listSuperString;
+        
+        public Type ofField(String name) {
+        	try{
+        		return getClass().getDeclaredField(name).getGenericType();
+        	}catch(Exception e){
+        		throw new RunWrapException(e);
+        	}
+        }
+
+        public Stream<Type> fields() {
+            return Arrays.asList(getClass().getDeclaredFields()).stream().map(Field::getGenericType);
+        }
     };
+	TypeInspector types = new TypeInspector();
 
     @Test
     public void testIdentity() {
         types.fields().forEach(t -> assertThat(Types.isAssignable(t, t), is(true)));
+    }
+    
+    @Test
+    public void testGeneric(){
+    	assertAssignable("listAny", "listExtendsCharSequence");
     }
 
     @Test
@@ -220,10 +241,10 @@ public class AssignableTest {
     }
 
     private void assertAssignable(String variable, String expression) {
-        assertThat(Types.isAssignable(types.of(variable), types.of(expression)), is(true));
+        assertThat(Types.isAssignable(types.ofField(variable), types.ofField(expression)), is(true));
     }
 
     private void assertUnassignable(String variable, String expression) {
-        assertThat(Types.isAssignable(types.of(variable), types.of(expression)), is(false));
+        assertThat(Types.isAssignable(types.ofField(variable), types.ofField(expression)), is(false));
     }
 }

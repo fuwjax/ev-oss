@@ -15,25 +15,21 @@
  */
 package org.fuwjax.oss.inject;
 
-import org.fuwjax.oss.generic.GenericMember;
-
-import java.lang.reflect.Type;
-
 /**
  * Created by fuwjax on 2/20/15.
  */
-public class ChainStrategy implements InjectorStrategy {
-    private final InjectorStrategy[] injectors;
+ class ChainStrategy implements BindingStrategy {
+    private final BindingStrategy[] strategies;
 
-    public ChainStrategy(InjectorStrategy... injectors) {
-        this.injectors = injectors;
+    public ChainStrategy(BindingStrategy... strategies) {
+        this.strategies = strategies;
     }
 
     @Override
     public Binding bindingFor(BindConstraint constraint) {
-        for (final InjectorStrategy injector : injectors) {
-            if (injector != null) {
-                final Binding result = injector.bindingFor(constraint);
+        for (final BindingStrategy strategy : strategies) {
+            if (strategy != null) {
+                final Binding result = strategy.bindingFor(constraint);
                 if (result != null) {
                     return result;
                 }

@@ -15,58 +15,52 @@
  */
 package org.fuwjax.oss.generic;
 
-import org.fuwjax.oss.util.Members;
-import org.fuwjax.oss.util.Streams;
-import org.fuwjax.oss.util.Types;
-import org.fuwjax.oss.util.collection.ListDecorator;
-
+import java.lang.reflect.Member;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
+
+import org.fuwjax.oss.util.collection.ListDecorator;
 
 /**
  * Created by fuwjax on 2/18/15.
  */
 public class Spec {
-    private static ConcurrentMap<Type, Spec> specs = new ConcurrentHashMap<>();
     private final Type type;
 
-    public static Spec of(final Type type) {
-        if (Types.isInstantiable(type)) {
-            return specs.computeIfAbsent(type, Spec::new);
-        }
-        throw new IllegalArgumentException("Type is not instantiable: " + type);
+    private static boolean isNotStatic(Member member){
+        return !Modifier.isStatic(member.getModifiers());
     }
 
     private List<GenericMember> members;
 
-    private Spec(Type type) {
+    public Spec(Type type) {
         this.type = type;
         if (type instanceof Class) {
-            members = new ArrayList<>();
-            Class<?> cls = (Class<?>) type;
-            Arrays.asList(cls.getDeclaredConstructors()).forEach(c -> members.add(new ConstructorMember(c)));
-            Arrays.asList(cls.getDeclaredMethods()).forEach(m -> members.add(new MethodMember(m)));
-            Arrays.asList(cls.getDeclaredFields()).forEach(f -> members.add(new GetFieldMember(f)));
-            Arrays.asList(cls.getDeclaredFields()).forEach(f -> members.add(new SetFieldMember(f)));
-            for (Class<?> sup = cls.getSuperclass(); sup != null; sup = sup.getSuperclass()) {
-                Arrays.asList(sup.getDeclaredMethods()).stream().filter(Members::isNotStatic).forEach(m -> members.add(new MethodMember(m)));
-                Arrays.asList(sup.getDeclaredFields()).stream().filter(Members::isNotStatic).forEach(f -> members.add(new GetFieldMember(f)));
-                Arrays.asList(sup.getDeclaredFields()).stream().filter(Members::isNotStatic).forEach(f -> members.add(new SetFieldMember(f)));
-            }
+            members = members((Class<?>)type);
         } else {
             ParameterizedType p = (ParameterizedType) type;
-            Spec raw = of(p.getRawType());
-            members = new ListDecorator<>(raw.members, m -> new ResolvedMember(m, p));
+            members = new ListDecorator<>(members((Class<?>)p.getRawType()), m -> new ResolvedMember(m, p));
         }
     }
+
+	private static List<GenericMember> members(Class<?> cls) {
+		List<GenericMember> members = new ArrayList<>();
+		Arrays.asList(cls.getDeclaredConstructors()).forEach(c -> members.add(new ConstructorMember(c)));
+		Arrays.asList(cls.getDeclaredMethods()).forEach(m -> members.add(new MethodMember(m)));
+		Arrays.asList(cls.getDeclaredFields()).forEach(f -> members.add(new GetFieldMember(f)));
+		Arrays.asList(cls.getDeclaredFields()).forEach(f -> members.add(new SetFieldMember(f)));
+		for (Class<?> sup = cls.getSuperclass(); sup != null; sup = sup.getSuperclass()) {
+		    Arrays.asList(sup.getDeclaredMethods()).stream().filter(Spec::isNotStatic).forEach(m -> members.add(new MethodMember(m)));
+		    Arrays.asList(sup.getDeclaredFields()).stream().filter(Spec::isNotStatic).forEach(f -> members.add(new GetFieldMember(f)));
+		    Arrays.asList(sup.getDeclaredFields()).stream().filter(Spec::isNotStatic).forEach(f -> members.add(new SetFieldMember(f)));
+		}
+		return members;
+	}
 
     public Stream<GenericMember> members() {
         return members.stream();

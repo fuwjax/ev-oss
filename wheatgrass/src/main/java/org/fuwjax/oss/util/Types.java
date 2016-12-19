@@ -15,10 +15,11 @@
  */
 package org.fuwjax.oss.util;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.AnnotatedType;
+import java.io.Serializable;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -28,8 +29,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by fuwjax on 2/18/15.
@@ -81,68 +82,68 @@ public class Types {
         return c.isPrimitive() ? parent.get(c) : c.getGenericSuperclass();
     }
 
-    public static boolean isAssignable(Type lhs, Type rhs) {
-        return (rhs == null || lhs != null) && (isAssignable(componentType(lhs), componentType(rhs), true) || isAssignable(lhs, rhs, true) || isAssignable(lhs, box.get(rhs), true));
+    public static boolean isAssignable(Type decl, Type val) {
+        return (val == null || decl != null) && ((!isPrimitive(componentType(decl)) && isAssignable(componentType(decl), componentType(val), true)) || isAssignable(decl, val, true) || isAssignable(decl, box.get(val), true));
     }
 
-    private static boolean isAssignable(Type lhs, Type rhs, boolean allowUnchecked){
-        if(rhs == null){
+    private static boolean isAssignable(Type decl, Type val, boolean allowUnchecked){
+        if(val == null){
             return false;
         }
-        if(lhs.equals(rhs)){
+        if(val.equals(decl)){
             return true;
         }
-        if(rhs instanceof Class) {
-            Class<?> right = c(rhs);
-            if (allowUnchecked && lhs instanceof ParameterizedType) {
-                if (p(lhs).getRawType().equals(rhs)) {
+        if(val instanceof Class) {
+            Class<?> right = c(val);
+            if (allowUnchecked && decl instanceof ParameterizedType) {
+                if (p(decl).getRawType().equals(val)) {
                     return true;
                 }
             }
-            if (isAssignable(lhs, superType(right), allowUnchecked)) {
+            if (isAssignable(decl, superType(right), allowUnchecked)) {
                 return true;
             }
             for(Type iface: right.getGenericInterfaces()){
-                if(isAssignable(lhs, iface, allowUnchecked)){
+                if(isAssignable(decl, iface, allowUnchecked)){
                     return true;
                 }
             }
-        }else if(rhs instanceof ParameterizedType){
-            ParameterizedType right = p(rhs);
-            if(isAssignable(lhs, right.getRawType(), false)){
+        }else if(val instanceof ParameterizedType){
+            ParameterizedType right = p(val);
+            if(isAssignable(decl, right.getRawType(), false)){
                 return true;
             }
             Class<?> self = c(right.getRawType());
-            if(isAssignable(lhs, subst(superType(self), right), allowUnchecked)){
+            if(isAssignable(decl, subst(superType(self), right), allowUnchecked)){
                 return true;
             }
             for(Type iface: self.getGenericInterfaces()){
-                if(isAssignable(lhs, subst(iface, right), allowUnchecked)){
+                if(isAssignable(decl, subst(iface, right), allowUnchecked)){
                     return true;
                 }
             }
-            if(isAssignable(lhs, capture(right), allowUnchecked)){
+            if(isAssignable(decl, capture(right), allowUnchecked)){
                 return true;
             }
-            if(lhs instanceof ParameterizedType){
-                ParameterizedType left = p(lhs);
+            if(decl instanceof ParameterizedType){
+                ParameterizedType left = p(decl);
                 if(left.getRawType().equals(right.getRawType()) && contains(left.getActualTypeArguments(), right.getActualTypeArguments())){
                     return true;
                 }
             }
-        }else if(rhs instanceof GenericArrayType){
-            if (isAssignable(lhs, Object.class, allowUnchecked)) {
+        }else if(val instanceof GenericArrayType){
+            if (isAssignable(decl, Object.class, allowUnchecked)) {
                 return true;
             }
             for(Type iface: Object[].class.getGenericInterfaces()){
-                if(isAssignable(lhs, iface, allowUnchecked)){
+                if(isAssignable(decl, iface, allowUnchecked)){
                     return true;
                 }
             }
-        }else if(rhs instanceof TypeVariable){
-            TypeVariable right = v(rhs);
+        }else if(val instanceof TypeVariable){
+            TypeVariable<?> right = v(val);
             for(Type bound: right.getBounds()){
-                if(isAssignable(lhs, bound, allowUnchecked)){
+                if(isAssignable(bound, decl, allowUnchecked)){
                     return true;
                 }
             }
@@ -201,46 +202,76 @@ public class Types {
         return new Type[]{t};
     }
 
-    public static Type subst(Type t, ParameterizedType mapping){
+    public static Type subst(Type decl, ParameterizedType mapping){
         Type result;
-        if(t == null){
+        if(decl == null){
             return null;
-        }else if(t instanceof TypeVariable){
-            TypeVariable v = v(t);
-            Class<?> raw = c(mapping.getRawType());
-            int index = Arrays.asList(raw.getTypeParameters()).indexOf(v);
-            if(index == -1){
-                if(mapping.getOwnerType() instanceof ParameterizedType){
-                    return subst(t, p(mapping.getOwnerType()));
-                }
-                throw new IllegalArgumentException("Variable "+t+" is not present in "+mapping);
-            }
-            Type arg = mapping.getActualTypeArguments()[index];
-            result = subst(arg == null ? wildcardOf(v.getBounds(), NO_PARAMS) : arg, mapping);
-        }else if(t instanceof GenericArrayType){
-            final GenericArrayType array = a(t);
+        }else if(decl instanceof TypeVariable){
+            TypeVariable<?> v = v(decl);
+            Type arg = resolve(mapping, v);
+            result = arg == null ? v : arg; //subst(wildcardOf(v.getBounds(), NO_PARAMS),mapping)
+        }else if(decl instanceof GenericArrayType){
+            final GenericArrayType array = a(decl);
             Type comp = subst(array.getGenericComponentType(), mapping);
             result = arrayOf(comp);
-        }else if(t instanceof ParameterizedType){
-            ParameterizedType p = p(t);
+        }else if(decl instanceof ParameterizedType){
+            ParameterizedType p = p(decl);
             Type owner = subst(p.getOwnerType(), mapping);
             Type[] args = subst(p.getActualTypeArguments(), mapping);
             result = paramOf(owner, p.getRawType(), args);
-        }else if(t instanceof WildcardType){
-            WildcardType w = w(t);
+        }else if(decl instanceof WildcardType){
+            WildcardType w = w(decl);
             Type[] upper = subst(w.getUpperBounds(), mapping);
             Type[] lower = subst(w.getLowerBounds(), mapping);
-            result = wildcardOf(upper, lower);
-        }else if(t instanceof Class){
-            result = t;
+            result = reduceBounds(upper, lower);
+        }else if(decl instanceof Class){
+            result = decl;
         }else{
-            throw new IllegalArgumentException("Unknown type "+t);
+            throw new IllegalArgumentException("Unknown type "+name(decl));
         }
-        return result.equals(t) ? t : result;
+        if(decl.equals(result)){
+        	return decl;
+        }
+        System.out.println("subst "+ name(decl)+" with "+ name(mapping)+" returned "+name(result));
+        return result;
+    }
+    
+    private static Type reduceBounds(Type[] upper, Type[] lower) {
+    	if(upper.length == 1 && upper[0] instanceof WildcardType){
+    		return upper[0];
+    	}
+    	if(lower.length == 1 && lower[0] instanceof WildcardType){
+    		return lower[0];
+    	}
+		return wildcardOf(upper, lower);
+	}
+
+	private static Type resolve(Type t, TypeVariable<?> v){
+    	return t instanceof ParameterizedType ? resolve(p(t), v) : null;
     }
 
-    public static Type[] subst(Type[] types, ParameterizedType mapping){
-        return Arrays2.transform(types, NO_PARAMS, t -> subst(t, mapping));
+    private static Type resolve(ParameterizedType p, TypeVariable<?> v) {
+    	int index = Arrays.asList(c(p.getRawType()).getTypeParameters()).indexOf(v);
+        if(index != -1){
+        	System.out.println("resolving "+name(v)+" against "+name(p) + " found "+name(p.getActualTypeArguments()[index]));
+        	return p.getActualTypeArguments()[index];
+        }
+    	System.out.println("resolving "+name(v)+" against "+name(p) + " found nothing");
+        return null;
+//		Type result = resolve(p.getOwnerType(), v);
+//    	if(result != null){
+//    		return result;
+//    	}
+//    	result = resolve(subst(c(p.getRawType()).getGenericSuperclass(), p), v);
+//    	if(result != null){
+//    		return result;
+//    	}
+//    	result = Arrays.asList(c(p.getRawType()).getGenericInterfaces()).stream().map(i -> resolve(subst(i, p), v)).findFirst().orElse(null);
+//        return result;
+	}
+
+	public static Type[] subst(Type[] decls, ParameterizedType mapping){
+        return Arrays2.transform(decls, NO_PARAMS, t -> subst(t, mapping));
     }
 
     private static ParameterizedType paramOf(Type owner, Type raw, Type[] args){
@@ -259,8 +290,14 @@ public class Types {
             public Type getOwnerType() {
                 return owner;
             }
+            
+            @Override
+            public String toString() {
+            	return name(this);
+            }
 
-            public boolean equals(Object obj) {
+            @Override
+			public boolean equals(Object obj) {
                 if(obj instanceof ParameterizedType) {
                     ParameterizedType o = p((Type)obj);
                     return Objects.equals(owner, o.getOwnerType()) && Objects.equals(raw, o.getRawType()) && Arrays.equals(args, o.getActualTypeArguments());
@@ -268,7 +305,8 @@ public class Types {
                 return false;
             }
 
-            public int hashCode() {
+            @Override
+			public int hashCode() {
                 return Arrays.hashCode(args) ^ Objects.hashCode(owner) ^ Objects.hashCode(raw);
             }
         };
@@ -285,8 +323,14 @@ public class Types {
             public Type[] getLowerBounds() {
                 return lower;
             }
+            
+            @Override
+            public String toString() {
+            	return name(this);
+            }
 
-            public boolean equals(Object obj) {
+            @Override
+			public boolean equals(Object obj) {
                 if(obj instanceof WildcardType) {
                     WildcardType o = w((Type)obj);
                     return Arrays.equals(upper, o.getUpperBounds()) && Arrays.equals(lower, o.getLowerBounds());
@@ -294,7 +338,8 @@ public class Types {
                 return false;
             }
 
-            public int hashCode() {
+            @Override
+			public int hashCode() {
                 return Arrays.hashCode(lower) ^ Arrays.hashCode(upper);
             }
         };
@@ -305,6 +350,11 @@ public class Types {
             @Override
             public Type getGenericComponentType() {
                 return comp;
+            }
+            
+            @Override
+            public String toString() {
+            	return name(this);
             }
 
             @Override
@@ -334,8 +384,8 @@ public class Types {
         return (Class<?>)t;
     }
 
-    private static TypeVariable v(Type t){
-        return (TypeVariable)t;
+    private static TypeVariable<?> v(Type t){
+        return (TypeVariable<?>)t;
     }
 
     private static WildcardType w(Type t){
@@ -363,23 +413,121 @@ public class Types {
         return void.class.equals(type) || Void.class.equals(type);
     }
 
-    public static AnnotatedElement annotatedElement(Annotation... annotations) {
-        Map<Class<?>, Annotation> map = Arrays.asList(annotations).stream().collect(Collectors.toMap(Annotation::annotationType, Function.identity()));
-        return new AnnotatedElement() {
-            @Override
-            public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-                return annotationClass.cast(map.get(annotationClass));
-            }
+	public static Class<?> rawType(Type type) {
+        if(type == null){
+            return null;
+        }
+        if(type instanceof Class) {
+            return c(type);
+        }
+        if(type instanceof ParameterizedType){
+        	return c(p(type).getRawType());
+        }
+        if(type instanceof GenericArrayType){
+        	return Array.newInstance(rawType(componentType(type)), 0).getClass();
+        }
+        if(type instanceof TypeVariable){
+        	return rawType(v(type).getBounds()[0]);
+        }
+        if(type instanceof WildcardType){
+        	return rawType(w(type).getUpperBounds()[0]);
+        }
+        assert false: "Unknown type "+type.getClass();
+        return null;
+	}
+	
+	public static String name(Type type){
+		if(type == null){
+			return null;
+		}
+		if(type instanceof Class){
+			return c(type).getName();
+		}
+		if(type instanceof ParameterizedType){
+			ParameterizedType p = p(type);
+			return (p.getOwnerType() != null ? name(p.getOwnerType())+"." + c(p.getRawType()).getSimpleName() : name(p.getRawType()))+Arrays.asList(p.getActualTypeArguments()).stream().map(Types::name).collect(Collectors.joining(",","<",">"));
+		}
+		if(type instanceof TypeVariable){
+			TypeVariable<?> v = v(type);
+			if(v.getGenericDeclaration() instanceof Class){
+				return ((Class<?>)v.getGenericDeclaration()).getName()+"."+v.getName();
+			}
+			if(v.getGenericDeclaration() instanceof Method){
+				Method m = (Method)v.getGenericDeclaration();
+				return m.getDeclaringClass().getName()+"."+m.getName()+"."+v.getName();
+			}
+			Constructor<?> c = (Constructor<?>)v.getGenericDeclaration();
+			return c.getDeclaringClass().getName()+".new."+v.getName();
+		}
+		if(type instanceof GenericArrayType){
+			return name(a(type).getGenericComponentType())+"[]";
+		}
+		if(type instanceof WildcardType){
+			WildcardType w = w(type);
+			if(w.getLowerBounds().length > 0){
+				return "? super "+Arrays.asList(w.getLowerBounds()).stream().map(Types::name).collect(Collectors.joining(" & "));
+			}else if(w.getUpperBounds().length == 1 && Object.class.equals(w.getUpperBounds()[0])){
+				return "?";
+			}
+			return "? super "+Arrays.asList(w.getUpperBounds()).stream().map(Types::name).collect(Collectors.joining(" & "));
+		}
+		return "WTF!!"+type+"!!";
+	}
 
-            @Override
-            public Annotation[] getAnnotations() {
-                return annotations;
-            }
+	public static boolean isPrimitive(Type type) {
+		return type instanceof Class && c(type).isPrimitive();
+	}
 
-            @Override
-            public Annotation[] getDeclaredAnnotations() {
-                return getAnnotations();
-            }
-        };
-    }
+	private static Map<Type, Type> primitiveParents = new HashMap<>();
+	static{
+		primitiveParents.put(byte.class, short.class);
+		primitiveParents.put(char.class, int.class);
+		primitiveParents.put(short.class, int.class);
+		primitiveParents.put(int.class, long.class);
+		primitiveParents.put(long.class, float.class);
+		primitiveParents.put(float.class, double.class);
+	}
+	
+	public static boolean widensTo(Type from, Type to) {
+		Type test = primitiveParents.get(from);
+		while(test != null && !Objects.equals(test, to)){
+			test = primitiveParents.get(test);
+		}
+		return test != null;
+	}
+	
+	public static boolean isArray(Type t){
+		return t instanceof GenericArrayType || (t instanceof Class && ((Class<?>)t).isArray());
+	}
+	
+	public static Type component(Type t){
+		if(t instanceof GenericArrayType){
+			return ((GenericArrayType)t).getGenericComponentType();
+		}
+		if(t instanceof Class){
+			return ((Class<?>)t).getComponentType();
+		}
+		return null;
+	}
+	
+	public static Stream<Type> supers(Type t){
+		if(t instanceof Class){
+			Class<?> c = (Class<?>)t;
+			List<Type> types = supers.get(c);
+			return Stream.concat(Stream.of(c, c.getGenericSuperclass()), Stream.of(c.getGenericInterfaces()));
+		}
+		if(t instanceof ParameterizedType){
+			ParameterizedType p = (ParameterizedType)t;
+			Class<?> raw = (Class<?>)p.getRawType();
+			return Stream.concat(Stream.of(p, subst(raw.getGenericSuperclass(), p)), Stream.of(subst(raw.getGenericInterfaces(), p)));
+		}
+		return Stream.of(t);
+	}
+
+	public static boolean isSuper(Type from, Type to) {
+		if(isArray(from)){
+			return isArray(to) ? isSuper(component(from), component(to)) : Arrays.asList(Object.class, Serializable.class, Cloneable.class).contains(to);
+		}
+		return supers(from).anyMatch(t -> contains(t, to));
+	}
 }

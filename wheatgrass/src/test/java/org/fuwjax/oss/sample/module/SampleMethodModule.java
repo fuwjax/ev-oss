@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.fuwjax.oss.sample;
+package org.fuwjax.oss.sample.module;
 
-import javax.inject.Named;
-import java.util.function.Supplier;
+import org.fuwjax.oss.sample.SampleResource;
 
-public class SampleAnnotatedModule {
-    @Named("first")
-    public final SampleResource firstResource = new SampleResource(7);
-    @Named("second")
-	public final SampleResource secondResource = new SampleResource(8);
+public class SampleMethodModule {
+    public SampleResource resource() {
+        return new SampleResource("method");
+    }
 }

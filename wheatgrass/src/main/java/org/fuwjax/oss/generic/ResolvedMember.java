@@ -15,20 +15,18 @@
  */
 package org.fuwjax.oss.generic;
 
-import org.fuwjax.oss.util.Arrays2;
-import org.fuwjax.oss.util.ObjectAssist;
-import org.fuwjax.oss.util.Types;
-
-import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+
+import org.fuwjax.oss.util.Arrays2;
+import org.fuwjax.oss.util.Types;
+import org.fuwjax.oss.util.ValueObject;
 
 /**
  * Created by fuwjax on 2/19/15.
  */
-public class ResolvedMember extends ObjectAssist.Impl implements GenericMember {
+public class ResolvedMember extends ValueObject implements GenericMember {
     private final GenericMember member;
     private final AnnotatedDeclaration type;
     private final AnnotatedDeclaration[] params;
@@ -39,6 +37,7 @@ public class ResolvedMember extends ObjectAssist.Impl implements GenericMember {
         this.type = new AnnotatedDeclaration(type, member.returnType().element());
         params = Arrays2.transform(member.paramTypes(), new AnnotatedDeclaration[0], d -> d.subst(type));
         returns = member.returnType().subst(type);
+        identify(GenericMember.ids(this));
     }
 
     @Override
@@ -85,9 +84,9 @@ public class ResolvedMember extends ObjectAssist.Impl implements GenericMember {
     public TargetType target() {
         return member.target();
     }
-
-    @Override
-    public Object[] ids() {
-        return GenericMember.ids(this);
-    }
+	
+	@Override
+	public GenericMember coerceReturn(Type type) {
+		return Types.isAssignable(type, returnType().type()) ? this : null;
+	}
 }

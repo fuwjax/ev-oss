@@ -15,6 +15,7 @@
  */
 package org.fuwjax.oss.util;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -52,6 +53,13 @@ public class RunWrapException extends RuntimeException {
 	public <X extends Throwable> RunWrapException throwIf(final Class<X> exceptionType) throws X {
 		if(exceptionType.isInstance(getCause())) {
 			throw exceptionType.cast(getCause());
+		}
+		return this;
+	}
+	
+	public <X extends Throwable, Y extends Throwable> RunWrapException throwIf(Class<X> exceptionType, Function<X, Y> transform) throws Y{
+		if(exceptionType.isInstance(getCause())){
+			throw transform.apply(exceptionType.cast(getCause()));
 		}
 		return this;
 	}

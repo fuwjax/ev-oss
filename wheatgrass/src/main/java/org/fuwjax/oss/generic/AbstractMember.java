@@ -18,19 +18,22 @@ package org.fuwjax.oss.generic;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
+import java.lang.reflect.Type;
 
-import org.fuwjax.oss.util.ObjectAssist;
+import org.fuwjax.oss.util.Types;
+import org.fuwjax.oss.util.ValueObject;
 
 /**
  * Created by fuwjax on 2/19/15.
  * @param <M> the member type
  */
-public abstract class AbstractMember<M extends AccessibleObject & Member & AnnotatedElement> extends ObjectAssist.Impl implements GenericMember {
+public abstract class AbstractMember<M extends AccessibleObject & Member & AnnotatedElement> extends ValueObject implements GenericMember {
 	private final M m;
 
 	public AbstractMember(final M m) {
 		m.setAccessible(true);
 		this.m = m;
+		identify(GenericMember.ids(this));
 	}
 
 	@Override
@@ -57,9 +60,9 @@ public abstract class AbstractMember<M extends AccessibleObject & Member & Annot
 	public TargetType target() {
 		return TargetType.of(m.getModifiers());
 	}
-
+	
 	@Override
-	public Object[] ids() {
-		return GenericMember.ids(this);
+	public GenericMember coerceReturn(Type type) {
+		return Types.isAssignable(type, returnType().type()) ? this : null;
 	}
 }

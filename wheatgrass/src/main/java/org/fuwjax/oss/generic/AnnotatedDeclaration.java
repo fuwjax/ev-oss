@@ -15,13 +15,17 @@
  */
 package org.fuwjax.oss.generic;
 
-import org.fuwjax.oss.util.Arrays2;
-import org.fuwjax.oss.util.Types;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.fuwjax.oss.util.Arrays2;
+import org.fuwjax.oss.util.Types;
 
 /**
  * Created by fuwjax on 3/3/15.
@@ -40,10 +44,30 @@ public class AnnotatedDeclaration {
     }
 
     public AnnotatedDeclaration(Type type, Annotation... annotations){
-        this(type, Types.annotatedElement(annotations));
+        this(type, annotatedElement(annotations));
     }
 
-    public static AnnotatedDeclaration[] of(Type[] types, Annotation[][] annotations) {
+    private static AnnotatedElement annotatedElement(Annotation[] annotations) {
+        Map<Class<?>, Annotation> map = Arrays.asList(annotations).stream().collect(Collectors.toMap(Annotation::annotationType, Function.identity()));
+        return new AnnotatedElement() {
+            @Override
+            public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                return annotationClass.cast(map.get(annotationClass));
+            }
+
+            @Override
+            public Annotation[] getAnnotations() {
+                return annotations;
+            }
+
+            @Override
+            public Annotation[] getDeclaredAnnotations() {
+                return getAnnotations();
+            }
+        };
+ 	}
+
+	public static AnnotatedDeclaration[] of(Type[] types, Annotation[][] annotations) {
         return Arrays2.zip(types, annotations, new AnnotatedDeclaration[types.length], AnnotatedDeclaration::new);
     }
 
@@ -54,6 +78,10 @@ public class AnnotatedDeclaration {
     public AnnotatedDeclaration subst(ParameterizedType mapping) {
         return new AnnotatedDeclaration(Types.subst(type, mapping), element);
     }
+    
+//    public AnnotatedDeclaration subst(TypeVariable<?>[] params, Type[] args) {
+//    	return new AnnotatedDeclaration(Types.subst(type, params, args), element);
+//    }
 
     public Type type() {
         return type;

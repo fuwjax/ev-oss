@@ -13,10 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.fuwjax.oss.sample;
+package org.fuwjax.oss.sample.module;
 
-public class SampleMethodModule {
-    public SampleResource resource() {
-        return new SampleResource(123);
+import java.util.function.Supplier;
+
+import org.fuwjax.oss.sample.SampleResource;
+
+public class SampleModule {
+    public final SampleResource publicResource = new SampleResource("public");
+	private final SampleResource privateResource = new SampleResource("private");
+
+    public Supplier<SampleResource> supplier(){
+        return () -> privateResource;
     }
 }

@@ -17,32 +17,15 @@ package org.fuwjax.oss.sample;
 
 
 import javax.inject.Inject;
-import java.util.Objects;
+
+import org.fuwjax.oss.util.ValueObject;
 
 /**
  * Created by fuwjax on 2/15/15.
  */
-public class SampleConstructorInject {
-    private final int id;
-    private final String name;
-
+public class SampleConstructorInject extends ValueObject {
     @Inject
     public SampleConstructorInject(int id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof SampleConstructorInject)) {
-            return false;
-        }
-        SampleConstructorInject o = (SampleConstructorInject) obj;
-        return Objects.equals(getClass(), o.getClass()) && id == o.id && Objects.equals(name, o.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name);
+    	identify(getClass(), id, name);
     }
 }

@@ -15,9 +15,7 @@
  */
 package org.fuwjax.oss.generic;
 
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 
 /**
  * Created by fuwjax on 2/19/15.

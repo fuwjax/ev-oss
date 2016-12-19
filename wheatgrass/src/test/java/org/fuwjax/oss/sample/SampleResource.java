@@ -15,13 +15,13 @@
  */
 package org.fuwjax.oss.sample;
 
-import org.fuwjax.oss.util.ObjectAssist;
+import org.fuwjax.oss.util.ValueObject;
 
 /**
  * Created by fuwjax on 2/18/15.
  */
-public class SampleResource extends ObjectAssist.Base {
-    public SampleResource(int id) {
-        super(id);
+public class SampleResource extends ValueObject {
+    public SampleResource(String id) {
+    	identify(getClass(), id);
     }
 }

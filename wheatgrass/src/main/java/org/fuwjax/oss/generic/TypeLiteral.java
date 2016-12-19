@@ -23,18 +23,15 @@ import java.lang.reflect.Type;
  * Created by fuwjax on 2/18/15.
  * @param <T> the proxied parameterized type
  */
-public abstract class TypeTemplate<T> implements ParameterizedType {
+public abstract class TypeLiteral<T> implements ParameterizedType {
 	private final ParameterizedType type;
 
-	protected TypeTemplate() {
+	protected TypeLiteral() {
+		assert getClass().getGenericSuperclass() instanceof ParameterizedType: "TypeTemplate instances should be anonymous classes";
 		final ParameterizedType t = (ParameterizedType) getClass().getGenericSuperclass();
-		if(!TypeTemplate.class.equals(t.getRawType())) {
-			throw new IllegalStateException("Template instances must be direct anonymous classes");
-		}
+		assert TypeLiteral.class.equals(t.getRawType()): "TypeTemplate instances must be direct anonymous classes";
 		final Type arg = t.getActualTypeArguments()[0];
-		if(!(arg instanceof ParameterizedType)) {
-			throw new IllegalStateException("Template anonymous instances should be for generic, non-array types");
-		}
+		assert arg instanceof ParameterizedType: "TypeTemplate anonymous instances should only be used for generic, non-array types";
 		type = (ParameterizedType) arg;
 	}
 

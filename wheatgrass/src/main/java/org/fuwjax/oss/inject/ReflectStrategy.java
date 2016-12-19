@@ -15,26 +15,28 @@
  */
 package org.fuwjax.oss.inject;
 
-import org.fuwjax.oss.generic.GenericMember;
-import org.fuwjax.oss.generic.GenericMember.MemberAccess;
-import org.fuwjax.oss.generic.Spec;
-import org.fuwjax.oss.util.Types;
-import sun.net.www.content.text.Generic;
-
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import static org.fuwjax.oss.generic.GenericMember.MemberAccess.PROTECTED;
 import static org.fuwjax.oss.generic.GenericMember.TargetType.INSTANCE;
 
-public class ReflectStrategy implements InjectorStrategy {
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.fuwjax.oss.generic.GenericMember;
+import org.fuwjax.oss.generic.Spec;
+import org.fuwjax.oss.util.Types;
+
+public class ReflectStrategy implements BindingStrategy {
     private final Map<Type, Set<GenericMember>> bindings = new HashMap<>();
     private final Object obj;
 
-    public ReflectStrategy(final Object obj) {
+    public ReflectStrategy(final Object obj, InjectionLibrary library) {
         this.obj = obj;
-        Spec spec = Spec.of(obj.getClass());
+        Spec spec = library.spec(obj.getClass());
         spec.members().filter(INSTANCE.and(PROTECTED).and(m -> !Types.isVoid(m.returnType().type())).and(m -> Types.isAssignable(obj.getClass(), m.declaringClass().type()))).forEach(this::register);
     }
 
@@ -55,7 +57,7 @@ public class ReflectStrategy implements InjectorStrategy {
             bindings.entrySet().stream().filter(e -> Types.isAssignable(constraint.type(), e.getKey())).map(Map.Entry::getValue).forEach(possibles::addAll);
             bindings.put(constraint.type(), possibles);
         }
-        final List<GenericMember> assigns = possibles.stream().filter(constraint).collect(Collectors.toList());
+        final List<GenericMember> assigns = possibles.stream().map(constraint::coerce).filter(e -> e != null).collect(Collectors.toList());
         if (assigns.isEmpty()) {
             return null;
         }

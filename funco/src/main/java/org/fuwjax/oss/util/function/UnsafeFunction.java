@@ -16,6 +16,7 @@
 package org.fuwjax.oss.util.function;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface UnsafeFunction<T, R> extends Function<T, R> {
 	R applyUnsafe(T t) throws Exception;
@@ -29,6 +30,14 @@ public interface UnsafeFunction<T, R> extends Function<T, R> {
 		} catch (final Exception e) {
 			throw new UnsafeException(e, "function did not apply safely");
 		}
+	}
+	
+	default <V> UnsafeFunction<T, V> andThen(UnsafeFunction<? super R, ? extends V> after) {
+		return t -> after.apply(apply(t));
+	}
+	
+	default <V> UnsafeFunction<V, R> compose(UnsafeFunction<? super V, ? extends T> before) {
+		return v -> apply(before.apply(v));
 	}
 
 	default UnsafeSupplier<R> defer(T value) {

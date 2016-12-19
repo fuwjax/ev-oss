@@ -16,7 +16,7 @@
 package org.fuwjax.oss.inject;
 
 /**
- * Created by fuwjax on 2/20/15.
+ * The value accessor for a
  */
 public interface Binding {
     Object get(Scope scope) throws ReflectiveOperationException;

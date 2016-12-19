@@ -15,19 +15,28 @@
  */
 package org.fuwjax.oss.inject;
 
-import org.fuwjax.oss.util.Annotations;
-
-import javax.inject.Named;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-public class Injector implements ObjectFactory {
-    public static Injector newInjector(final Object... modules) throws ReflectiveOperationException {
-        InjectorStrategy[] injectors = new InjectorStrategy[modules.length + 1];
-        Injector injector = new Injector(new ChainStrategy(injectors));
-        injectors[modules.length] = injector::spawn;
+import javax.inject.Named;
+
+import org.fuwjax.oss.generic.TypeLiteral;
+import org.fuwjax.oss.util.Annotations;
+
+/**
+ * Created by fuwjax on 2/20/15.
+ */
+public interface Injector {
+	public static Injector newInjector(final Object... modules) throws ReflectiveOperationException{
+		return newInjector(InjectionLibrary.DEFAULT, modules);
+	}
+	
+    public static Injector newInjector(InjectionLibrary library, final Object... modules) throws ReflectiveOperationException {
+        BindingStrategy[] bindings = new BindingStrategy[modules.length];
+        InjectorImpl injector = new InjectorImpl(new ChainStrategy(bindings), library);
         for (int i = 0; i < modules.length; i++) {
-            Object module = modules[i] instanceof Type ? injector.get(new BindConstraint((Type) modules[i])) : modules[i];
-            injectors[i] = module instanceof InjectorStrategy ? (InjectorStrategy) module : new ReflectStrategy(module);
+            Object module = modules[i] instanceof Type ? injector.get((Type) modules[i]) : modules[i];
+            bindings[i] = module instanceof BindingStrategy ? (BindingStrategy) module : new ReflectStrategy(module, library);
         }
         return injector;
     }
@@ -36,27 +45,13 @@ public class Injector implements ObjectFactory {
         return Annotations.of(Named.class, name);
     }
 
-    private Binding spawn(BindConstraint constraint) {
-        return scope -> scope.create(constraint);
-    }
+    <T> T inject(final T object) throws ReflectiveOperationException;
 
-    private final InjectorStrategy strategy;
+    <T> T inject(TypeLiteral<T> type, final T object) throws ReflectiveOperationException;
 
-    protected Injector(final InjectorStrategy strategy) {
-        this.strategy = strategy;
-    }
-
-    @Override
-    public void inject(BindConstraint constraint, Object target) throws ReflectiveOperationException {
-        scope().inject(constraint, target);
-    }
-
-    public Scope scope() {
-        return new Scope(strategy);
-    }
-
-    @Override
-    public Object get(BindConstraint constraint) throws ReflectiveOperationException {
-        return scope().get(constraint);
-    }
+     <T> T get(final Class<T> type, Annotation... annotations) throws ReflectiveOperationException;
+     
+     <T> T get(final TypeLiteral<T> type, Annotation... annotations) throws ReflectiveOperationException;
+     
+     Injector scope();
 }

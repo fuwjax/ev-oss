@@ -15,24 +15,26 @@
  */
 package org.fuwjax.oss.generic;
 
-import org.fuwjax.oss.util.Types;
-
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
+
+import org.fuwjax.oss.util.Types;
 
 /**
  * Created by fuwjax on 2/19/15.
  */
 public class ConstructorMember extends AbstractMember<Constructor<?>> {
-
     public ConstructorMember(Constructor<?> c) {
         super(c);
     }
 
     @Override
     public Object invoke(Object target, Object... args) throws ReflectiveOperationException {
-        return source().newInstance(args);
+    	try{
+    		return source().newInstance(args);
+    	}catch(ReflectiveOperationException e){
+    		throw new ReflectiveOperationException("Could not create "+source(),e);
+    	}
     }
 
     @Override
@@ -58,5 +60,15 @@ public class ConstructorMember extends AbstractMember<Constructor<?>> {
     @Override
     public TargetType target() {
         return TargetType.TYPE;
+    }
+    
+    @Override
+    public GenericMember coerceReturn(Type type) {
+    	if(Types.isAssignable(type, returnType().type())){
+//    		Type[] params = Types.coerce(type, returnType().type(), source().getTypeParameters());
+//    		Types.subst(returnType().type(), Types.)
+    		return this;
+    	}
+    	return null;
     }
 }

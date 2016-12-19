@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.fuwjax.oss.inject;
+package org.fuwjax.oss.sample.module;
 
-import org.fuwjax.oss.generic.GenericMember;
-import org.fuwjax.oss.generic.GenericMember.MemberAccess;
+import javax.inject.Named;
 
-import java.lang.reflect.Type;
+import org.fuwjax.oss.sample.SampleResource;
 
-/**
- * Created by fuwjax on 2/20/15.
- */
-public interface InjectorStrategy {
-    Binding bindingFor(BindConstraint constraint);
+public class SampleAnnotatedModule {
+    @Named("first")
+    public final SampleResource firstResource = new SampleResource("public.first");
+    @Named("second")
+	public final SampleResource secondResource = new SampleResource("public.second");
 }

@@ -18,14 +18,20 @@ package org.fuwjax.oss.sample;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.fuwjax.oss.util.ValueObject;
+
 /**
  * Created by fuwjax on 3/3/15.
  */
-public class SampleNamedDependency {
+public class SampleNamedDependency extends ValueObject{
     @Inject
     @Named("second")
     private SampleResource resource;
-
+    
+    public SampleNamedDependency() {
+    	deferId(this::getClass, this::resource);
+	}
+    
     public SampleResource resource(){
         return resource;
     }

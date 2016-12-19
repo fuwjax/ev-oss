@@ -17,6 +17,7 @@ package org.fuwjax.oss.generic;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.Comparator;
 import java.util.function.Predicate;
 
@@ -101,4 +102,6 @@ public interface GenericMember {
             .thenComparing(nullsLast(comparing(GenericMember::declaringClass, comparing(AnnotatedDeclaration::type, TYPE_COMPARATOR))))
             .thenComparing(GenericMember::name)
             .thenComparing(GenericMember::paramTypes, comparingArray(comparing(AnnotatedDeclaration::type, TYPE_COMPARATOR)));
+
+	GenericMember coerceReturn(Type type);
 }

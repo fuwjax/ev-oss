@@ -13,17 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.fuwjax.oss.sample;
+package org.fuwjax.oss.inject;
 
-import org.fuwjax.oss.inject.Injector;
-
-import java.util.function.Supplier;
-
-public class SampleModule {
-    public final SampleResource publicResource = new SampleResource(7);
-	private final SampleResource privateResource = new SampleResource(8);
-
-    public Supplier<SampleResource> supplier(){
-        return () -> privateResource;
-    }
+/**
+ * Created by fuwjax on 2/20/15.
+ */
+ interface BindingStrategy {
+    Binding bindingFor(BindConstraint constraint);
 }

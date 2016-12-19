@@ -17,37 +17,34 @@ package org.fuwjax.oss.sample;
 
 
 import javax.inject.Inject;
-import java.util.Objects;
+
+import org.fuwjax.oss.util.ValueObject;
 
 /**
  * Created by fuwjax on 2/15/15.
  */
-public class SampleFieldInject {
+public class SampleFieldInject extends ValueObject{
     @Inject
     private int id;
     @Inject
     private String name;
 
-    private SampleFieldInject(){
-        // for injection
-    }
+	private SampleFieldInject(){
+		// for injection
+		deferId(this::getClass, this::id, this::name);
+	}
 
     public SampleFieldInject(int id, String name) {
+    	this();
         this.id = id;
         this.name = name;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if(!(obj instanceof SampleFieldInject)){
-            return false;
-        }
-        SampleFieldInject o = (SampleFieldInject)obj;
-        return Objects.equals(getClass(), o.getClass()) && id == o.id && Objects.equals(name, o.name);
+    
+    public int id(){
+    	return id;
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name);
+    
+    public String name(){
+    	return name;
     }
 }
