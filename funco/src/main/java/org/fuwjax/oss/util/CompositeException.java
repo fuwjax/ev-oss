@@ -15,11 +15,14 @@
  */
 package org.fuwjax.oss.util;
 
-import org.fuwjax.oss.util.function.UnsafeRunnable;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+
+import org.fuwjax.oss.util.function.UnsafeConsumer;
+import org.fuwjax.oss.util.function.UnsafeRunnable;
 
 /**
  * Created by fuwjax on 12/20/14.
@@ -45,12 +48,12 @@ public class CompositeException extends RunWrapException {
         }
         causes.add(cause);
     }
-
+    
     @Override
     public <X extends Throwable> CompositeException throwIf(Class<X> exceptionType) throws X {
         for(Exception cause: causes){
-            if(exceptionType.isInstance(getCause())){
-                throw exceptionType.cast(getCause());
+            if(exceptionType.isInstance(cause)){
+                throw exceptionType.cast(cause);
             }
         }
         return this;
@@ -67,14 +70,26 @@ public class CompositeException extends RunWrapException {
     }
 
     public void throwIfCaused() {
+        if(causes.size() > 1) {
+            throw this;
+        }
         if(getCause() != null){
             if(RuntimeException.class.isInstance(getCause())){
                 throw (RuntimeException)getCause();
             }
             throw new RunWrapException(getCause(), message());
         }
-        if(!causes.isEmpty()) {
-            throw this;
-        }
     }
+    
+	
+	public <T> boolean accept(UnsafeConsumer<T> consumer, T value){
+        try{
+            consumer.accept(value);
+            return true;
+        }catch(Exception e){
+            add(e);
+            return false;
+        }
+	}
+
 }

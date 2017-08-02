@@ -18,6 +18,8 @@ package org.fuwjax.oss.util.function;
 import org.fuwjax.oss.util.RunWrapException;
 
 public class UnsafeException extends RunWrapException {
+	private static final long serialVersionUID = 1L;
+
 	public UnsafeException(Exception cause, String pattern, Object... args) {
 		super(cause, pattern, args);
 	}
