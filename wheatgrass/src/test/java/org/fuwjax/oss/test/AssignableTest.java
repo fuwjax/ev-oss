@@ -15,16 +15,15 @@
  */
 package org.fuwjax.oss.test;
 
+import static org.fuwjax.oss.util.assertion.Assertions.assertThat;
+import static org.fuwjax.oss.util.assertion.Assertions.is;
+
+import java.io.Serializable;
+import java.util.List;
+
 import org.fuwjax.oss.generic.TypeInspector;
 import org.fuwjax.oss.util.Types;
 import org.junit.Test;
-
-import java.io.Serializable;
-import java.lang.reflect.Type;
-import java.util.List;
-
-import static org.fuwjax.oss.util.assertion.Assertions.assertThat;
-import static org.fuwjax.oss.util.assertion.Assertions.is;
 
 /**
  * Created by fuwjax on 2/22/15.

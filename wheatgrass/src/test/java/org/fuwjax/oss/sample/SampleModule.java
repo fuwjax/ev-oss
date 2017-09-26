@@ -15,8 +15,6 @@
  */
 package org.fuwjax.oss.sample;
 
-import org.fuwjax.oss.inject.Injector;
-
 import java.util.function.Supplier;
 
 public class SampleModule {

@@ -15,10 +15,7 @@
  */
 package org.fuwjax.oss.util;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Array;
-import java.lang.reflect.Type;
 import java.util.Comparator;
 import java.util.function.BiFunction;
 import java.util.function.Function;

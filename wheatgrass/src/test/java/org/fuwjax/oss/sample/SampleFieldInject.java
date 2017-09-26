@@ -16,8 +16,9 @@
 package org.fuwjax.oss.sample;
 
 
-import javax.inject.Inject;
 import java.util.Objects;
+
+import javax.inject.Inject;
 
 /**
  * Created by fuwjax on 2/15/15.

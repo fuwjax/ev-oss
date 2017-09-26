@@ -15,28 +15,23 @@
  */
 package org.fuwjax.oss.inject;
 
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toSet;
+import static org.fuwjax.oss.generic.GenericMember.MemberAccess.PROTECTED;
+import static org.fuwjax.oss.generic.GenericMember.MemberAccess.PUBLIC;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import javax.inject.Qualifier;
+
 import org.fuwjax.oss.generic.AnnotatedDeclaration;
 import org.fuwjax.oss.generic.GenericMember;
 import org.fuwjax.oss.generic.GenericMember.MemberAccess;
 import org.fuwjax.oss.util.ObjectAssist;
 import org.fuwjax.oss.util.Types;
-import sun.security.util.Cache;
-
-import javax.inject.Qualifier;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toSet;
-import static org.fuwjax.oss.generic.GenericMember.MemberAccess.PROTECTED;
-import static org.fuwjax.oss.generic.GenericMember.MemberAccess.PUBLIC;
 
 /**
  * Created by fuwjax on 2/26/15.

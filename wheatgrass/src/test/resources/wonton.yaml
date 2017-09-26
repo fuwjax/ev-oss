@@ -1,0 +1,6 @@
+name: example
+source:
+	hostname: www.example.com
+target:
+	hostname: fuwjax.com
+port: 80

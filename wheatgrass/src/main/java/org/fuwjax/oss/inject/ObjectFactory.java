@@ -15,19 +15,9 @@
  */
 package org.fuwjax.oss.inject;
 
-import org.fuwjax.oss.generic.GenericMember;
-import org.fuwjax.oss.generic.GenericMember.MemberAccess;
-import org.fuwjax.oss.generic.TypeTemplate;
-import org.fuwjax.oss.util.Arrays2;
-import org.fuwjax.oss.util.RunWrapException;
-import org.fuwjax.oss.util.Streams;
-
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 
-import static org.fuwjax.oss.generic.GenericMember.MemberAccess.PROTECTED;
-import static org.fuwjax.oss.generic.GenericMember.MemberAccess.PUBLIC;
-import static org.fuwjax.oss.util.function.Functions.function;
+import org.fuwjax.oss.generic.TypeTemplate;
 
 /**
  * Created by fuwjax on 2/20/15.

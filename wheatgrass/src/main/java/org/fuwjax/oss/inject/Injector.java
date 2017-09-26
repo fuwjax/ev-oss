@@ -15,10 +15,11 @@
  */
 package org.fuwjax.oss.inject;
 
-import org.fuwjax.oss.util.Annotations;
+import java.lang.reflect.Type;
 
 import javax.inject.Named;
-import java.lang.reflect.Type;
+
+import org.fuwjax.oss.util.Annotations;
 
 public class Injector implements ObjectFactory {
     public static Injector newInjector(final Object... modules) throws ReflectiveOperationException {
@@ -26,13 +27,23 @@ public class Injector implements ObjectFactory {
         Injector injector = new Injector(new ChainStrategy(injectors));
         injectors[modules.length] = injector::spawn;
         for (int i = 0; i < modules.length; i++) {
-            Object module = modules[i] instanceof Type ? injector.get(new BindConstraint((Type) modules[i])) : modules[i];
+            Object module = injector.asModule(modules[i]);
             injectors[i] = module instanceof InjectorStrategy ? (InjectorStrategy) module : new ReflectStrategy(module);
         }
         return injector;
     }
 
-    public static Named named(String name) {
+    private Object asModule(Object source) throws ReflectiveOperationException {
+    		if(source instanceof Type) {
+    			return get(new BindConstraint((Type) source));
+    		}
+    		if(source instanceof String) {
+    			return new Config((String)source);
+    		}
+    		return source;
+	}
+
+	public static Named named(String name) {
         return Annotations.of(Named.class, name);
     }
 

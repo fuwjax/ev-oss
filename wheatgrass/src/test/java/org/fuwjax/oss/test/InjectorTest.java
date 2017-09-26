@@ -15,20 +15,23 @@
  */
 package org.fuwjax.oss.test;
 
-import org.fuwjax.oss.inject.BindConstraint;
-import org.fuwjax.oss.inject.Injector;
-import org.fuwjax.oss.generic.TypeTemplate;
-import org.fuwjax.oss.sample.*;
-import org.fuwjax.oss.util.Annotations;
-import org.junit.Test;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.util.function.Supplier;
-
 import static org.fuwjax.oss.util.assertion.Assertions.assertThat;
 import static org.fuwjax.oss.util.assertion.Assertions.is;
 import static org.fuwjax.oss.util.assertion.Assertions.isA;
+
+import java.util.function.Supplier;
+
+import javax.inject.Inject;
+
+import org.fuwjax.oss.generic.TypeTemplate;
+import org.fuwjax.oss.inject.Injector;
+import org.fuwjax.oss.sample.SampleAnnotatedModule;
+import org.fuwjax.oss.sample.SampleMethodModule;
+import org.fuwjax.oss.sample.SampleModule;
+import org.fuwjax.oss.sample.SampleNamedDependency;
+import org.fuwjax.oss.sample.SampleResource;
+import org.fuwjax.oss.sample.SelfReferencingType;
+import org.junit.Test;
 
 public class InjectorTest {
     @Test

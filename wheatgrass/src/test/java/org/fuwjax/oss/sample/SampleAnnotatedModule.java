@@ -16,7 +16,6 @@
 package org.fuwjax.oss.sample;
 
 import javax.inject.Named;
-import java.util.function.Supplier;
 
 public class SampleAnnotatedModule {
     @Named("first")
